@@ -184,64 +184,92 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </div>
 
-          {/* Mobile Navigation - Floating Overlay */}
-          {mobileMenuOpen && (
-            <>
-              {/* Backdrop */}
-              <div 
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
-                onClick={() => setMobileMenuOpen(false)}
-              />
-              
-              {/* Sliding Menu */}
-              <div className="fixed top-16 left-0 right-0 bottom-0 bg-white z-50 md:hidden overflow-y-auto shadow-2xl animate-in slide-in-from-top duration-300">
-                <div className="py-4">
-                  {/* User Info */}
-                  <div className="mb-4 px-4 pb-4 border-b border-gray-200">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-semibold shadow-lg">
-                        {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-gray-900">{user?.name || 'User'}</div>
-                        <div className="text-xs text-gray-500">{user?.email}</div>
-                      </div>
-                      {user?.currency && (
-                        <div className="ml-auto px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-lg">
-                          {user.currency}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Navigation Links */}
-                  <div className="space-y-2 px-4">
-                    {navigation.map((item) => {
-                      const isActive = pathname === item.href;
-                      return (
-                        <Link
-                          key={item.name}
-                          href={item.href}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className={cn(
-                            'flex items-center space-x-3 rounded-xl px-4 py-3 text-base font-medium transition-all',
-                            isActive
-                              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
-                              : 'text-gray-700 hover:bg-gray-100'
-                          )}
-                        >
-                          {item.icon}
-                          <span>{item.name}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
         </div>
       </nav>
+
+      {/* Mobile Navigation - Full Screen Overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 md:hidden" style={{ zIndex: 9999 }}>
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          
+          {/* Sliding Menu Panel */}
+          <div className="absolute inset-x-0 top-0 max-h-screen bg-white shadow-2xl animate-in slide-in-from-top duration-300 overflow-hidden flex flex-col">
+            {/* Header with Close Button */}
+            <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+              <div className="flex items-center space-x-2">
+                <div className="bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-lg p-2 shadow-lg">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+                <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Menu
+                </span>
+              </div>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="py-4">
+                {/* User Info */}
+                <div className="mb-4 px-4 pb-4 border-b border-gray-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-semibold shadow-lg text-lg">
+                      {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold text-gray-900">{user?.name || 'User'}</div>
+                      <div className="text-xs text-gray-500 truncate">{user?.email}</div>
+                    </div>
+                    {user?.currency && (
+                      <div className="px-3 py-1.5 bg-green-100 text-green-700 text-sm font-semibold rounded-lg">
+                        {user.currency}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Navigation Links */}
+                <div className="space-y-2 px-4">
+                  {navigation.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={cn(
+                          'flex items-center space-x-3 rounded-xl px-4 py-4 text-base font-medium transition-all',
+                          isActive
+                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
+                            : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
+                        )}
+                      >
+                        <div className="flex-shrink-0">
+                          {item.icon}
+                        </div>
+                        <span>{item.name}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
