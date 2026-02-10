@@ -77,14 +77,14 @@ export default function AddExpensePage() {
 
   return (
     <DashboardLayout>
-      <div className="grid grid-cols-12 gap-6 min-h-[calc(100vh-12rem)]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Spacer - 20% */}
         <div className="hidden lg:block lg:col-span-2"></div>
 
         {/* Main Content - 60% */}
-        <div className="col-span-12 lg:col-span-8 space-y-6">
+        <div className="col-span-1 lg:col-span-8">
           {/* Input Card */}
-          <Card className="h-full">
+          <Card>
             <CardHeader>
               <CardTitle>Natural Language Input</CardTitle>
               <CardDescription>
