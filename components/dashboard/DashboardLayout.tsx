@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
@@ -16,11 +16,29 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     router.push('/');
+  };
+
+  const openMobileMenu = () => {
+    setMobileMenuOpen(true);
+    setIsAnimating(false);
+    // Trigger animation after mount
+    setTimeout(() => setIsAnimating(true), 10);
+  };
+
+  const closeMobileMenu = () => {
+    setIsClosing(true);
+    setIsAnimating(false);
+    setTimeout(() => {
+      setMobileMenuOpen(false);
+      setIsClosing(false);
+    }, 300); // Match animation duration
   };
 
   const navigation = [
@@ -169,7 +187,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
                 {/* Mobile menu button */}
                 <button
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  onClick={() => {
+                    if (mobileMenuOpen) {
+                      closeMobileMenu();
+                    } else {
+                      openMobileMenu();
+                    }
+                  }}
                   className="rounded-xl p-2 text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,14 +214,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Mobile Navigation - Full Screen Overlay */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 md:hidden" style={{ zIndex: 9999 }}>
-          {/* Backdrop */}
+          {/* Backdrop with fade animation */}
           <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setMobileMenuOpen(false)}
+            className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ease-out ${
+              isAnimating ? 'opacity-100' : 'opacity-0'
+            }`}
+            onClick={closeMobileMenu}
           />
           
           {/* Sliding Menu Panel */}
-          <div className="absolute inset-x-0 top-0 max-h-screen bg-white shadow-2xl animate-in slide-in-from-top duration-300 overflow-hidden flex flex-col">
+          <div 
+            className="absolute inset-x-0 top-0 max-h-screen bg-white shadow-2xl overflow-hidden flex flex-col transition-transform duration-300 ease-out"
+            style={{
+              transform: isAnimating && !isClosing ? 'translateY(0)' : 'translateY(-100%)',
+            }}
+          >
             {/* Header with Close Button */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
               <div className="flex items-center space-x-2">
@@ -211,7 +242,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </span>
               </div>
               <button
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -249,7 +280,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       <Link
                         key={item.name}
                         href={item.href}
-                        onClick={() => setMobileMenuOpen(false)}
+                        onClick={closeMobileMenu}
                         className={cn(
                           'flex items-center space-x-3 rounded-xl px-4 py-4 text-base font-medium transition-all',
                           isActive
