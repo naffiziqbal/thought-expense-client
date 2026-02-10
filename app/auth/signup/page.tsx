@@ -65,7 +65,7 @@ export default function SignupPage() {
       if (response.success) {
         setUser(response.data.user);
         toast.success('Account created successfully!');
-        router.push('/dashboard');
+        router.push('/dashboard/add');
       }
     } catch (error: any) {
       const message =

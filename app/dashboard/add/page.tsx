@@ -36,6 +36,15 @@ export default function AddExpensePage() {
         setParsedExpenses(response.data.expenses);
         setNeedsReview(response.data.needsReview);
         toast.success(response.message);
+        
+        // Clear input and navigate to expenses list after successful creation
+        setTimeout(() => {
+          setRawInput('');
+          setParsedExpenses([]);
+          setNeedsReview([]);
+          toast.success(`${response.data.expenses.length} expense(s) added!`);
+          router.push('/dashboard/expenses');
+        }, 1500); // Small delay to show success message
       }
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to parse expenses';
@@ -95,16 +104,20 @@ export default function AddExpensePage() {
                 className="font-mono"
               />
 
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex gap-3">
                 <Button
                   onClick={handleParse}
                   isLoading={isLoading}
                   disabled={!rawInput.trim()}
-                  className="flex-1"
+                  className="flex-1 h-12 text-base font-semibold"
                 >
                   Parse Expenses
                 </Button>
-                <Button onClick={handleClear} variant="outline" className="flex-1">
+                <Button 
+                  onClick={handleClear} 
+                  variant="outline" 
+                  className="flex-1 h-12 text-base font-semibold"
+                >
                   Clear
                 </Button>
               </div>

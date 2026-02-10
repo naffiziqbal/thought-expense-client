@@ -54,7 +54,7 @@ export default function LoginPage() {
       if (response.success) {
         setUser(response.data.user);
         toast.success('Login successful!');
-        router.push('/dashboard');
+        router.push('/dashboard/add');
       }
     } catch (error: any) {
       const message = error.response?.data?.message || 'Invalid email or password';
