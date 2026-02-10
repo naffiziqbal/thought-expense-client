@@ -5,20 +5,30 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Navigation */}
-      <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
+      <nav className="sticky top-0 z-50 border-b border-gray-200/50 bg-white/80 backdrop-blur-xl shadow-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-2xl font-bold text-blue-600">ThoughtExpense</span>
-            </div>
-            <div className="flex items-center space-x-4">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2 group">
+              <div className="bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-lg p-2 shadow-lg group-hover:shadow-xl transition-shadow">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                ThoughtExpense
+              </span>
+            </Link>
+
+            {/* CTA Buttons */}
+            <div className="flex items-center space-x-3">
               <Link href="/auth/login">
-                <Button variant="ghost" size="md">
+                <Button variant="ghost" size="md" className="hidden sm:inline-flex">
                   Login
                 </Button>
               </Link>
               <Link href="/auth/signup">
-                <Button variant="primary" size="md">
+                <Button size="md" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all">
                   Get Started
                 </Button>
               </Link>
@@ -28,30 +38,87 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="px-4 py-20 sm:px-6 lg:px-8">
+      <section className="relative px-4 py-24 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-1/4 left-10 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl"></div>
+        </div>
+
         <div className="mx-auto max-w-7xl">
           <div className="text-center">
-            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+            {/* Badge */}
+            <div className="inline-flex items-center space-x-2 rounded-full bg-blue-100 px-4 py-2 mb-8">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              </span>
+              <span className="text-sm font-semibold text-blue-700">AI-Powered Expense Tracking</span>
+            </div>
+
+            {/* Main Heading */}
+            <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-6xl md:text-7xl lg:text-8xl">
               Track Expenses
-              <span className="block text-blue-600">The Way You Think</span>
+              <span className="block mt-2 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent animate-gradient">
+                The Way You Think
+              </span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 sm:text-xl">
+
+            {/* Subheading */}
+            <p className="mx-auto mt-8 max-w-3xl text-xl text-gray-600 sm:text-2xl leading-relaxed">
               Stop forcing yourself into categories. Just write naturally and let AI do the work.
-              Track spending without the spreadsheet pain.
+              <span className="block mt-2 font-semibold text-gray-900">Track spending without the spreadsheet pain.</span>
             </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+
+            {/* CTA Buttons */}
+            <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link href="/auth/signup">
-                <Button variant="primary" size="lg">
-                  Start Tracking Free
+                <Button 
+                  size="lg" 
+                  className="group relative bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/70 transition-all duration-300 text-lg px-8 py-6 h-auto"
+                >
+                  <span className="flex items-center space-x-2">
+                    <span>Start Tracking Free</span>
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </span>
                 </Button>
               </Link>
               <Link href="#features">
-                <Button variant="outline" size="lg">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="text-lg px-8 py-6 h-auto border-2 border-gray-300 hover:border-blue-600 hover:bg-blue-50 transition-all duration-300"
+                >
                   Learn More
                 </Button>
               </Link>
             </div>
-            <p className="mt-4 text-sm text-gray-500">No credit card required • Free forever</p>
+
+            {/* Trust Badges */}
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
+              <div className="flex items-center space-x-2 text-gray-600">
+                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>No credit card required</span>
+              </div>
+              <div className="hidden sm:block text-gray-400">•</div>
+              <div className="flex items-center space-x-2 text-gray-600">
+                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Free forever</span>
+              </div>
+              <div className="hidden sm:block text-gray-400">•</div>
+              <div className="flex items-center space-x-2 text-gray-600">
+                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Setup in 60 seconds</span>
+              </div>
+            </div>
           </div>
 
           {/* Demo Preview */}

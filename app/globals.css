@@ -56,6 +56,20 @@ body {
   }
 }
 
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 .animate-in {
   animation: fade-in 0.2s ease-out, zoom-in 0.2s ease-out;
+}
+
+.animate-gradient {
+  background-size: 200% auto;
+  animation: gradient 8s ease infinite;
 }
