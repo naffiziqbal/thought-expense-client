@@ -77,32 +77,29 @@ export default function AddExpensePage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Add Expenses</h1>
-          <p className="mt-2 text-gray-600">
-            Type your expenses naturally, and AI will handle the rest
-          </p>
-        </div>
+      <div className="grid grid-cols-12 gap-6 min-h-[calc(100vh-12rem)]">
+        {/* Left Spacer - 20% */}
+        <div className="hidden lg:block lg:col-span-2"></div>
 
-        {/* Input Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Natural Language Input</CardTitle>
-            <CardDescription>
-              Type expenses like "coffee 5", "rent 1200", or "uber to work 15"
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Textarea
-                value={rawInput}
-                onChange={(e) => setRawInput(e.target.value)}
-                placeholder="rent 1200&#10;coffee 5&#10;uber to work 15&#10;groceries at walmart 85"
-                rows={8}
-                className="font-mono"
-              />
+        {/* Main Content - 60% */}
+        <div className="col-span-12 lg:col-span-8 space-y-6">
+          {/* Input Card */}
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Natural Language Input</CardTitle>
+              <CardDescription>
+                Type expenses like "coffee 5", "rent 1200", or "uber to work 15"
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Textarea
+                  value={rawInput}
+                  onChange={(e) => setRawInput(e.target.value)}
+                  placeholder="rent 1200&#10;coffee 5&#10;uber to work 15&#10;groceries at walmart 85"
+                  rows={20}
+                  className="font-mono text-lg"
+                />
 
               <div className="flex gap-3">
                 <Button
@@ -121,24 +118,17 @@ export default function AddExpensePage() {
                   Clear
                 </Button>
               </div>
-
-              {/* Examples */}
-              <div className="rounded-lg bg-blue-50 p-4">
-                <p className="mb-2 text-sm font-medium text-blue-900">
-                  💡 Example formats:
-                </p>
-                <ul className="space-y-1 text-sm text-blue-800">
-                  <li>• Simple: "coffee 5"</li>
-                  <li>• Detailed: "bought groceries for 85 dollars"</li>
-                  <li>• With context: "uber ride to airport was 45"</li>
-                  <li>• Multiple lines: Enter each expense on a new line</li>
-                </ul>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Parsed Results */}
+        {/* Right Spacer - 20% */}
+        <div className="hidden lg:block lg:col-span-2"></div>
+      </div>
+
+      {/* Parsed Results - Full Width Below */}
+      <div className="mt-6">
         {parsedExpenses.length > 0 && (
           <Card>
             <CardHeader>
