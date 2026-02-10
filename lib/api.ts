@@ -165,6 +165,31 @@ class ApiClient {
     });
     return response.data;
   }
+
+  // Category suggestion endpoint (if backend implements)
+  async suggestCategory(description: string): Promise<{
+    success: boolean;
+    data: {
+      suggestedCategories: Array<{
+        category: string;
+        confidence: number;
+        reason?: string;
+      }>;
+    };
+  }> {
+    try {
+      const response = await this.client.get('/api/expenses/suggest-category', {
+        params: { description },
+      });
+      return response.data;
+    } catch (error) {
+      // If endpoint doesn't exist yet, return empty
+      return {
+        success: false,
+        data: { suggestedCategories: [] },
+      };
+    }
+  }
 }
 
 export const api = new ApiClient();

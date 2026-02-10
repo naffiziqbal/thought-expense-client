@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
+import { useCategories } from '@/hooks/useCategories';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { CategoryInput } from '@/components/ui/CategoryInput';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
-import type { Expense, ExpenseCategory, EXPENSE_CATEGORIES } from '@/types';
+import type { Expense } from '@/types';
 import {
   formatCurrency,
   formatDate,
@@ -19,6 +21,7 @@ import {
 
 export default function ExpensesPage() {
   const { isAuthenticated, isLoading: authLoading } = useProtectedRoute();
+  const { categories } = useCategories();
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -152,24 +155,18 @@ export default function ExpensesPage() {
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Category
                 </label>
-                <select
-                  value={filters.category}
-                  onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20"
-                >
-                  <option value="">All Categories</option>
-                  <option value="Food">Food</option>
-                  <option value="Transport">Transport</option>
-                  <option value="Rent">Rent</option>
-                  <option value="Utilities">Utilities</option>
-                  <option value="Shopping">Shopping</option>
-                  <option value="Entertainment">Entertainment</option>
-                  <option value="Healthcare">Healthcare</option>
-                  <option value="Education">Education</option>
-                  <option value="Personal Care">Personal Care</option>
-                  <option value="Fees">Fees</option>
-                  <option value="Other">Other</option>
-                </select>
+              <select
+                value={filters.category}
+                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20"
+              >
+                <option value="">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
               </div>
 
               <Input
@@ -320,26 +317,13 @@ export default function ExpensesPage() {
             value={editForm.amount}
             onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
           />
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Category</label>
-            <select
-              value={editForm.category}
-              onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20"
-            >
-              <option value="Food">Food</option>
-              <option value="Transport">Transport</option>
-              <option value="Rent">Rent</option>
-              <option value="Utilities">Utilities</option>
-              <option value="Shopping">Shopping</option>
-              <option value="Entertainment">Entertainment</option>
-              <option value="Healthcare">Healthcare</option>
-              <option value="Education">Education</option>
-              <option value="Personal Care">Personal Care</option>
-              <option value="Fees">Fees</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+          <CategoryInput
+            label="Category"
+            value={editForm.category}
+            onChange={(value) => setEditForm({ ...editForm, category: value })}
+            suggestions={categories}
+            placeholder="Type or select category"
+          />
           <Input
             label="Date"
             type="date"

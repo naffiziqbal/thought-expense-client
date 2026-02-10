@@ -73,8 +73,20 @@ export function getConfidenceBadgeColor(confidence: number): string {
   return 'bg-red-100 text-red-800';
 }
 
+// Generate consistent color for any category using hash
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+}
+
 export function getCategoryColor(category: string): string {
-  const colors: Record<string, string> = {
+  // Predefined colors for common categories
+  const predefinedColors: Record<string, string> = {
     Food: 'bg-blue-100 text-blue-800',
     Transport: 'bg-purple-100 text-purple-800',
     Rent: 'bg-red-100 text-red-800',
@@ -87,11 +99,35 @@ export function getCategoryColor(category: string): string {
     Fees: 'bg-gray-100 text-gray-800',
     Other: 'bg-slate-100 text-slate-800',
   };
-  return colors[category] || colors.Other;
+
+  // Return predefined color if exists
+  if (predefinedColors[category]) {
+    return predefinedColors[category];
+  }
+
+  // Generate consistent color for dynamic categories
+  const colorPalette = [
+    'bg-blue-100 text-blue-800',
+    'bg-purple-100 text-purple-800',
+    'bg-pink-100 text-pink-800',
+    'bg-indigo-100 text-indigo-800',
+    'bg-green-100 text-green-800',
+    'bg-teal-100 text-teal-800',
+    'bg-orange-100 text-orange-800',
+    'bg-cyan-100 text-cyan-800',
+    'bg-lime-100 text-lime-800',
+    'bg-amber-100 text-amber-800',
+    'bg-rose-100 text-rose-800',
+    'bg-violet-100 text-violet-800',
+  ];
+
+  const hash = hashString(category);
+  return colorPalette[hash % colorPalette.length];
 }
 
 export function getCategoryChartColor(category: string): string {
-  const colors: Record<string, string> = {
+  // Predefined colors for common categories
+  const predefinedColors: Record<string, string> = {
     Food: '#3b82f6',
     Transport: '#a855f7',
     Rent: '#ef4444',
@@ -104,5 +140,28 @@ export function getCategoryChartColor(category: string): string {
     Fees: '#6b7280',
     Other: '#64748b',
   };
-  return colors[category] || colors.Other;
+
+  // Return predefined color if exists
+  if (predefinedColors[category]) {
+    return predefinedColors[category];
+  }
+
+  // Generate consistent color for dynamic categories
+  const colorPalette = [
+    '#3b82f6', // blue
+    '#a855f7', // purple
+    '#ec4899', // pink
+    '#6366f1', // indigo
+    '#10b981', // green
+    '#14b8a6', // teal
+    '#f97316', // orange
+    '#06b6d4', // cyan
+    '#84cc16', // lime
+    '#f59e0b', // amber
+    '#f43f5e', // rose
+    '#8b5cf6', // violet
+  ];
+
+  const hash = hashString(category);
+  return colorPalette[hash % colorPalette.length];
 }
