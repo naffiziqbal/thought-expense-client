@@ -91,16 +91,10 @@ export default function SignupPage() {
       {/* Navigation */}
       <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-blue-600">
+          <div className="flex h-16 items-center justify-center sm:justify-start">
+            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               ThoughtExpense
             </Link>
-            <div className="text-sm text-gray-600">
-              Already have an account?{' '}
-              <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-700">
-                Login
-              </Link>
-            </div>
           </div>
         </div>
       </nav>
@@ -186,6 +180,16 @@ export default function SignupPage() {
               By signing up, you agree to our Terms of Service and Privacy Policy
             </p>
           </form>
+
+          {/* Login Link */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link href="/auth/login" className="font-semibold text-blue-600 hover:text-blue-700">
+                Sign in
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
