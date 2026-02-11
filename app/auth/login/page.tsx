@@ -111,14 +111,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white px-6 py-12">
-      {/* Gradient Orbs - Ambient Decor */}
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-y-auto overflow-x-hidden bg-white px-6 py-12">
+      {/* Teal Gradient Orbs (design token accent) */}
       <div
-        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 opacity-60 blur-3xl"
+        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-linear-to-br from-teal-400 to-teal-500 opacity-60 blur-3xl"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 opacity-60 blur-3xl"
+        className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-linear-to-br from-teal-500 to-teal-600 opacity-60 blur-3xl"
         aria-hidden
       />
 
@@ -128,7 +128,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center">
           <Link
             href="/"
-            className="mb-6 inline-block rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 px-5 py-4 shadow-lg transition-transform hover:scale-105"
+            className="mb-6 inline-block rounded-2xl bg-linear-to-br from-teal-500 to-teal-600 px-5 py-4 shadow-lg transition-transform hover:scale-105"
             style={{ transform: 'rotate(3deg)' }}
           >
             <span className="text-xl font-bold text-white">TE</span>
@@ -148,14 +148,14 @@ export default function LoginPage() {
               className={cn(
                 'flex h-14 items-center gap-3 rounded-2xl px-4 transition-all',
                 'bg-gray-50',
-                emailFocused && 'bg-white ring-2 ring-emerald-500 ring-offset-2 shadow-sm',
+                emailFocused && 'bg-white ring-2 ring-teal-500 ring-offset-2 shadow-sm',
                 errors.email && 'bg-red-50'
               )}
             >
               <MailIcon
                 className={cn(
                   'h-5 w-5 shrink-0',
-                  emailFocused ? 'text-emerald-600' : 'text-gray-400'
+                  emailFocused ? 'text-teal-600' : 'text-gray-400'
                 )}
               />
               <input
@@ -181,14 +181,14 @@ export default function LoginPage() {
               className={cn(
                 'flex h-14 items-center gap-3 rounded-2xl px-4 transition-all',
                 'bg-gray-50',
-                passwordFocused && 'bg-white ring-2 ring-emerald-500 ring-offset-2 shadow-sm',
+                passwordFocused && 'bg-white ring-2 ring-teal-500 ring-offset-2 shadow-sm',
                 errors.password && 'bg-red-50'
               )}
             >
               <LockIcon
                 className={cn(
                   'h-5 w-5 shrink-0',
-                  passwordFocused ? 'text-emerald-600' : 'text-gray-400'
+                  passwordFocused ? 'text-teal-600' : 'text-gray-400'
                 )}
               />
               <input
@@ -222,7 +222,7 @@ export default function LoginPage() {
           <div className="flex justify-end">
             <Link
               href="/auth/forgot-password"
-              className="text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
+              className="text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors"
             >
               Forgot password?
             </Link>
@@ -232,7 +232,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gray-900 px-6 font-semibold text-white shadow-lg transition-all hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-teal-600 px-6 font-semibold text-white shadow-lg shadow-teal-200 transition-all hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -282,7 +282,7 @@ export default function LoginPage() {
         {/* Sign Up Link */}
         <p className="mt-8 text-center text-sm text-gray-600">
           Don&apos;t have an account?{' '}
-          <Link href="/auth/signup" className="font-semibold text-emerald-600 hover:text-emerald-700">
+          <Link href="/auth/signup" className="font-semibold text-teal-600 hover:text-teal-700">
             Sign up for free
           </Link>
         </p>
