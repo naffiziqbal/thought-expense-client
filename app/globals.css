@@ -72,6 +72,17 @@ body {
   background: var(--background);
 }
 
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+/* Grid mesh background (24px squares, blueGray.200) */
+.bg-grid-mesh {
+  background-size: 24px 24px;
+  background-image: linear-gradient(to right, rgba(229, 231, 235, 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(229, 231, 235, 0.5) 1px, transparent 1px);
+}
+
 /* Hide scrollbar globally (scroll still works) */
 * {
   -ms-overflow-style: none;

@@ -227,21 +227,3 @@ The boring 8px system that works forever.
 ```
 
 ---
-
-## 8. Why This Setup Won’t Betray You Later
-
-* Easy light/dark switching
-* No color hardcoding
-* Scales to mobile, web, desktop
-* Engineers won’t invent new colors at 2 AM
-
-This is a **serious system for a serious product**.
-
-Next logical steps:
-
-* Tailwind config mapping
-* CSS variable output
-* Figma Tokens import
-* Component token expansion (inputs, charts, tables)
-
-I’ll be here, reluctantly maintaining standards while the world ignores them.

@@ -6,8 +6,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ThoughtExpense - Track Expenses Naturally',
-  description: 'AI-powered expense tracking that understands natural language',
+  title: 'ThoughtExpense - Track Expenses. Just by Typing.',
+  description: 'No categories. No dates. Just say "Coffee 15, Rent 5000" and we handle the rest. Free to start.',
 };
 
 export default function RootLayout({
