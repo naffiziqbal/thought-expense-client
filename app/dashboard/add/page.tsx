@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { createWorker } from 'tesseract.js';
+import { createWorker, PSM } from 'tesseract.js';
 import {
   formatCurrency,
   getCategoryBgColor,
@@ -32,6 +32,30 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 function getCategoryIcon(category: string): string {
   return CATEGORY_ICONS[category] || CATEGORY_ICONS.Other;
+}
+
+/** Preprocess image for better OCR: scale up, grayscale, contrast */
+async function preprocessImageForOCR(source: Blob | File): Promise<HTMLCanvasElement> {
+  const img = await createImageBitmap(source);
+  const scale = 2;
+  const w = img.width * scale;
+  const h = img.height * scale;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(img, 0, 0, w, h);
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
+  const contrast = 1.4;
+  const offset = 128 * (1 - contrast);
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    const adjusted = Math.min(255, Math.max(0, gray * contrast + offset));
+    data[i] = data[i + 1] = data[i + 2] = adjusted;
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
 }
 
 interface ReceiptItem {
@@ -96,7 +120,13 @@ export default function AddExpensePage() {
     let stream: MediaStream | null = null;
     const startCamera = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
+        });
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -123,10 +153,19 @@ export default function AddExpensePage() {
     setIsScanning(true);
     toast.loading('Extracting text from receipt...', { id: 'ocr' });
     try {
-      const worker = await createWorker('eng');
+      const preprocessed = await preprocessImageForOCR(file);
+      const worker = await createWorker('eng', 1, {
+        workerPath: '/tesseract/worker.min.js',
+        corePath: '/tesseract-core/',
+        langPath: '/tesseract-lang/',
+      });
+      await worker.setParameters({
+        tessedit_pageseg_mode: PSM.AUTO,
+        user_defined_dpi: '300',
+      });
       const {
         data: { text },
-      } = await worker.recognize(file);
+      } = await worker.recognize(preprocessed);
       await worker.terminate();
 
       const trimmed = text?.trim();
@@ -167,7 +206,7 @@ export default function AddExpensePage() {
         processImage(file);
       },
       'image/jpeg',
-      0.92
+      0.95
     );
   };
 
