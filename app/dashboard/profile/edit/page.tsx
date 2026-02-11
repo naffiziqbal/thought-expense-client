@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
@@ -10,6 +11,7 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
+import { getImageUrl } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
 const BackIcon = () => (
@@ -101,7 +103,7 @@ export default function EditProfilePage() {
     }
   };
 
-  const profilePictureUrl = user?.profilePictureUrl || user?.profilePicture;
+  const profileImageUrl = getImageUrl(user?.profilePicture || user?.profilePictureUrl);
 
   if (isLoading || !isAuthenticated) {
     return (
@@ -148,12 +150,14 @@ export default function EditProfilePage() {
               disabled={isUploading}
               className="relative group focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded-full disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <div className="h-24 w-24 rounded-full bg-teal-600 flex items-center justify-center shadow-md overflow-hidden">
-                {profilePictureUrl ? (
-                  <img
-                    src={profilePictureUrl}
+              <div className="h-24 w-24 rounded-full bg-teal-600 flex items-center justify-center shadow-md overflow-hidden relative">
+                {profileImageUrl ? (
+                  <Image
+                    src={profileImageUrl}
                     alt="Profile"
-                    className="h-full w-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="96px"
                   />
                 ) : (
                   <span className="text-4xl font-bold text-white">

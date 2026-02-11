@@ -1,21 +1,20 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { useProtectedRoute } from '@/hooks/useProtectedRoute';
-import { useAuthStore } from '@/store/authStore';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { api } from '@/lib/api';
-import toast from 'react-hot-toast';
-import { createWorker, PSM } from 'tesseract.js';
+import { getCategoryIcon } from '@/lib/categoryIcons';
 import {
   formatCurrency,
   getCategoryBgColor,
-  parseExpenseInputLocally,
   getCategoryFromKeyword,
-  type ParsedExpensePreview,
+  parseExpenseInputLocally
 } from '@/lib/utils';
-import { getCategoryIcon } from '@/lib/categoryIcons';
+import { useAuthStore } from '@/store/authStore';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
+import { createWorker, PSM } from 'tesseract.js';
 
 /** Preprocess image for better OCR: scale up, grayscale, contrast */
 async function preprocessImageForOCR(source: Blob | File): Promise<HTMLCanvasElement> {

@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
+import { getImageUrl } from '@/lib/utils';
 
 const UserIcon = () => (
   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -214,12 +216,14 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center pt-8">
             {/* Avatar with Badge */}
             <div className="relative mb-4">
-              <div className="h-24 w-24 rounded-full bg-teal-600 flex items-center justify-center shadow-md overflow-hidden">
-                {user?.profilePictureUrl ? (
-                  <img
-                    src={user.profilePictureUrl}
+              <div className="h-24 w-24 rounded-full bg-teal-600 flex items-center justify-center shadow-md overflow-hidden relative">
+                {getImageUrl(user?.profilePicture || user?.profilePictureUrl) ? (
+                  <Image
+                    src={getImageUrl(user?.profilePicture || user?.profilePictureUrl)!}
                     alt="Profile"
-                    className="h-full w-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="96px"
                   />
                 ) : (
                   <span className="text-4xl font-bold text-white">

@@ -6,6 +6,24 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Build full image URL from stored path using NEXT_PUBLIC_SPACES_URL
+ * @param imagePath Stored path (e.g. /ThoughtExpense/avatars/xxx.jpg) or full URL (returned as-is)
+ * @returns Full URL or null
+ */
+export function getImageUrl(imagePath: string | null | undefined): string | null {
+  if (!imagePath) return null;
+  // Already a full URL
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  const base = process.env.NEXT_PUBLIC_SPACES_URL;
+  if (!base) return null;
+  const baseTrimmed = base.replace(/\/$/, '');
+  const pathTrimmed = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  return `${baseTrimmed}${pathTrimmed}`;
+}
+
 // Map common currency symbols/codes to ISO 4217 codes
 const currencyCodeMap: Record<string, string> = {
   'TK': 'BDT',   // Bangladesh Taka
