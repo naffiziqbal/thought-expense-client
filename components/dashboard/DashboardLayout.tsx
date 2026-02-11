@@ -292,8 +292,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </nav>
 
-      {/* Main Content - Add padding for mobile with bottom nav */}
-      <main className="mx-auto max-w-7xl px-4 pt-6 pb-24 md:py-8 sm:px-6 lg:px-8">{children}</main>
+      {/* Main Content - Hierarchical spacing */}
+      <main className="mx-auto max-w-7xl px-4 md:px-6 pt-6 pb-24 md:py-8">{children}</main>
     </div>
   );
 }

@@ -165,3 +165,44 @@ export function getCategoryChartColor(category: string): string {
   const hash = hashString(category);
   return colorPalette[hash % colorPalette.length];
 }
+
+export function getCategoryBgColor(category: string): string {
+  // Predefined background colors (10% opacity style) for common categories
+  const predefinedColors: Record<string, string> = {
+    Food: '#eff6ff',
+    Transport: '#faf5ff',
+    Rent: '#fef2f2',
+    Utilities: '#fefce8',
+    Shopping: '#fdf2f8',
+    Entertainment: '#eef2ff',
+    Healthcare: '#f0fdf4',
+    Education: '#f0fdfa',
+    'Personal Care': '#fff7ed',
+    Fees: '#f9fafb',
+    Other: '#f8fafc',
+  };
+
+  // Return predefined color if exists
+  if (predefinedColors[category]) {
+    return predefinedColors[category];
+  }
+
+  // Generate consistent background color for dynamic categories
+  const colorPalette = [
+    '#eff6ff', // blue
+    '#faf5ff', // purple
+    '#fdf2f8', // pink
+    '#eef2ff', // indigo
+    '#f0fdf4', // green
+    '#f0fdfa', // teal
+    '#fff7ed', // orange
+    '#ecfeff', // cyan
+    '#f7fee7', // lime
+    '#fffbeb', // amber
+    '#fff1f2', // rose
+    '#f5f3ff', // violet
+  ];
+
+  const hash = hashString(category);
+  return colorPalette[hash % colorPalette.length];
+}
