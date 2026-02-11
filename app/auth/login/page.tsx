@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { api } from '@/lib/api';
-import { useAuthStore } from '@/store/authStore';
-import { AxiosError } from 'axios';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { api } from "@/lib/api";
+import { useAuthStore } from "@/store/authStore";
+import { AxiosError } from "axios";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
 
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -26,13 +26,13 @@ export default function LoginPage() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
+      newErrors.email = "Invalid email format";
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     }
 
     setErrors(newErrors);
@@ -54,14 +54,14 @@ export default function LoginPage() {
 
       if (response.success) {
         setUser(response.data.user);
-        toast.success('Login successful!');
-        router.push('/dashboard/add');
+        toast.success("Login successful!");
+        router.push("/dashboard/add");
       }
     } catch (error) {
       const message =
         error instanceof AxiosError
-          ? error.response?.data?.message || 'Invalid email or password'
-          : 'Invalid email or password';
+          ? error.response?.data?.message || "Invalid email or password"
+          : "Invalid email or password";
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -74,7 +74,10 @@ export default function LoginPage() {
       <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-center sm:justify-start">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <Link
+              href="/"
+              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+            >
               ThoughtExpense
             </Link>
           </div>
@@ -97,7 +100,9 @@ export default function LoginPage() {
               type="email"
               placeholder="you@example.com"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               error={errors.email}
               required
             />
@@ -107,7 +112,9 @@ export default function LoginPage() {
               type="password"
               placeholder="••••••••"
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
               error={errors.password}
               required
             />
@@ -129,18 +136,13 @@ export default function LoginPage() {
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Don&apos;t have an account?{' '}
-              <Link href="/auth/signup" className="font-semibold text-blue-600 hover:text-blue-700">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/auth/signup"
+                className="font-semibold text-blue-600 hover:text-blue-700"
+              >
                 Sign up for free
               </Link>
-            </p>
-          </div>
-
-          {/* Demo hint */}
-          <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
-            <p className="text-sm text-blue-800">
-              <strong>Demo:</strong> Create a new account or use existing credentials to explore
-              the app.
             </p>
           </div>
         </div>
