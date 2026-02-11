@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const TYPING_PHRASES = [
   'Groceries 500, Uber 200',
   'Coffee 15, Rent 5000',
   'Lunch 45, Netflix 15',
+  'Electricity 80, Dinner 65',
+  'Petrol 50, Gym 30',
+  'Books 120, Movie 25',
 ];
 
 const TAGS_BY_PHRASE: Record<string, { label: string; emoji: string; category: string }[]> = {
@@ -21,41 +24,54 @@ const TAGS_BY_PHRASE: Record<string, { label: string; emoji: string; category: s
     { label: 'Lunch', emoji: '🍔', category: 'Food' },
     { label: 'Netflix', emoji: '🎬', category: 'Entertainment' },
   ],
+  'Electricity 80, Dinner 65': [
+    { label: 'Electricity', emoji: '💡', category: 'Utilities' },
+    { label: 'Dinner', emoji: '🍽️', category: 'Food' },
+  ],
+  'Petrol 50, Gym 30': [
+    { label: 'Petrol', emoji: '⛽', category: 'Transport' },
+    { label: 'Gym', emoji: '💪', category: 'Health' },
+  ],
+  'Books 120, Movie 25': [
+    { label: 'Books', emoji: '📚', category: 'Education' },
+    { label: 'Movie', emoji: '🎬', category: 'Entertainment' },
+  ],
 };
 
 export function MagicInputHero() {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [visibleText, setVisibleText] = useState('');
   const [tagsVisible, setTagsVisible] = useState(false);
-  const [phase, setPhase] = useState<'typing' | 'showing' | 'clearing'>('typing');
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const charIndexRef = useRef(0);
 
   const fullPhrase = TYPING_PHRASES[phraseIndex];
   const tags = TAGS_BY_PHRASE[fullPhrase] || [];
 
   useEffect(() => {
-    if (phase === 'typing') {
-      if (visibleText.length < fullPhrase.length) {
-        const t = setTimeout(() => {
-          setVisibleText(fullPhrase.slice(0, visibleText.length + 1));
-        }, 50);
-        return () => clearTimeout(t);
+    charIndexRef.current = 0;
+
+    const typeNext = () => {
+      const idx = charIndexRef.current;
+      if (idx < fullPhrase.length) {
+        setVisibleText(fullPhrase.slice(0, idx + 1));
+        charIndexRef.current = idx + 1;
+        timerRef.current = setTimeout(typeNext, 50);
+      } else {
+        setTagsVisible(true);
+        timerRef.current = setTimeout(() => {
+          setTagsVisible(false);
+          setVisibleText('');
+          setPhraseIndex((i) => (i + 1) % TYPING_PHRASES.length);
+        }, 2500);
       }
-      setTagsVisible(true);
-      setPhase('showing');
-      const t = setTimeout(() => setPhase('clearing'), 2500);
-      return () => clearTimeout(t);
-    }
-    if (phase === 'clearing') {
-      setTagsVisible(false);
-      setVisibleText('');
-      const nextIndex = (phraseIndex + 1) % TYPING_PHRASES.length;
-      const t = setTimeout(() => {
-        setPhraseIndex(nextIndex);
-        setPhase('typing');
-      }, 400);
-      return () => clearTimeout(t);
-    }
-  }, [phase, visibleText, fullPhrase, phraseIndex]);
+    };
+
+    timerRef.current = setTimeout(typeNext, 100);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [phraseIndex, fullPhrase]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -66,7 +82,7 @@ export function MagicInputHero() {
           </div>
           <div className="min-h-[2.5rem] flex-1 py-2 text-lg text-gray-700">
             {visibleText}
-            <span className="animate-pulse">|</span>
+            <span className="animate-cursor-blink text-teal-500" aria-hidden>|</span>
           </div>
         </div>
       </div>

@@ -140,6 +140,15 @@ body {
   animation: fade-in 0.2s ease-out, zoom-in 0.2s ease-out;
 }
 
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
+}
+
 .animate-gradient {
   background-size: 200% auto;
   animation: gradient 8s ease infinite;
