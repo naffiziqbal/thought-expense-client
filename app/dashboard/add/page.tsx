@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { createWorker } from 'tesseract.js';
 import {
   formatCurrency,
   getCategoryBgColor,
@@ -46,6 +47,9 @@ export default function AddExpensePage() {
   const { user } = useAuthStore();
   const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
 
   const [rawInput, setRawInput] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -89,19 +93,55 @@ export default function AddExpensePage() {
     updatePreview(value);
   };
 
-  const handleScanReceipt = () => {
+  const processImage = async (file: File) => {
     setIsScanning(true);
-    toast('Scan Receipt - Coming soon');
-    setTimeout(() => setIsScanning(false), 2000);
+    toast.loading('Extracting text from receipt...', { id: 'ocr' });
+    try {
+      const worker = await createWorker('eng');
+      const {
+        data: { text },
+      } = await worker.recognize(file);
+      await worker.terminate();
+
+      const trimmed = text?.trim();
+      if (trimmed) {
+        const newInput = rawInput ? `${rawInput}\n${trimmed}` : trimmed;
+        setRawInput(newInput);
+        updatePreview(newInput);
+        toast.success('Text extracted!', { id: 'ocr' });
+      } else {
+        toast.error('No text found in image', { id: 'ocr' });
+      }
+    } catch (err) {
+      console.error('OCR error:', err);
+      toast.error('Failed to read receipt', { id: 'ocr' });
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  const handleScanReceipt = () => {
+    cameraInputRef.current?.click();
   };
 
   const handleGallery = () => {
-    toast('Gallery - Coming soon');
+    galleryInputRef.current?.click();
   };
 
-  const handleToday = () => {
-    setSelectedDate(new Date().toISOString().split('T')[0]);
-    toast('Date set to today');
+  const handleImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      processImage(file);
+    }
+    e.target.value = '';
+  };
+
+  const handleDateClick = () => {
+    dateInputRef.current?.showPicker?.();
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedDate(e.target.value);
   };
 
   const handleEditItem = (id: string, field: 'description' | 'amount', value: string | number) => {
@@ -187,6 +227,30 @@ export default function AddExpensePage() {
 
           {/* Bottom Half - Media Bar */}
           <div className="flex items-center justify-between gap-3 px-4 py-3">
+            {/* Hidden inputs */}
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleImageSelected}
+              className="hidden"
+            />
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelected}
+              className="hidden"
+            />
+            <input
+              ref={dateInputRef}
+              type="date"
+              value={selectedDate}
+              onChange={handleDateChange}
+              className="hidden"
+            />
+
             <button
               onClick={handleScanReceipt}
               disabled={isScanning}
@@ -197,15 +261,23 @@ export default function AddExpensePage() {
             </button>
             <button
               onClick={handleGallery}
-              className="p-2.5 rounded-full text-gray-600 hover:bg-gray-100 transition-colors"
+              disabled={isScanning}
+              className="p-2.5 rounded-full text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-60"
             >
               <span className="text-xl">🖼️</span>
             </button>
             <button
-              onClick={handleToday}
+              onClick={handleDateClick}
               className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-sm font-medium transition-colors"
             >
-              <span>Today</span>
+              <span className="whitespace-nowrap">
+                {selectedDate === new Date().toISOString().split('T')[0]
+                  ? 'Today'
+                  : (() => {
+                      const [y, m, d] = selectedDate.split('-');
+                      return `${m}/${d}/${y.slice(-2)}`;
+                    })()}
+              </span>
               <span>📅</span>
             </button>
           </div>
