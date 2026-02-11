@@ -111,7 +111,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-y-auto overflow-x-hidden bg-white px-6 py-12">
+    <div className="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-white px-4 py-4">
       {/* Teal Gradient Orbs (design token accent) */}
       <div
         className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-linear-to-br from-teal-400 to-teal-500 opacity-60 blur-3xl"
@@ -123,30 +123,27 @@ export default function LoginPage() {
       />
 
       {/* Content Container */}
-      <div className="relative z-10 w-full max-w-[420px]">
+      <div className="relative z-10 w-full max-w-[420px] shrink-0 py-1">
         {/* Brand Anchor */}
         <div className="flex flex-col items-center">
           <Link
             href="/"
-            className="mb-6 inline-block rounded-2xl bg-linear-to-br from-teal-500 to-teal-600 px-5 py-4 shadow-lg transition-transform hover:scale-105"
+            className="mb-3 inline-block rounded-xl bg-linear-to-br from-teal-500 to-teal-600 px-4 py-2.5 shadow-lg transition-transform hover:scale-105"
             style={{ transform: 'rotate(3deg)' }}
           >
-            <span className="text-xl font-bold text-white">TE</span>
+            <span className="text-lg font-bold text-white">TE</span>
           </Link>
-          <h1 className="text-[30px] font-bold text-gray-900">Welcome Back</h1>
-          <p className="mt-2 text-sm font-medium text-gray-500">Securely login to your wallet</p>
+          <h1 className="text-xl font-bold text-gray-900">Welcome Back</h1>
+          <p className="mt-0.5 text-xs text-gray-500">Securely login to your wallet</p>
         </div>
 
         {/* Tactile Form */}
-        <form onSubmit={handleSubmit} className="mt-10 space-y-5">
+        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-2">
           {/* Email */}
           <div>
-            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-800">
-              Email
-            </label>
             <div
               className={cn(
-                'flex h-14 items-center gap-3 rounded-2xl px-4 transition-all',
+                'flex h-11 items-center gap-2.5 rounded-xl px-3 transition-all',
                 'bg-gray-50',
                 emailFocused && 'bg-white ring-2 ring-teal-500 ring-offset-2 shadow-sm',
                 errors.email && 'bg-red-50'
@@ -169,17 +166,14 @@ export default function LoginPage() {
                 autoComplete="email"
               />
             </div>
-            {errors.email && <p className="mt-1.5 text-sm text-red-600">{errors.email}</p>}
+            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
           </div>
 
           {/* Password */}
           <div>
-            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-800">
-              Password
-            </label>
             <div
               className={cn(
-                'flex h-14 items-center gap-3 rounded-2xl px-4 transition-all',
+                'flex h-11 items-center gap-2.5 rounded-xl px-3 transition-all',
                 'bg-gray-50',
                 passwordFocused && 'bg-white ring-2 ring-teal-500 ring-offset-2 shadow-sm',
                 errors.password && 'bg-red-50'
@@ -215,7 +209,7 @@ export default function LoginPage() {
                 )}
               </button>
             </div>
-            {errors.password && <p className="mt-1.5 text-sm text-red-600">{errors.password}</p>}
+            {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
           </div>
 
           {/* Forgot Password */}
@@ -232,7 +226,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-teal-600 px-6 font-semibold text-white shadow-lg shadow-teal-200 transition-all hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 font-semibold text-white shadow-lg shadow-teal-200 transition-all hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -252,35 +246,35 @@ export default function LoginPage() {
         </form>
 
         {/* Social Login */}
-        <div className="mt-8">
-          <div className="flex items-center gap-4">
+        <div className="mt-4">
+          <div className="flex items-center gap-3">
             <div className="h-px flex-1 bg-gray-200" />
             <span className="text-xs font-medium text-gray-500">Or continue with</span>
             <div className="h-px flex-1 bg-gray-200" />
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-4">
+          <div className="mt-3 grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => handleSocialLogin('Google')}
-              className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              className="flex h-10 items-center justify-center gap-2 rounded-xl border border-gray-100 bg-white text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
             >
-              <GoogleIcon className="h-6 w-6" />
+              <GoogleIcon className="h-5 w-5" />
               Google
             </button>
             <button
               type="button"
               onClick={() => handleSocialLogin('Apple')}
-              className="flex h-14 items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white font-medium text-gray-900 transition-colors hover:bg-gray-50"
+              className="flex h-10 items-center justify-center gap-2 rounded-xl border border-gray-100 bg-white text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50"
             >
-              <AppleIcon className="h-6 w-6 text-gray-900" />
+              <AppleIcon className="h-5 w-5 text-gray-900" />
               Apple
             </button>
           </div>
         </div>
 
         {/* Sign Up Link */}
-        <p className="mt-8 text-center text-sm text-gray-600">
+        <p className="mt-4 text-center text-sm text-gray-600">
           Don&apos;t have an account?{' '}
           <Link href="/auth/signup" className="font-semibold text-teal-600 hover:text-teal-700">
             Sign up for free
