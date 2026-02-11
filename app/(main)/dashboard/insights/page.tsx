@@ -127,7 +127,6 @@ export default function InsightsPage() {
         name: 'Others',
         value: othersValue,
         percentage: othersPct.toFixed(1),
-        _children: others,
       });
     }
     return result;
