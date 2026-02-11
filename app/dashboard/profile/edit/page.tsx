@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { getImageUrl } from '@/lib/utils';
+import type { User } from '@/types';
 import toast from 'react-hot-toast';
 
 const BackIcon = () => (
@@ -37,26 +38,74 @@ export default function EditProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState(user?.name || '');
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Clean up blob URL on unmount or when pending file changes
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const nameChanged = name !== (user?.name || '');
+  const hasChanges = nameChanged || pendingFile !== null;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasChanges || !user) return;
+
     setError(null);
     setIsSaving(true);
 
     try {
-      const res = await api.updateProfile({ name: name || null });
-      if (res.success && res.data?.user) {
-        setUser(res.data.user);
-        toast.success('Profile updated');
-        router.push('/dashboard/profile');
-      } else {
-        setError('Failed to save. Please try again.');
+      let updatedUser: User = { ...user };
+
+      // Only upload if user selected a new image
+      if (pendingFile) {
+        const compressed = await imageCompression(pendingFile, {
+          maxSizeMB: 2,
+          maxWidthOrHeight: 1200,
+          useWebWorker: true,
+        });
+
+        const res = await api.uploadProfilePicture(compressed);
+        if (res.success && res.data?.user) {
+          updatedUser = res.data.user;
+          setPendingFile(null);
+          if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            setPreviewUrl(null);
+          }
+        } else {
+          setError('Failed to upload image. Please try again.');
+          setIsSaving(false);
+          return;
+        }
       }
-    } catch {
-      setError('Failed to save. Please try again.');
+
+      // Only update name if it changed
+      if (nameChanged) {
+        const res = await api.updateProfile({ name: name || null });
+        if (res.success && res.data?.user) {
+          updatedUser = { ...updatedUser, ...res.data.user };
+        } else {
+          setError('Failed to save name. Please try again.');
+          setIsSaving(false);
+          return;
+        }
+      }
+
+      setUser(updatedUser);
+      toast.success('Profile updated');
+      router.push('/dashboard/profile');
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+        : null;
+      setError(msg || 'Failed to save. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -66,7 +115,7 @@ export default function EditProfilePage() {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -76,34 +125,14 @@ export default function EditProfilePage() {
     }
 
     setError(null);
-    setIsUploading(true);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(URL.createObjectURL(file));
+    setPendingFile(file);
     e.target.value = '';
-
-    try {
-      const compressed = await imageCompression(file, {
-        maxSizeMB: 2,
-        maxWidthOrHeight: 1200,
-        useWebWorker: true,
-      });
-
-      const res = await api.uploadProfilePicture(compressed);
-      if (res.success && res.data?.user) {
-        setUser(res.data.user);
-        toast.success('Profile picture updated');
-      } else {
-        toast.error('Failed to upload. Please try again.');
-      }
-    } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'response' in err
-        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-        : null;
-      toast.error(msg || 'Failed to upload. Please try again.');
-    } finally {
-      setIsUploading(false);
-    }
   };
 
-  const profileImageUrl = getImageUrl(user?.profilePicture || user?.profilePictureUrl);
+  // Show: pending preview > current profile picture > initial
+  const displayImageUrl = previewUrl ?? getImageUrl(user?.profilePicture || user?.profilePictureUrl);
 
   if (isLoading || !isAuthenticated) {
     return (
@@ -140,25 +169,34 @@ export default function EditProfilePage() {
               accept={ACCEPTED_TYPES.join(',')}
               className="hidden"
               onChange={handleFileChange}
-              disabled={isUploading}
+              disabled={isSaving}
             />
 
             {/* Avatar with Edit Overlay */}
             <button
               type="button"
               onClick={handleAvatarClick}
-              disabled={isUploading}
+              disabled={isSaving}
               className="relative group focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded-full disabled:opacity-70 disabled:cursor-not-allowed"
             >
               <div className="h-24 w-24 rounded-full bg-teal-600 flex items-center justify-center shadow-md overflow-hidden relative">
-                {profileImageUrl ? (
-                  <Image
-                    src={profileImageUrl}
-                    alt="Profile"
-                    fill
-                    className="object-cover"
-                    sizes="96px"
-                  />
+                {displayImageUrl ? (
+                  previewUrl ? (
+                    // Blob URL - use img for local preview
+                    <img
+                      src={displayImageUrl}
+                      alt="Profile preview"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={displayImageUrl}
+                      alt="Profile"
+                      fill
+                      className="object-cover"
+                      sizes="96px"
+                    />
+                  )
                 ) : (
                   <span className="text-4xl font-bold text-white">
                     {(name || user?.email)?.[0]?.toUpperCase() || '?'}
@@ -167,17 +205,13 @@ export default function EditProfilePage() {
               </div>
               {/* Camera overlay */}
               <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity">
-                {isUploading ? (
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                ) : (
-                  <div className="rounded-full bg-white/90 p-3">
-                    <CameraIcon />
-                  </div>
-                )}
+                <div className="rounded-full bg-white/90 p-3">
+                  <CameraIcon />
+                </div>
               </div>
             </button>
             <p className="mt-2 text-sm text-gray-500">
-              {isUploading ? 'Uploading...' : 'Tap to change photo'}
+              Tap to change photo
             </p>
           </div>
         </div>
@@ -210,7 +244,7 @@ export default function EditProfilePage() {
               className="w-full"
               size="lg"
               isLoading={isSaving}
-              disabled={name === (user?.name || '')}
+              disabled={!hasChanges}
             >
               Save Changes
             </Button>
