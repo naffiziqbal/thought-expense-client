@@ -125,45 +125,44 @@ export function getCategoryColor(category: string): string {
   return colorPalette[hash % colorPalette.length];
 }
 
-export function getCategoryChartColor(category: string): string {
-  // Predefined colors for common categories
-  const predefinedColors: Record<string, string> = {
-    Food: '#3b82f6',
-    Transport: '#a855f7',
-    Rent: '#ef4444',
-    Utilities: '#eab308',
-    Shopping: '#ec4899',
-    Entertainment: '#6366f1',
-    Healthcare: '#10b981',
-    Education: '#14b8a6',
-    'Personal Care': '#f97316',
-    Fees: '#6b7280',
-    Other: '#64748b',
-  };
+/** Semantic data viz palette per design spec */
+const SEMANTIC_CATEGORY_COLORS: Record<string, string> = {
+  // Housing/Utilities (Fixed): Blues
+  Rent: '#3B82F6',
+  Housing: '#3B82F6',
+  Utilities: '#3B82F6',
+  // Food/Lifestyle (Variable): Oranges/Yellows
+  Food: '#F59E0B',
+  Transport: '#F59E0B',
+  Shopping: '#F59E0B',
+  Entertainment: '#F59E0B',
+  'Personal Care': '#F59E0B',
+  // Health/Emergency: Red/Pink
+  Healthcare: '#EF4444',
+  Health: '#EF4444',
+  // Income/Savings: Greens (edge case for income)
+  Education: '#10B981',
+  // Others: Cool Grey
+  Fees: '#9CA3AF',
+  Other: '#9CA3AF',
+};
 
-  // Return predefined color if exists
-  if (predefinedColors[category]) {
-    return predefinedColors[category];
+export function getCategoryChartColor(category: string): string {
+  const lower = category.toLowerCase();
+  // Match semantic categories by keyword
+  if (lower.includes('rent') || lower.includes('housing') || lower.includes('utilities')) return '#3B82F6';
+  if (lower.includes('food') || lower.includes('transport') || lower.includes('shopping') || lower.includes('entertainment') || lower.includes('personal')) return '#F59E0B';
+  if (lower.includes('health') || lower.includes('doctor') || lower.includes('medical')) return '#EF4444';
+  if (lower.includes('education') || lower.includes('savings')) return '#10B981';
+
+  if (SEMANTIC_CATEGORY_COLORS[category]) {
+    return SEMANTIC_CATEGORY_COLORS[category];
   }
 
-  // Generate consistent color for dynamic categories
-  const colorPalette = [
-    '#3b82f6', // blue
-    '#a855f7', // purple
-    '#ec4899', // pink
-    '#6366f1', // indigo
-    '#10b981', // green
-    '#14b8a6', // teal
-    '#f97316', // orange
-    '#06b6d4', // cyan
-    '#84cc16', // lime
-    '#f59e0b', // amber
-    '#f43f5e', // rose
-    '#8b5cf6', // violet
-  ];
-
+  // Fallback: Teal, Violet for top 3, Grey for Others
+  const fallbackPalette = ['#0EA5A4', '#8B5CF6', '#3B82F6', '#9CA3AF'];
   const hash = hashString(category);
-  return colorPalette[hash % colorPalette.length];
+  return fallbackPalette[hash % fallbackPalette.length];
 }
 
 export function getCategoryBgColor(category: string): string {
