@@ -46,7 +46,7 @@ class ApiClient {
           // Don't redirect if it's a login or signup request failing
           const isAuthEndpoint = error.config?.url?.includes('/api/auth/login') || 
                                  error.config?.url?.includes('/api/auth/signup');
-          
+        
           if (!isAuthEndpoint) {
             // Clear token on unauthorized
             this.clearToken();
