@@ -43,11 +43,17 @@ class ApiClient {
       (response) => response,
       (error: AxiosError<ApiError>) => {
         if (error.response?.status === 401) {
-          // Clear token on unauthorized
-          this.clearToken();
-          // Redirect to login if on client side
-          if (typeof window !== 'undefined') {
-            window.location.href = '/auth/login';
+          // Don't redirect if it's a login or signup request failing
+          const isAuthEndpoint = error.config?.url?.includes('/api/auth/login') || 
+                                 error.config?.url?.includes('/api/auth/signup');
+          
+          if (!isAuthEndpoint) {
+            // Clear token on unauthorized
+            this.clearToken();
+            // Redirect to login if on client side
+            if (typeof window !== 'undefined') {
+              window.location.href = '/auth/login';
+            }
           }
         }
         return Promise.reject(error);
