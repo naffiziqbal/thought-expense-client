@@ -4,6 +4,8 @@ export interface User {
   email: string;
   name: string | null;
   currency: string;
+  profilePicture?: string | null;
+  profilePictureUrl?: string | null; // Full CDN URL for display
   createdAt: string;
 }
 

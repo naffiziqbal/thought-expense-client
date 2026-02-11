@@ -101,6 +101,23 @@ class ApiClient {
     return response.data;
   }
 
+  async updateProfile(data: { name?: string | null }) {
+    const response = await this.client.patch('/api/auth/profile', data);
+    return response.data;
+  }
+
+  async uploadProfilePicture(file: File) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await this.client.post('/api/auth/profile/picture', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
   logout(): void {
     this.clearToken();
   }

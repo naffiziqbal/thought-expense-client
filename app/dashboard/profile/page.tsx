@@ -151,7 +151,7 @@ export default function ProfilePage() {
       title: 'Edit Profile',
       subtitle: 'Update name & avatar',
       href: '/dashboard/profile/edit',
-      comingSoon: true,
+      comingSoon: false,
     },
     {
       icon: <CrownIcon />,
@@ -214,10 +214,18 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center pt-8">
             {/* Avatar with Badge */}
             <div className="relative mb-4">
-              <div className="h-24 w-24 rounded-full bg-teal-600 flex items-center justify-center shadow-md">
-                <span className="text-4xl font-bold text-white">
-                  {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
-                </span>
+              <div className="h-24 w-24 rounded-full bg-teal-600 flex items-center justify-center shadow-md overflow-hidden">
+                {user?.profilePictureUrl ? (
+                  <img
+                    src={user.profilePictureUrl}
+                    alt="Profile"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="text-4xl font-bold text-white">
+                    {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
+                  </span>
+                )}
               </div>
               <span className="absolute -bottom-1 -right-1 rounded-full bg-gray-200 px-2.5 py-0.5 text-xs font-semibold text-gray-700">
                 FREE
