@@ -93,7 +93,7 @@ export default function ProfilePage() {
     <DashboardLayout>
       <div className="max-w-2xl mx-auto">
         {/* Mobile-optimized profile page */}
-        <div className="bg-white rounded-3xl shadow-sm min-h-[calc(100vh-10rem)] md:min-h-0">
+        <div className="bg-white rounded-2xl shadow-sm min-h-[calc(100vh-10rem)] md:min-h-0">
           {/* Back Button */}
           <div className="px-6 pt-6 pb-4">
             <button
@@ -110,10 +110,10 @@ export default function ProfilePage() {
           {/* Profile Header */}
           <div className="flex flex-col items-center px-6 py-8 pb-6">
             {/* Avatar */}
-            <div className="w-36 h-36 rounded-full bg-linear-to-br from-orange-400 via-amber-300 to-yellow-200 flex items-center justify-center shadow-2xl mb-6 ring-4 ring-white">
-              <div className="w-32 h-32 rounded-full bg-orange-600 flex items-center justify-center text-white text-5xl font-bold">
+            <div className="w-32 h-32 rounded-full bg-teal-600 flex items-center justify-center shadow-lg mb-6">
+              <span className="text-white text-5xl font-bold">
                 {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
-              </div>
+              </span>
             </div>
 
             {/* Name */}
@@ -122,7 +122,7 @@ export default function ProfilePage() {
             </h1>
 
             {/* User ID */}
-            <p className="text-sm text-gray-400 font-medium">
+            <p className="text-sm text-gray-500 font-medium">
               ID: {user?.id.slice(0, 8).toUpperCase()}
             </p>
           </div>
@@ -138,9 +138,9 @@ export default function ProfilePage() {
                     alert(`${item.title} - Coming soon!`);
                   }
                 }}
-                className="w-full flex items-start space-x-4 p-4 rounded-2xl hover:bg-gray-50 active:bg-gray-100 transition-colors text-left group"
+                className="w-full flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-all duration-200 text-left group"
               >
-                <div className="shrink-0 w-11 h-11 rounded-full bg-gray-900 flex items-center justify-center text-white group-hover:bg-gray-800 transition-colors">
+                <div className="shrink-0 w-11 h-11 rounded-lg bg-gray-900 flex items-center justify-center text-white group-hover:bg-gray-800 transition-all duration-200">
                   {item.icon}
                 </div>
                 <div className="flex-1 min-w-0">

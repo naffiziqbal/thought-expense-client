@@ -61,7 +61,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
+    <div className="min-h-screen bg-gray-50">
       {/* Top Navigation - Desktop Only */}
       <nav className="hidden md:block sticky top-0 z-50 border-b border-gray-200/50 bg-white/80 backdrop-blur-xl shadow-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -69,12 +69,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {/* Logo with gradient */}
             <div className="flex items-center">
               <Link href="/dashboard" className="flex items-center space-x-2 group">
-                <div className="bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-lg p-2 shadow-lg group-hover:shadow-xl transition-shadow">
+                <div className="bg-teal-600 text-white rounded-lg p-2 shadow-md group-hover:bg-teal-500 transition-all">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                   </svg>
                 </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <span className="text-xl font-bold text-gray-900">
                   ThoughtExpense
                 </span>
               </Link>
@@ -89,10 +89,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      'flex items-center space-x-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200',
+                      'flex items-center space-x-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200',
                       isActive
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
-                        : 'text-gray-700 hover:bg-gray-100 hover:scale-105'
+                        ? 'bg-teal-600 text-white shadow-md'
+                        : 'text-gray-700 hover:bg-gray-100'
                     )}
                   >
                     {item.icon}
@@ -120,7 +120,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center space-x-3 rounded-xl px-3 py-2 hover:bg-gray-100 transition-colors"
                 >
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-semibold shadow-lg">
+                  <div className="w-9 h-9 rounded-full bg-teal-600 flex items-center justify-center text-white font-semibold shadow-md">
                     {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
                   </div>
                   <div className="text-left">
@@ -187,7 +187,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   'transition-all duration-200',
                   pathname === '/dashboard' 
-                    ? 'w-7 h-7 text-blue-600' 
+                    ? 'w-7 h-7 text-teal-600' 
                     : 'w-6 h-6 text-gray-400'
                 )} 
                 fill="none"
@@ -211,7 +211,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   'transition-all duration-200',
                   pathname === '/dashboard/expenses' 
-                    ? 'w-7 h-7 text-blue-600' 
+                    ? 'w-7 h-7 text-teal-600' 
                     : 'w-6 h-6 text-gray-400'
                 )} 
                 fill="none"
@@ -226,14 +226,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {/* Primary Action Button - Floating & Elevated */}
             <Link
               href="/dashboard/add"
-              className="flex items-center justify-center -mt-8 transition-transform duration-300 active:scale-95 hover:scale-105"
+              className="flex items-center justify-center -mt-8 transition-all duration-200 active:scale-95"
             >
               <div className="relative">
                 {/* Glow effect */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 blur-xl opacity-40"></div>
+                <div className="absolute inset-0 rounded-full bg-teal-500 blur-xl opacity-30"></div>
                 
                 {/* Main button */}
-                <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-2xl shadow-yellow-500/50">
+                <div className="relative w-16 h-16 rounded-full bg-teal-600 hover:bg-teal-500 flex items-center justify-center shadow-lg transition-all duration-200">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
@@ -253,7 +253,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   'transition-all duration-200',
                   pathname === '/dashboard/insights' 
-                    ? 'w-7 h-7 text-blue-600' 
+                    ? 'w-7 h-7 text-teal-600' 
                     : 'w-6 h-6 text-gray-400'
                 )} 
                 fill="none"
@@ -277,7 +277,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   'transition-all duration-200',
                   pathname === '/dashboard/profile' 
-                    ? 'w-7 h-7 text-blue-600' 
+                    ? 'w-7 h-7 text-teal-600' 
                     : 'w-6 h-6 text-gray-400'
                 )} 
                 fill="none"
