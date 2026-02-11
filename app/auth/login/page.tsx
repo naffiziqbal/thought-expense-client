@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
+import { AxiosError } from 'axios';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
@@ -56,8 +57,11 @@ export default function LoginPage() {
         toast.success('Login successful!');
         router.push('/dashboard/add');
       }
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Invalid email or password';
+    } catch (error) {
+      const message =
+        error instanceof AxiosError
+          ? error.response?.data?.message || 'Invalid email or password'
+          : 'Invalid email or password';
       toast.error(message);
     } finally {
       setIsLoading(false);
