@@ -401,10 +401,10 @@ export default function ExpensesPage() {
                 >
                   {/* Left: Category Icon (48x48 squircle) */}
                   <div
-                    className="w-12 h-12 rounded-xl shrink-0 flex items-center justify-center text-2xl"
+                    className="w-12 h-12 rounded-xl shrink-0 flex items-center justify-center text-gray-700"
                     style={{ backgroundColor: getCategoryBgColor(expense.category) }}
                   >
-                    <CategoryIcon className="w-6 h-6" />
+                    <CategoryIcon className="w-6 h-6 shrink-0" aria-hidden />
                   </div>
 
                   {/* Middle: Title & Subtitle */}

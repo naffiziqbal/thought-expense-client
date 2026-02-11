@@ -388,10 +388,10 @@ export default function AddExpensePage() {
                     className="flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm shrink-0"
                   >
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-700 shrink-0"
                       style={{ backgroundColor: getCategoryBgColor(item.category) }}
                     >
-                      <CategoryIcon className="w-5 h-5" />
+                      <CategoryIcon className="w-5 h-5 shrink-0" aria-hidden />
                     </div>
                     <div className="flex-1 min-w-0">
                       {editingId === item.id ? (
