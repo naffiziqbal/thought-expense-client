@@ -15,24 +15,7 @@ import {
   getCategoryFromKeyword,
   type ParsedExpensePreview,
 } from '@/lib/utils';
-
-const CATEGORY_ICONS: Record<string, string> = {
-  Food: '🍔',
-  Transport: '🚗',
-  Rent: '🏠',
-  Utilities: '💡',
-  Shopping: '🛍️',
-  Entertainment: '🎬',
-  Healthcare: '⚕️',
-  Education: '📚',
-  'Personal Care': '💅',
-  Fees: '💳',
-  Other: '📎',
-};
-
-function getCategoryIcon(category: string): string {
-  return CATEGORY_ICONS[category] || CATEGORY_ICONS.Other;
-}
+import { getCategoryIcon } from '@/lib/categoryIcons';
 
 /** Preprocess image for better OCR: scale up, grayscale, contrast */
 async function preprocessImageForOCR(source: Blob | File): Promise<HTMLCanvasElement> {
@@ -375,7 +358,9 @@ export default function AddExpensePage() {
                   <div className="h-14 rounded-2xl bg-gray-100 animate-pulse" />
                 </>
               ) : (
-                receiptItems.map((item) => (
+                receiptItems.map((item) => {
+                  const CategoryIcon = getCategoryIcon(item.category);
+                  return (
                   <div
                     key={item.id}
                     className="flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm shrink-0"
@@ -384,7 +369,7 @@ export default function AddExpensePage() {
                       className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
                       style={{ backgroundColor: getCategoryBgColor(item.category) }}
                     >
-                      {getCategoryIcon(item.category)}
+                      <CategoryIcon className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
                       {editingId === item.id ? (
@@ -406,7 +391,8 @@ export default function AddExpensePage() {
                     </div>
                     <span className="font-bold text-gray-900 shrink-0">-{formatCurrency(item.amount, currency)}</span>
                   </div>
-                ))
+                );
+                })
               )}
             </div>
           )}

@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
 import { formatCurrency, formatDate, getCategoryColor, getCategoryBgColor } from '@/lib/utils';
+import { getCategoryIcon } from '@/lib/categoryIcons';
 import Link from 'next/link';
 import type { CategorySummary, Expense, Insight } from '@/types';
 
@@ -99,24 +100,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  // Get category icon
-  const getCategoryIcon = (category: string) => {
-    const icons: Record<string, string> = {
-      'Food': '🍔',
-      'Transport': '🚗',
-      'Rent': '🏠',
-      'Utilities': '💡',
-      'Shopping': '🛍️',
-      'Entertainment': '🎬',
-      'Healthcare': '⚕️',
-      'Education': '📚',
-      'Personal Care': '💅',
-      'Fees': '💳',
-      'Other': '📌'
-    };
-    return icons[category] || '💰';
-  };
 
   return (
     <DashboardLayout>
@@ -272,7 +255,9 @@ export default function DashboardPage() {
 
             {/* Transaction Tiles - Flat on Background */}
             <div className="space-y-3">
-              {recentExpenses.map((expense) => (
+              {recentExpenses.map((expense) => {
+                const CategoryIcon = getCategoryIcon(expense.category);
+                return (
                 <Link 
                   key={expense.id}
                   href="/dashboard/expenses"
@@ -285,7 +270,7 @@ export default function DashboardPage() {
                         className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
                         style={{ backgroundColor: getCategoryBgColor(expense.category) }}
                       >
-                        {getCategoryIcon(expense.category)}
+                        <CategoryIcon className="w-6 h-6" />
                       </div>
 
                       {/* Metadata (Middle) */}
@@ -306,7 +291,8 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </Link>
-              ))}
+              );
+              })}
             </div>
           </div>
         )}

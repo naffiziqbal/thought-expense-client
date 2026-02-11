@@ -263,26 +263,8 @@ export function cleanExpenseDescription(description: string): string {
     .trim() || description;
 }
 
-const CATEGORY_ICONS: Record<string, string> = {
-  Food: '🍔',
-  Transport: '🚗',
-  Rent: '🏠',
-  Utilities: '💡',
-  Shopping: '🛍️',
-  Entertainment: '🎬',
-  Healthcare: '⚕️',
-  Education: '📚',
-  'Personal Care': '💅',
-  Fees: '💳',
-  Other: '📎',
-  Medicine: '💊',
-  Wifi: '📶',
-  'Web Hosting': '🌐',
-};
-
-export function getCategoryIcon(category: string): string {
-  return CATEGORY_ICONS[category] || CATEGORY_ICONS.Other;
-}
+// Category icons moved to lib/categoryIcons.tsx (react-icons)
+export { getCategoryIcon } from './categoryIcons';
 
 export function getCategoryFromKeyword(description: string): string {
   const lower = description.toLowerCase();

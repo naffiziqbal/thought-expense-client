@@ -16,9 +16,9 @@ import {
   formatDate,
   getCategoryColor,
   getCategoryBgColor,
-  getCategoryIcon,
   cleanExpenseDescription,
 } from '@/lib/utils';
+import { getCategoryIcon } from '@/lib/categoryIcons';
 
 export default function ExpensesPage() {
   const { isAuthenticated, isLoading: authLoading } = useProtectedRoute();
@@ -286,7 +286,9 @@ export default function ExpensesPage() {
             </div>
           ) : (
             <div className={`relative flex-1 min-h-0 overflow-y-auto divide-y divide-gray-100 transition-opacity ${isPageChanging ? 'opacity-60 pointer-events-none' : ''}`}>
-              {expenses.map((expense) => (
+              {expenses.map((expense) => {
+                const CategoryIcon = getCategoryIcon(expense.category);
+                return (
                 <button
                   key={expense.id}
                   type="button"
@@ -298,7 +300,7 @@ export default function ExpensesPage() {
                     className="w-12 h-12 rounded-xl shrink-0 flex items-center justify-center text-2xl"
                     style={{ backgroundColor: getCategoryBgColor(expense.category) }}
                   >
-                    {getCategoryIcon(expense.category)}
+                    <CategoryIcon className="w-6 h-6" />
                   </div>
 
                   {/* Middle: Title & Subtitle */}
@@ -321,7 +323,8 @@ export default function ExpensesPage() {
                     </span>
                   </div>
                 </button>
-              ))}
+              );
+              })}
             </div>
           )}
         </div>
