@@ -293,7 +293,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </nav>
 
       {/* Main Content - Hierarchical spacing */}
-      <main className="mx-auto max-w-7xl px-4 md:px-6 pt-6 pb-24 md:py-8">{children}</main>
+      <main
+        className={cn(
+          'mx-auto max-w-7xl px-4 md:px-6 pt-6 pb-24 md:py-8',
+          pathname === '/dashboard/add' && 'h-screen md:h-[calc(100vh-4rem)] overflow-hidden flex flex-col'
+        )}
+      >
+        {pathname === '/dashboard/add' ? (
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+            {children}
+          </div>
+        ) : (
+          children
+        )}
+      </main>
     </div>
   );
 }
