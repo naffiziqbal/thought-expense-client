@@ -255,6 +255,35 @@ export function parseExpenseInputLocally(input: string): ParsedExpensePreview[] 
   return results;
 }
 
+/** Clean expense description: remove "3." prefix and "- 971TK" suffix */
+export function cleanExpenseDescription(description: string): string {
+  return description
+    .replace(/^\d+\.\s*/, '')
+    .replace(/\s*[-–—]\s*[\d,.]+\s*(?:[A-Z]{2,4}|[A-Za-z]+)?\s*$/i, '')
+    .trim() || description;
+}
+
+const CATEGORY_ICONS: Record<string, string> = {
+  Food: '🍔',
+  Transport: '🚗',
+  Rent: '🏠',
+  Utilities: '💡',
+  Shopping: '🛍️',
+  Entertainment: '🎬',
+  Healthcare: '⚕️',
+  Education: '📚',
+  'Personal Care': '💅',
+  Fees: '💳',
+  Other: '📎',
+  Medicine: '💊',
+  Wifi: '📶',
+  'Web Hosting': '🌐',
+};
+
+export function getCategoryIcon(category: string): string {
+  return CATEGORY_ICONS[category] || CATEGORY_ICONS.Other;
+}
+
 export function getCategoryFromKeyword(description: string): string {
   const lower = description.toLowerCase();
   const keywords: Record<string, string[]> = {

@@ -73,6 +73,8 @@ export interface ExpensesResponse {
       total: number;
       limit: number;
       offset: number;
+      page?: number;
+      totalPages?: number;
       hasMore: boolean;
     };
   };
