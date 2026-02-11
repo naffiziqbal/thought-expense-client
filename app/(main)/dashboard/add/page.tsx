@@ -12,6 +12,8 @@ import {
 } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useIsPremium } from '@/hooks/useIsPremium';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { createWorker, PSM } from 'tesseract.js';
@@ -51,6 +53,7 @@ interface ReceiptItem {
 export default function AddExpensePage() {
   const { isAuthenticated, isLoading: authLoading } = useProtectedRoute();
   const { user } = useAuthStore();
+  const isPremium = useIsPremium();
   const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -168,6 +171,10 @@ export default function AddExpensePage() {
   };
 
   const handleScanReceipt = () => {
+    if (!isPremium) {
+      toast.error('Upgrade to Premium to scan receipts');
+      return;
+    }
     setShowCamera(true);
   };
 
@@ -197,6 +204,10 @@ export default function AddExpensePage() {
   };
 
   const handleGallery = () => {
+    if (!isPremium) {
+      toast.error('Upgrade to Premium to scan receipts');
+      return;
+    }
     galleryInputRef.current?.click();
   };
 
@@ -315,21 +326,33 @@ export default function AddExpensePage() {
               className="hidden"
             />
 
-            <button
-              onClick={handleScanReceipt}
-              disabled={isScanning}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 disabled:opacity-60 transition-colors"
-            >
-              <span>📷</span>
-              <span>Scan Receipt</span>
-            </button>
-            <button
-              onClick={handleGallery}
-              disabled={isScanning}
-              className="p-2.5 rounded-full text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-60"
-            >
-              <span className="text-xl">🖼️</span>
-            </button>
+            {isPremium ? (
+              <>
+                <button
+                  onClick={handleScanReceipt}
+                  disabled={isScanning}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 disabled:opacity-60 transition-colors"
+                >
+                  <span>📷</span>
+                  <span>Scan Receipt</span>
+                </button>
+                <button
+                  onClick={handleGallery}
+                  disabled={isScanning}
+                  className="p-2.5 rounded-full text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-60"
+                >
+                  <span className="text-xl">🖼️</span>
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/dashboard/premium"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-teal-600 text-white text-sm font-medium hover:bg-teal-500 transition-colors"
+              >
+                <span>📷</span>
+                <span>Upgrade to scan receipts</span>
+              </Link>
+            )}
             <button
               onClick={handleDateClick}
               className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-sm font-medium transition-colors"

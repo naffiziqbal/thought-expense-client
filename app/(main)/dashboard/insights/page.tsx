@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import Link from 'next/link';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
+import { useIsPremium } from '@/hooks/useIsPremium';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { BottomSheet } from '@/components/ui/BottomSheet';
@@ -35,6 +37,7 @@ function getInsightCardStyle(type: string): { bg: string; border: string; tag: s
 
 export default function InsightsPage() {
   const { isAuthenticated, isLoading: authLoading } = useProtectedRoute();
+  const isPremium = useIsPremium();
 
   const [insights, setInsights] = useState<Insight[]>([]);
   const [summary, setSummary] = useState<CategorySummary | null>(null);
@@ -306,7 +309,26 @@ export default function InsightsPage() {
           </div>
         )}
 
-        {/* D. AI Observations - Smart Cards */}
+        {/* D. Daily & Weekly Insights - Premium Locked (Free users only) */}
+        {!isPremium && (
+          <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 p-6 flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-3">
+              <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h3 className="text-base font-semibold text-gray-900 mb-1">Daily & Weekly Insights</h3>
+            <p className="text-sm text-gray-600 mb-4">Get granular spending patterns with daily and weekly AI analysis on Premium.</p>
+            <Link
+              href="/dashboard/premium"
+              className="px-5 py-2.5 rounded-xl bg-teal-600 text-white text-sm font-semibold hover:bg-teal-500 transition-colors"
+            >
+              Upgrade to Premium
+            </Link>
+          </div>
+        )}
+
+        {/* E. AI Observations - Smart Cards */}
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <h3 className="mb-4 text-base font-semibold text-gray-900">AI Observations</h3>
           {isLoading ? (

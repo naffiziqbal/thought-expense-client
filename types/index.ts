@@ -6,6 +6,7 @@ export interface User {
   currency: string;
   profilePicture?: string | null;
   profilePictureUrl?: string | null; // Full CDN URL for display
+  isPremium: boolean;
   createdAt: string;
 }
 

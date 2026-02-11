@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import Link from 'next/link';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useCategories } from '@/hooks/useCategories';
+import { useIsPremium } from '@/hooks/useIsPremium';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -23,6 +25,7 @@ import { getCategoryIcon } from '@/lib/categoryIcons';
 export default function ExpensesPage() {
   const { isAuthenticated, isLoading: authLoading } = useProtectedRoute();
   const { categories } = useCategories();
+  const isPremium = useIsPremium();
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +50,11 @@ export default function ExpensesPage() {
     endDate: '',
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'csv' | 'pdf'>('csv');
+  const [exportFrom, setExportFrom] = useState('');
+  const [exportTo, setExportTo] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
 
   // Pagination
   const PAGE_SIZE = 10;
@@ -150,6 +158,28 @@ export default function ExpensesPage() {
     setPage(1);
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const from = exportFrom || undefined;
+      const to = exportTo || undefined;
+      const blob = await api.exportExpenses(exportFormat, from, to);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `expenses-${new Date().toISOString().slice(0, 10)}.${exportFormat === 'csv' ? 'csv' : 'pdf'}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setExportModalOpen(false);
+      toast.success('Export downloaded');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e.response?.data?.message || 'Export failed');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (authLoading || !isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -184,6 +214,13 @@ export default function ExpensesPage() {
     <DashboardLayout>
       <div className="flex flex-col h-full bg-gray-100 px-4 overflow-hidden">
         {/* A. Header & Filter Bar - Fixed */}
+        {!isPremium && (
+          <div className="mb-4 rounded-xl bg-teal-50 border border-teal-200 px-4 py-3 flex items-center justify-between">
+            <p className="text-sm text-teal-800">
+              Viewing past 3 months. <Link href="/dashboard/premium" className="font-semibold underline">Upgrade to Premium</Link> for full history.
+            </p>
+          </div>
+        )}
         <div className="shrink-0 pt-4 pb-4 flex justify-between items-end">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">All Expenses</h1>
@@ -191,7 +228,26 @@ export default function ExpensesPage() {
               {transactionCount} transaction{transactionCount !== 1 ? 's' : ''}
             </p>
           </div>
-          <button
+          <div className="flex gap-2">
+            {isPremium ? (
+              <button
+                onClick={() => setExportModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export
+              </button>
+            ) : (
+              <div title="Export available on Premium" className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-400 text-sm cursor-not-allowed">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Export
+              </div>
+            )}
+            <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
           >
@@ -205,6 +261,7 @@ export default function ExpensesPage() {
               </span>
             )}
           </button>
+          </div>
         </div>
 
         {/* Collapsible Filters Panel */}
@@ -438,6 +495,58 @@ export default function ExpensesPage() {
             value={editForm.date}
             onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
           />
+        </div>
+      </Modal>
+
+      {/* Export Modal */}
+      <Modal
+        isOpen={exportModalOpen}
+        onClose={() => setExportModalOpen(false)}
+        title="Export Expenses"
+        footer={
+          <div className="flex gap-3">
+            <Button onClick={() => setExportModalOpen(false)} variant="outline" className="flex-1">
+              Cancel
+            </Button>
+            <Button onClick={handleExport} className="flex-1" disabled={isExporting}>
+              {isExporting ? 'Exporting...' : 'Export'}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Format</label>
+            <select
+              value={exportFormat}
+              onChange={(e) => setExportFormat(e.target.value as 'csv' | 'pdf')}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            >
+              <option value="csv">CSV</option>
+              <option value="pdf">PDF</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">From (optional)</label>
+              <input
+                type="date"
+                value={exportFrom}
+                onChange={(e) => setExportFrom(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">To (optional)</label>
+              <input
+                type="date"
+                value={exportTo}
+                onChange={(e) => setExportTo(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+              />
+            </div>
+          </div>
+          <p className="text-sm text-gray-500">Leave dates empty to export all expenses.</p>
         </div>
       </Modal>
 

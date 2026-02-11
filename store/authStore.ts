@@ -28,7 +28,11 @@ export const useAuthStore = create<AuthState>()(
       error: null,
       _hasHydrated: false,
 
-      setUser: (user) => set({ user, isAuthenticated: true, error: null }),
+      setUser: (user) => set({
+        user: { ...user, isPremium: user.isPremium ?? false },
+        isAuthenticated: true,
+        error: null,
+      }),
       
       clearUser: () => set({ user: null, isAuthenticated: false }),
       

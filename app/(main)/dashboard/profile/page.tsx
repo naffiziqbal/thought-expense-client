@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
+import { useIsPremium } from '@/hooks/useIsPremium';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
 import { getImageUrl } from '@/lib/utils';
@@ -109,6 +110,7 @@ function MenuItem({ icon, iconBg, iconColor, title, subtitle, href, isLast, comi
 export default function ProfilePage() {
   const { isAuthenticated, isLoading } = useProtectedRoute();
   const { user, logout } = useAuthStore();
+  const isPremium = useIsPremium();
   const router = useRouter();
   const [transactionCount, setTransactionCount] = useState<number | null>(null);
   const [categoryCount, setCategoryCount] = useState<number>(0);
@@ -160,9 +162,9 @@ export default function ProfilePage() {
       iconBg: 'bg-orange-50',
       iconColor: 'text-orange-600',
       title: 'Premium Plans',
-      subtitle: 'Unlock unlimited features',
+      subtitle: isPremium ? 'You have Premium' : 'Upgrade to unlock all features',
       href: '/dashboard/premium',
-      comingSoon: true,
+      comingSoon: false,
     },
   ];
 
@@ -231,8 +233,10 @@ export default function ProfilePage() {
                   </span>
                 )}
               </div>
-              <span className="absolute -bottom-1 -right-1 rounded-full bg-gray-200 px-2.5 py-0.5 text-xs font-semibold text-gray-700">
-                FREE
+              <span className={`absolute -bottom-1 -right-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                isPremium ? 'bg-amber-100 text-amber-800' : 'bg-gray-200 text-gray-700'
+              }`}>
+                {isPremium ? 'PREMIUM' : 'FREE'}
               </span>
             </div>
 

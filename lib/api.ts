@@ -153,6 +153,14 @@ class ApiClient {
     return response.data;
   }
 
+  async exportExpenses(format: 'csv' | 'pdf', from?: string, to?: string): Promise<Blob> {
+    const response = await this.client.get('/api/expenses/export', {
+      params: { format, from, to },
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
   async getCategorySummary(filters?: {
     startDate?: string;
     endDate?: string;

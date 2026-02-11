@@ -3,16 +3,19 @@
 import { useEffect, useState, useRef } from 'react';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
+import { useIsPremium } from '@/hooks/useIsPremium';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
 import { formatCurrency, formatDate, getCategoryColor, getCategoryBgColor } from '@/lib/utils';
 import { getCategoryIcon } from '@/lib/categoryIcons';
 import Link from 'next/link';
 import type { CategorySummary, Expense, Insight } from '@/types';
+import { AdPlaceholder } from '@/components/landing/AdPlaceholder';
 
 export default function DashboardPage() {
   const { isAuthenticated, isLoading } = useProtectedRoute();
   const { user } = useAuthStore();
+  const isPremium = useIsPremium();
 
   const [summary, setSummary] = useState<CategorySummary | null>(null);
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
@@ -312,6 +315,13 @@ export default function DashboardPage() {
                 Add Your First Expense
               </button>
             </Link>
+          </div>
+        )}
+
+        {/* Ad placeholder - Free users only */}
+        {!isPremium && !loading && (
+          <div>
+            <AdPlaceholder />
           </div>
         )}
       </div>
