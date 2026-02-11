@@ -67,7 +67,7 @@ export default function AddExpensePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [receiptItems, setReceiptItems] = useState<ReceiptItem[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currency = user?.currency || 'USD';
 
@@ -273,7 +273,7 @@ export default function AddExpensePage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-full overflow-hidden px-4 md:px-6 pb-28">
+      <div className="flex flex-col h-full overflow-hidden px-4 pb-28">
         {/* 1. Top Header - Fixed */}
         <div className="shrink-0 pt-4 pb-4">
           <h1 className="text-2xl font-bold text-gray-900">Quick Log</h1>
@@ -443,7 +443,7 @@ export default function AddExpensePage() {
         )}
 
         {/* 4. Floating Action Button */}
-        <div className="fixed bottom-20 left-0 right-0 px-4 md:px-6 pb-safe z-40">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-[768px] px-4 pb-safe z-40">
           <button
             onClick={handleSave}
             disabled={!hasContent || isSaving}

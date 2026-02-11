@@ -72,8 +72,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Navigation */}
       <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-center sm:justify-start">
+        <div className="mx-auto max-w-[768px] px-4">
+          <div className="flex h-16 items-center justify-center">
             <Link
               href="/"
               className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
@@ -85,7 +85,7 @@ export default function LoginPage() {
       </nav>
 
       {/* Login Form */}
-      <div className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <div className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>

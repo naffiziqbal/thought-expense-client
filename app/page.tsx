@@ -6,7 +6,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-xl shadow-sm">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[768px] px-4">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2 group">
@@ -23,7 +23,7 @@ export default function HomePage() {
             {/* CTA Buttons */}
             <div className="flex items-center space-x-3">
               <Link href="/auth/login">
-                <Button variant="ghost" size="md" className="hidden sm:inline-flex text-gray-700 hover:bg-gray-100">
+                <Button variant="ghost" size="md" className="text-gray-700 hover:bg-gray-100">
                   Login
                 </Button>
               </Link>
@@ -38,14 +38,14 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative px-4 py-24 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative px-4 py-24 overflow-hidden">
         {/* Background decorations */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-1/4 left-10 w-72 h-72 bg-teal-400/20 rounded-full blur-3xl"></div>
           <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-teal-300/20 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[768px]">
           <div className="text-center">
             {/* Badge */}
             <div className="inline-flex items-center space-x-2 rounded-full bg-teal-50 px-4 py-2 mb-8 border border-teal-200">
@@ -57,7 +57,7 @@ export default function HomePage() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-6xl md:text-7xl lg:text-8xl">
+            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">
               Track Expenses
               <span className="block mt-2 text-teal-600">
                 The Way You Think
@@ -65,13 +65,13 @@ export default function HomePage() {
             </h1>
 
             {/* Subheading */}
-            <p className="mx-auto mt-8 max-w-3xl text-xl text-gray-600 sm:text-2xl leading-relaxed">
+            <p className="mx-auto mt-8 text-lg text-gray-600 leading-relaxed">
               Stop forcing yourself into categories. Just write naturally and let AI do the work.
               <span className="block mt-2 font-semibold text-gray-900">Track spending without the spreadsheet pain.</span>
             </p>
 
             {/* CTA Buttons */}
-            <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="mt-12 flex flex-col items-center justify-center gap-4">
               <Link href="/auth/signup">
                 <Button 
                   size="lg" 
@@ -97,21 +97,21 @@ export default function HomePage() {
             </div>
 
             {/* Trust Badges */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 text-sm">
               <div className="flex items-center space-x-2 text-gray-600">
                 <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <span>No credit card required</span>
               </div>
-              <div className="hidden sm:block text-gray-400">•</div>
+              <div className="text-gray-400">•</div>
               <div className="flex items-center space-x-2 text-gray-600">
                 <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <span>Free forever</span>
               </div>
-              <div className="hidden sm:block text-gray-400">•</div>
+              <div className="text-gray-400">•</div>
               <div className="flex items-center space-x-2 text-gray-600">
                 <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -123,14 +123,14 @@ export default function HomePage() {
 
           {/* Demo Preview */}
           <div className="mt-16">
-            <div className="mx-auto max-w-4xl rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-2xl sm:p-8">
+            <div className="mx-auto max-w-full rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-2xl">
               <div className="mb-4 flex items-center space-x-2">
                 <div className="h-3 w-3 rounded-full bg-red-500"></div>
                 <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
                 <div className="h-3 w-3 rounded-full bg-green-500"></div>
               </div>
               <div className="rounded-lg bg-gray-50 p-6">
-                <p className="font-mono text-sm text-gray-800 sm:text-base">
+                <p className="font-mono text-sm text-gray-800">
                   <span className="text-gray-500">{">"}</span> rent 1200
                   <br />
                   <span className="text-gray-500">{">"}</span> coffee 5
@@ -162,10 +162,10 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="bg-white px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+      <section id="features" className="bg-white px-4 py-20">
+        <div className="mx-auto max-w-[768px]">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            <h2 className="text-2xl font-bold text-gray-900">
               Why ThoughtExpense?
             </h2>
             <p className="mt-4 text-lg text-gray-600">
@@ -173,7 +173,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-16 grid gap-6 grid-cols-1">
             {/* Feature 1 */}
             <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm transition-shadow hover:shadow-md">
               <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
@@ -319,9 +319,9 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-blue-600 px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold text-white sm:text-4xl">
+      <section className="bg-blue-600 px-4 py-20">
+        <div className="mx-auto max-w-[768px] text-center">
+          <h2 className="text-2xl font-bold text-white">
             Ready to simplify expense tracking?
           </h2>
           <p className="mt-4 text-lg text-blue-100">
@@ -338,8 +338,8 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+      <footer className="border-t border-gray-200 bg-white px-4 py-12">
+        <div className="mx-auto max-w-[768px]">
           <div className="text-center">
             <p className="text-sm text-gray-600">
               © 2026 ThoughtExpense. Built for humans who hate spreadsheets.

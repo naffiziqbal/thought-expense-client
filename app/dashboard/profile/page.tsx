@@ -93,7 +93,7 @@ export default function ProfilePage() {
     <DashboardLayout>
       <div className="max-w-2xl mx-auto">
         {/* Mobile-optimized profile page */}
-        <div className="bg-white rounded-2xl shadow-sm min-h-[calc(100vh-10rem)] md:min-h-0">
+        <div className="bg-white rounded-2xl shadow-sm min-h-[calc(100vh-10rem)]">
           {/* Back Button */}
           <div className="px-6 pt-6 pb-4">
             <button

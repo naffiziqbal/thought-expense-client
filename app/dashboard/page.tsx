@@ -191,7 +191,7 @@ export default function DashboardPage() {
           <div className="relative h-full flex flex-col justify-between">
             <div>
               <p className="text-teal-100 text-sm font-medium mb-2">Total Spent</p>
-              <h2 className="text-4xl md:text-5xl font-bold text-white">
+              <h2 className="text-4xl font-bold text-white">
                 {loading ? '...' : formatCurrency(summary?.totalSpent || 0, summary?.currency)}
               </h2>
             </div>

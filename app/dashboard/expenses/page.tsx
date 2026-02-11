@@ -182,7 +182,7 @@ export default function ExpensesPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-full bg-gray-100 px-4 md:max-w-[480px] md:mx-auto md:px-4 overflow-hidden">
+      <div className="flex flex-col h-full bg-gray-100 px-4 overflow-hidden">
         {/* A. Header & Filter Bar - Fixed */}
         <div className="shrink-0 pt-4 pb-4 flex justify-between items-end">
           <div>

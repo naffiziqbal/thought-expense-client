@@ -100,7 +100,7 @@ export default function InsightsPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Insights</h1>
             <p className="mt-2 text-gray-600">AI-powered spending analysis and trends</p>
@@ -112,7 +112,7 @@ export default function InsightsPage() {
 
         {/* Charts Row */}
         {summary && summary.transactionCount > 0 && (
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 grid-cols-1">
             {/* Pie Chart */}
             <Card>
               <CardHeader>
@@ -174,7 +174,7 @@ export default function InsightsPage() {
 
         {/* Summary Stats */}
         {summary && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-2">
             <Card>
               <CardContent>
                 <p className="text-sm font-medium text-gray-600">Total Spent</p>
@@ -260,7 +260,7 @@ export default function InsightsPage() {
                     <p className="text-base text-gray-800">{insight.content}</p>
                     
                     {insight.metadata?.summary && (
-                      <div className="mt-4 grid grid-cols-2 gap-4 border-t border-blue-200 pt-4 sm:grid-cols-3">
+                      <div className="mt-4 grid grid-cols-2 gap-4 border-t border-blue-200 pt-4">
                         <div>
                           <p className="text-xs text-gray-600">Total Spent</p>
                           <p className="font-semibold text-gray-900">
