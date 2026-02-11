@@ -206,3 +206,72 @@ export function getCategoryBgColor(category: string): string {
   const hash = hashString(category);
   return colorPalette[hash % colorPalette.length];
 }
+
+// Local parsing for Quick Log live preview (works offline)
+export interface ParsedExpensePreview {
+  description: string;
+  amount: number;
+  rawInput: string;
+}
+
+export function parseExpenseInputLocally(input: string): ParsedExpensePreview[] {
+  if (!input.trim()) return [];
+
+  const items = input
+    .split(/[\n,]+|\s+and\s+/i)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const results: ParsedExpensePreview[] = [];
+
+  for (const item of items) {
+    const endNumberMatch = item.match(/^(.+?)\s+(\d+(?:\.\d{1,2})?)\s*$/);
+    const startNumberMatch = item.match(/^(\d+(?:\.\d{1,2})?)\s+(.+)$/);
+
+    if (endNumberMatch) {
+      results.push({
+        description: endNumberMatch[1].trim(),
+        amount: parseFloat(endNumberMatch[2]),
+        rawInput: item,
+      });
+    } else if (startNumberMatch) {
+      results.push({
+        description: startNumberMatch[2].trim(),
+        amount: parseFloat(startNumberMatch[1]),
+        rawInput: item,
+      });
+    } else {
+      const numbers = item.match(/\d+(?:\.\d{1,2})?/g);
+      if (numbers && numbers.length > 0) {
+        results.push({
+          description: 'Unknown',
+          amount: parseFloat(numbers[0]),
+          rawInput: item,
+        });
+      }
+    }
+  }
+
+  return results;
+}
+
+export function getCategoryFromKeyword(description: string): string {
+  const lower = description.toLowerCase();
+  const keywords: Record<string, string[]> = {
+    Food: ['coffee', 'lunch', 'dinner', 'breakfast', 'burger', 'pizza', 'restaurant', 'food', 'groceries', 'grocery', 'snack'],
+    Transport: ['uber', 'taxi', 'bus', 'metro', 'rickshaw', 'petrol', 'fuel', 'parking'],
+    Rent: ['rent', 'lease'],
+    Utilities: ['electricity', 'water', 'internet', 'bill', 'utilities'],
+    Shopping: ['shopping', 'mall', 'store', 'amazon'],
+    Entertainment: ['movie', 'netflix', 'spotify', 'game'],
+    Healthcare: ['doctor', 'medicine', 'pharmacy', 'hospital'],
+    Education: ['course', 'book', 'tuition'],
+    'Personal Care': ['salon', 'haircut', 'gym'],
+    Fees: ['fee', 'subscription', 'membership'],
+  };
+
+  for (const [category, words] of Object.entries(keywords)) {
+    if (words.some((w) => lower.includes(w))) return category;
+  }
+  return 'Other';
+}
