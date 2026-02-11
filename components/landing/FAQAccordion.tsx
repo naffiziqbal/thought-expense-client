@@ -4,21 +4,25 @@ import { useState } from 'react';
 
 const FAQ_ITEMS = [
   {
+    q: 'What\'s included in Free?',
+    a: 'Free gets you natural language text input, 3 months of expense history, monthly AI insights, and multi-currency support. Upgrade to Premium for receipt scanning, full history, export (CSV/PDF), and daily & weekly insights.',
+  },
+  {
     q: 'Is my data encrypted?',
     a: 'Yes. All data is encrypted at rest using industry-standard AES-256. In transit, we use TLS 1.3. Your expense data is never shared or sold.',
   },
   {
-    q: 'Can I export my data and leave?',
-    a: 'Absolutely. Developer accounts get CSV export. Production accounts get JSON + SQL dump. Your data is yours—no lock-in.',
+    q: 'Can I export my data?',
+    a: 'Premium users can export expenses as CSV or PDF anytime. Free users can upgrade to Premium to unlock export. Your data is yours—no lock-in.',
   },
   {
-    q: 'How does the OCR work?',
-    a: 'We use Tesseract.js for receipt scanning with custom preprocessing. Typical accuracy is 99.8% on clean receipts. You can always correct entries manually.',
+    q: 'How does receipt scanning work?',
+    a: 'Premium users can snap or upload receipts. We use Tesseract.js for OCR with custom preprocessing. Typical accuracy is high on clean receipts. You can always correct entries manually.',
   },
 ];
 
 export function FAQAccordion() {
-  const [open, setOpen] = useState<number | null>(0);
+  const [open, setOpen] = useState<number | null>(null);
 
   return (
     <div className="space-y-2">

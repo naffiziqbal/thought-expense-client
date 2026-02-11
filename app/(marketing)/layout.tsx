@@ -21,6 +21,9 @@ export default function MarketingLayout({
               <span className="text-xl font-medium text-gray-900">ThoughtExpense</span>
             </Link>
             <div className="flex items-center space-x-3">
+              <Link href="/#pricing" className="hidden sm:inline text-sm font-medium text-gray-600 hover:text-teal-600 transition-colors">
+                Pricing
+              </Link>
               <Link href="/auth/login">
                 <Button variant="ghost" size="md" className="rounded-full text-gray-700 hover:bg-gray-100">
                   Login

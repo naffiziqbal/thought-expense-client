@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { MagicInputHero } from '@/components/landing/MagicInputHero';
 import { TransformationShowcase } from '@/components/landing/TransformationShowcase';
 import { SocialTrust } from '@/components/landing/SocialTrust';
+import { FAQAccordion } from '@/components/landing/FAQAccordion';
 
 export default function HomePage() {
   return (
@@ -55,8 +56,11 @@ export default function HomePage() {
             Everything you need to stay on top of spending.
           </p>
           <div className="mt-16 grid gap-8 md:grid-cols-3">
-            {/* Card 1: Receipt Snap */}
-            <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm transition-shadow hover:shadow-md">
+            {/* Card 1: Receipt Snap - Premium */}
+            <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm transition-shadow hover:shadow-md relative">
+              <span className="absolute right-4 top-4 rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-medium text-teal-700">
+                Premium
+              </span>
               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-50 text-4xl">
                 📸
               </div>
@@ -73,7 +77,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-medium text-gray-900">Spending Wisdom</h3>
               <p className="mt-3 text-gray-500">
-                Know where your money goes. Visual insights that make sense.
+                Monthly insights for everyone. Daily & weekly analysis on Premium.
               </p>
               <div className="mt-6 flex items-center justify-center">
                 <div className="h-24 w-24 rounded-full border-8 border-teal-200 border-t-teal-500" />
@@ -106,6 +110,19 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Section 04b: FAQ */}
+      <section id="faq" className="border-t border-gray-200 bg-white px-4 py-24">
+        <div className="mx-auto max-w-2xl">
+          <h2 className="text-center text-3xl font-medium tracking-tight text-gray-900">
+            Frequently asked
+          </h2>
+          <p className="mt-4 text-center text-lg text-gray-500 mb-12">
+            Quick answers about ThoughtExpense
+          </p>
+          <FAQAccordion />
+        </div>
+      </section>
+
       {/* Section 05: Pricing */}
       <section id="pricing" className="border-t border-gray-200 bg-white px-4 py-24">
         <div className="mx-auto max-w-4xl">
@@ -116,15 +133,16 @@ export default function HomePage() {
             Start free. Upgrade when you need more.
           </p>
           <div className="mt-16 grid gap-8 md:grid-cols-2">
-            {/* Basic (Free) */}
+            {/* Free */}
             <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
-              <h3 className="text-xl font-medium text-gray-900">Basic</h3>
+              <h3 className="text-xl font-medium text-gray-900">Free</h3>
               <p className="mt-1 text-gray-500">For everyone</p>
-              <p className="mt-8 text-4xl font-semibold text-gray-900">Free</p>
+              <p className="mt-8 text-4xl font-semibold text-gray-900">$0</p>
               <ul className="mt-8 space-y-4 text-gray-600">
-                <li>50 transactions / month</li>
-                <li>Text input only</li>
-                <li>1 month history</li>
+                <li>Natural language text input</li>
+                <li>3 months of expense history</li>
+                <li>Monthly spending insights</li>
+                <li>Multi-currency support</li>
               </ul>
               <Link href="/auth/signup" className="mt-10 block">
                 <Button
@@ -136,24 +154,28 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Plus (Paid) */}
+            {/* Premium */}
             <div className="rounded-3xl border-2 border-teal-500 bg-white p-8 shadow-lg relative overflow-hidden">
               <div className="absolute right-4 top-4 rounded-full bg-teal-500 px-3 py-1 text-xs font-medium text-white">
                 Best Value
               </div>
-              <h3 className="text-xl font-medium text-gray-900">Plus</h3>
+              <h3 className="text-xl font-medium text-gray-900">Premium</h3>
               <p className="mt-1 text-gray-500">For smart spenders</p>
               <p className="mt-8 text-4xl font-semibold text-gray-900">
-                $4<span className="text-lg font-normal text-gray-500">/mo</span>
+                Coming soon
               </p>
+              <p className="mt-1 text-sm text-gray-500">via Mobile App</p>
               <ul className="mt-8 space-y-4 text-gray-600">
-                <li><strong className="text-gray-900">Unlimited</strong> transactions</li>
-                <li>Text <strong className="text-gray-900">+ Receipt Scan</strong></li>
-                <li><strong className="text-gray-900">Forever</strong> history</li>
+                <li>Everything in Free, plus:</li>
+                <li><strong className="text-gray-900">Receipt scan</strong> — camera or upload</li>
+                <li><strong className="text-gray-900">Full history</strong> — lifetime access</li>
+                <li><strong className="text-gray-900">Export</strong> — CSV & PDF</li>
+                <li><strong className="text-gray-900">Daily & weekly</strong> insights</li>
+                <li><strong className="text-gray-900">Ad-free</strong> experience</li>
               </ul>
               <Link href="/auth/signup" className="mt-10 block">
                 <Button className="w-full rounded-full bg-teal-500 py-4 hover:bg-teal-400">
-                  Start Plus
+                  Start Free, Upgrade Later
                 </Button>
               </Link>
             </div>
