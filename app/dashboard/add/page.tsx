@@ -47,13 +47,16 @@ export default function AddExpensePage() {
   const { user } = useAuthStore();
   const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const [rawInput, setRawInput] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [isScanning, setIsScanning] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [receiptItems, setReceiptItems] = useState<ReceiptItem[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -86,6 +89,29 @@ export default function AddExpensePage() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!showCamera) return;
+    setCameraError(null);
+    let stream: MediaStream | null = null;
+    const startCamera = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (err: any) {
+        setCameraError(err?.message || 'Could not access camera');
+      }
+    };
+    startCamera();
+    return () => {
+      stream?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      if (videoRef.current) videoRef.current.srcObject = null;
+    };
+  }, [showCamera]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -121,7 +147,32 @@ export default function AddExpensePage() {
   };
 
   const handleScanReceipt = () => {
-    cameraInputRef.current?.click();
+    setShowCamera(true);
+  };
+
+  const handleCaptureFromCamera = () => {
+    const video = videoRef.current;
+    if (!video || !video.srcObject || video.readyState !== 4) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0);
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return;
+        const file = new File([blob], 'receipt.jpg', { type: 'image/jpeg' });
+        setShowCamera(false);
+        processImage(file);
+      },
+      'image/jpeg',
+      0.92
+    );
+  };
+
+  const handleCloseCamera = () => {
+    setShowCamera(false);
   };
 
   const handleGallery = () => {
@@ -229,14 +280,6 @@ export default function AddExpensePage() {
           <div className="flex items-center justify-between gap-3 px-4 py-3">
             {/* Hidden inputs */}
             <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleImageSelected}
-              className="hidden"
-            />
-            <input
               ref={galleryInputRef}
               type="file"
               accept="image/*"
@@ -329,6 +372,50 @@ export default function AddExpensePage() {
             </div>
           )}
         </div>
+
+        {/* Camera overlay - live preview */}
+        {showCamera && (
+          <div className="fixed inset-0 z-50 bg-black flex flex-col">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 flex flex-col">
+              <div className="flex justify-between items-center p-4 pt-safe">
+                <button
+                  onClick={handleCloseCamera}
+                  className="p-2 rounded-full bg-black/50 text-white hover:bg-black/70"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                <span className="text-white font-medium">Scan Receipt</span>
+                <div className="w-10" />
+              </div>
+              {cameraError ? (
+                <div className="flex-1 flex items-center justify-center p-4">
+                  <p className="text-white text-center">{cameraError}</p>
+                </div>
+              ) : (
+                <div className="flex-1" />
+              )}
+              <div className="p-6 pb-safe flex flex-col items-center gap-4">
+                <button
+                  onClick={handleCaptureFromCamera}
+                  disabled={!!cameraError}
+                  className="w-16 h-16 rounded-full border-4 border-white bg-white/20 backdrop-blur flex items-center justify-center shadow-lg disabled:opacity-50 active:scale-95 transition-transform"
+                >
+                  <span className="w-12 h-12 rounded-full bg-white" />
+                </button>
+                <p className="text-white/90 text-sm">Tap to capture</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 4. Floating Action Button */}
         <div className="fixed bottom-20 left-0 right-0 px-4 md:px-6 pb-safe z-40">
