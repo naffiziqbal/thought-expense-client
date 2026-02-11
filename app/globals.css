@@ -73,3 +73,15 @@ body {
   background-size: 200% auto;
   animation: gradient 8s ease infinite;
 }
+
+/* Safe area support for mobile devices */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Ensure body doesn't scroll behind bottom nav on mobile */
+@media (max-width: 768px) {
+  html {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
