@@ -20,6 +20,7 @@ import {
   getCategoryBgColor,
   cleanExpenseDescription,
 } from '@/lib/utils';
+import { subMonths } from 'date-fns';
 import { getCategoryIcon } from '@/lib/categoryIcons';
 
 export default function ExpensesPage() {
@@ -68,6 +69,12 @@ export default function ExpensesPage() {
 
   const totalPages = Math.max(1, Math.ceil(pagination.total / PAGE_SIZE));
 
+  // Free users: limit date filter to last 3 months
+  const today = new Date();
+  const threeMonthsAgo = subMonths(today, 3);
+  const minDateFree = threeMonthsAgo.toISOString().slice(0, 10);
+  const maxDateToday = today.toISOString().slice(0, 10);
+
   const fetchExpenses = async () => {
     const isPageChange = isPageChangeRef.current;
     isPageChangeRef.current = false;
@@ -76,9 +83,14 @@ export default function ExpensesPage() {
     else setIsPageChanging(true);
     try {
       const offset = (page - 1) * PAGE_SIZE;
+      // Free users: clamp startDate to 3-month cutoff
+      const startDate =
+        filters.startDate && !isPremium && filters.startDate < minDateFree
+          ? minDateFree
+          : filters.startDate;
       const response = await api.getExpenses({
         ...(filters.category && { category: filters.category }),
-        ...(filters.startDate && { startDate: filters.startDate }),
+        ...(startDate && { startDate }),
         ...(filters.endDate && { endDate: filters.endDate }),
         limit: PAGE_SIZE,
         offset,
@@ -100,6 +112,30 @@ export default function ExpensesPage() {
     if (!isAuthenticated || authLoading) return;
     fetchExpenses();
   }, [isAuthenticated, authLoading, filters, page]);
+
+  // Free users: clamp filters when panel opens with out-of-range dates
+  const prevShowFilters = useRef(false);
+  useEffect(() => {
+    if (!showFilters || isPremium) {
+      prevShowFilters.current = showFilters;
+      return;
+    }
+    if (prevShowFilters.current === showFilters) return;
+    prevShowFilters.current = showFilters;
+    setFilters((prev) => {
+      let updated = false;
+      const next = { ...prev };
+      if (prev.startDate && prev.startDate < minDateFree) {
+        next.startDate = minDateFree;
+        updated = true;
+      }
+      if (prev.endDate && prev.endDate > maxDateToday) {
+        next.endDate = maxDateToday;
+        updated = true;
+      }
+      return updated ? next : prev;
+    });
+  }, [showFilters, isPremium, minDateFree, maxDateToday]);
 
   const handleEdit = (expense: Expense) => {
     setSelectedExpense(expense);
@@ -286,10 +322,19 @@ export default function ExpensesPage() {
                   <label className="mb-1.5 block text-sm font-medium text-gray-700">From</label>
                   <input
                     type="date"
-                    value={filters.startDate}
+                    value={
+                      !isPremium && filters.startDate && filters.startDate < minDateFree
+                        ? minDateFree
+                        : filters.startDate
+                    }
                     onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+                    min={!isPremium ? minDateFree : undefined}
+                    max={maxDateToday}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                   />
+                  {!isPremium && (
+                    <p className="mt-1 text-xs text-gray-500">Free: last 3 months only</p>
+                  )}
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-700">To</label>
@@ -297,6 +342,8 @@ export default function ExpensesPage() {
                     type="date"
                     value={filters.endDate}
                     onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+                    min={!isPremium ? minDateFree : undefined}
+                    max={maxDateToday}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                   />
                 </div>
