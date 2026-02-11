@@ -3,40 +3,7 @@ import { Button } from '@/components/ui/Button';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-xl shadow-sm">
-        <div className="mx-auto max-w-[768px] px-4">
-          <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2 group">
-              <div className="bg-teal-600 text-white rounded-lg p-2 shadow-md group-hover:bg-teal-500 transition-all">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold text-gray-900">
-                ThoughtExpense
-              </span>
-            </Link>
-
-            {/* CTA Buttons */}
-            <div className="flex items-center space-x-3">
-              <Link href="/auth/login">
-                <Button variant="ghost" size="md" className="text-gray-700 hover:bg-gray-100">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/auth/signup">
-                <Button size="md" className="bg-teal-600 hover:bg-teal-500 text-white shadow-md transition-all">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+    <>
       {/* Hero Section */}
       <section className="relative px-4 py-24 overflow-hidden">
         {/* Background decorations */}
@@ -193,7 +160,7 @@ export default function HomePage() {
               </div>
               <h3 className="mb-2 text-xl font-semibold text-gray-900">Natural Input</h3>
               <p className="text-gray-600">
-                Type expenses like you think. "coffee 5", "rent 1200", "uber to airport 45". No
+                Type expenses like you think. &quot;coffee 5&quot;, &quot;rent 1200&quot;, &quot;uber to airport 45&quot;. No
                 forms, no friction.
               </p>
             </div>
@@ -340,13 +307,19 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-gray-200 bg-white px-4 py-12">
         <div className="mx-auto max-w-[768px]">
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              © 2026 ThoughtExpense. Built for humans who hate spreadsheets.
-            </p>
+          <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-center sm:gap-6">
+            <Link href="/privacy" className="text-sm text-gray-600 hover:text-teal-600">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="text-sm text-gray-600 hover:text-teal-600">
+              Terms of Service
+            </Link>
           </div>
+          <p className="mt-4 text-center text-sm text-gray-600">
+            © 2026 ThoughtExpense. Built for humans who hate spreadsheets.
+          </p>
         </div>
       </footer>
-    </div>
+    </>
   );
 }

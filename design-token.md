@@ -1,16 +1,4 @@
-Naturally. Design tokens. The unglamorous backbone of every grown-up design system. This is where we stop “vibes” and start something engineers can’t accidentally ruin.
 
-I’ll give you **production-ready tokens**, structured so they work for:
-
-* Figma Tokens
-* Style Dictionary
-* Tailwind config
-* CSS variables
-* Next.js theming
-
-No fluff. No magic colors named “sunset happiness”.
-
----
 
 ## 1. Token Philosophy (Read Once)
 
