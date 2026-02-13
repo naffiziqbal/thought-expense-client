@@ -5,7 +5,7 @@ import { useIsPremium } from '@/hooks/useIsPremium';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 
 const CheckIcon = () => (
-  <svg className="w-5 h-5 text-teal-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-5 h-5 text-token-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
   </svg>
 );
@@ -24,10 +24,10 @@ export default function PremiumPage() {
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-token-surface">
         <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-teal-600 border-r-transparent" />
-          <p className="text-gray-600">Loading...</p>
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
+          <p className="text-token-secondary">Loading...</p>
         </div>
       </div>
     );
@@ -43,8 +43,8 @@ export default function PremiumPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2l2.5 8.5H22l-5.5 4 2.5 8-7-5.5L5 22l2.5-8L2 10.5h7.5L12 2z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">ThoughtExpense Premium</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl font-bold text-token-primary">ThoughtExpense Premium</h1>
+          <p className="mt-2 text-token-secondary">
             {isPremium
               ? "You're a Premium member. Enjoy all features!"
               : 'Unlock the full power of your expense tracker'}
@@ -52,8 +52,8 @@ export default function PremiumPage() {
         </div>
 
         {/* Benefits */}
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="rounded-2xl bg-token-card p-5 shadow-sm border border-token">
+          <h2 className="text-lg font-semibold text-token-primary mb-4">
             {isPremium ? 'What you have' : 'What you get'}
           </h2>
           <ul className="space-y-4">
@@ -61,8 +61,8 @@ export default function PremiumPage() {
               <li key={b.title} className="flex items-start gap-3">
                 <CheckIcon />
                 <div>
-                  <p className="font-medium text-gray-900">{b.title}</p>
-                  <p className="text-sm text-gray-500">{b.desc}</p>
+                  <p className="font-medium text-token-primary">{b.title}</p>
+                  <p className="text-sm text-token-secondary">{b.desc}</p>
                 </div>
               </li>
             ))}
@@ -71,9 +71,9 @@ export default function PremiumPage() {
 
         {/* Upgrade CTA - only for Free users */}
         {!isPremium && (
-          <div className="rounded-2xl bg-teal-50 border border-teal-200 p-6 text-center">
-            <h3 className="font-semibold text-gray-900 mb-2">Ready to upgrade?</h3>
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="rounded-2xl bg-token-card border border-token p-6 text-center">
+            <h3 className="font-semibold text-token-primary mb-2">Ready to upgrade?</h3>
+            <p className="text-sm text-token-secondary mb-4">
               Premium will be available through the mobile app. Stay tuned for updates!
             </p>
             <button

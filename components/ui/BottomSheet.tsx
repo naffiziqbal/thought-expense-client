@@ -40,22 +40,22 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
       {/* Sheet */}
       <div
         className={cn(
-          'relative z-10 w-full max-w-[768px] rounded-t-3xl bg-white shadow-2xl',
+          'relative z-10 w-full max-w-[768px] rounded-t-3xl bg-token-card shadow-2xl border-t border-x border-token',
           'max-h-[85vh] flex flex-col',
           'animate-slide-up'
         )}
       >
         {/* Handle bar */}
         <div className="flex justify-center pt-3 pb-1">
-          <div className="h-1 w-12 rounded-full bg-gray-300" />
+          <div className="h-1 w-12 rounded-full bg-[var(--blueGray-300)]" />
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 pb-4">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-lg font-semibold text-token-primary">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-2 text-token-muted hover:bg-[var(--blueGray-100)] hover:text-token-primary"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

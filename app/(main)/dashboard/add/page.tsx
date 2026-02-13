@@ -318,10 +318,10 @@ export default function AddExpensePage() {
 
   if (authLoading || !isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-token-surface">
         <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-teal-600 border-r-transparent"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent"></div>
+          <p className="text-token-secondary">Loading...</p>
         </div>
       </div>
     );
@@ -329,15 +329,15 @@ export default function AddExpensePage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-full overflow-hidden px-3 sm:px-4 pb-28">
+      <div className="flex flex-col h-full overflow-hidden px-3 sm:px-4 pb-28 bg-token-surface">
         {/* 1. Top Header - Fixed */}
         <div className="shrink-0 pt-4 pb-4">
-          <h1 className="text-2xl font-bold text-gray-900">Quick Log</h1>
-          <p className="text-sm text-gray-500 mt-1">Type details or scan a receipt</p>
+          <h1 className="text-2xl font-bold text-token-primary">Quick Log</h1>
+          <p className="text-sm text-token-secondary mt-1">Type details or scan a receipt</p>
         </div>
 
         {/* 2. The Input Card (Smart Box) - Fixed */}
-        <div className="shrink-0 rounded-2xl bg-white shadow-md overflow-hidden">
+        <div className="shrink-0 rounded-2xl bg-token-card border border-token shadow-md overflow-hidden">
           {/* Top Half - Text Area */}
           <div className="p-4">
             <textarea
@@ -347,12 +347,12 @@ export default function AddExpensePage() {
               placeholder="Lunch 500"
               disabled={isScanning}
               rows={4}
-              className="w-full min-h-[120px] resize-none border-0 bg-transparent text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0 text-[20px] leading-relaxed disabled:opacity-60"
+              className="w-full min-h-[120px] resize-none border-0 bg-transparent text-token-primary placeholder:text-token-muted focus:outline-none focus:ring-0 text-[20px] leading-relaxed disabled:opacity-60"
             />
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-gray-200" />
+          <div className="h-px bg-[var(--border-default)]" />
 
           {/* Bottom Half - Media Bar */}
           <div className="flex items-center justify-between gap-3 px-4 py-3">
@@ -377,7 +377,7 @@ export default function AddExpensePage() {
                 <button
                   onClick={handleScanReceipt}
                   disabled={isScanning}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 disabled:opacity-60 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-token-primary text-white text-sm font-medium hover:opacity-90 disabled:opacity-60 transition-colors"
                 >
                   <span>📷</span>
                   <span>Scan Receipt</span>
@@ -385,7 +385,7 @@ export default function AddExpensePage() {
                 <button
                   onClick={handleGallery}
                   disabled={isScanning}
-                  className="p-2.5 rounded-full text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-60"
+                  className="p-2.5 rounded-full text-token-secondary hover:bg-[var(--blueGray-100)] transition-colors disabled:opacity-60"
                 >
                   <span className="text-xl">🖼️</span>
                 </button>
@@ -401,7 +401,7 @@ export default function AddExpensePage() {
             )}
             <button
               onClick={handleDateClick}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-token-secondary hover:bg-[var(--blueGray-100)] text-sm font-medium transition-colors"
             >
               <span className="whitespace-nowrap">
                 {selectedDate === new Date().toISOString().split('T')[0]
@@ -422,8 +422,8 @@ export default function AddExpensePage() {
             <div className="space-y-3 pb-4">
               {isScanning ? (
                 <>
-                  <div className="h-14 rounded-2xl bg-gray-100 animate-pulse" />
-                  <div className="h-14 rounded-2xl bg-gray-100 animate-pulse" />
+                  <div className="h-14 rounded-2xl bg-[var(--blueGray-100)] animate-pulse" />
+                  <div className="h-14 rounded-2xl bg-[var(--blueGray-100)] animate-pulse" />
                 </>
               ) : (
                 displayItems.map((item) => {
@@ -431,10 +431,10 @@ export default function AddExpensePage() {
                   return (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm shrink-0"
+                    className="flex items-center gap-4 p-4 rounded-2xl bg-token-card border border-token shadow-sm shrink-0"
                   >
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-700 shrink-0"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-token-primary shrink-0"
                       style={{ backgroundColor: getCategoryBgColor(item.category) }}
                     >
                       <CategoryIcon className="w-5 h-5 shrink-0" aria-hidden />
@@ -446,18 +446,18 @@ export default function AddExpensePage() {
                           onChange={(e) => handleEditItem(item.id, 'description', e.target.value)}
                           onBlur={() => setEditingId(null)}
                           autoFocus
-                          className="w-full text-base font-medium text-gray-900 border-b border-teal-500 focus:outline-none bg-transparent"
+                          className="w-full text-base font-medium text-token-primary border-b border-[var(--accent-primary)] focus:outline-none bg-transparent"
                         />
                       ) : (
                         <button
                           onClick={() => setEditingId(item.id)}
-                          className="w-full text-left font-medium text-gray-900 truncate block hover:text-teal-600 transition-colors"
+                          className="w-full text-left font-medium text-token-primary truncate block hover:text-token-accent transition-colors"
                         >
                           {item.description}
                         </button>
                       )}
                     </div>
-                    <span className="font-bold text-gray-900 shrink-0">-{formatCurrency(item.amount, currency)}</span>
+                    <span className="font-bold text-token-primary shrink-0">-{formatCurrency(item.amount, currency)}</span>
                   </div>
                 );
                 })
@@ -515,7 +515,7 @@ export default function AddExpensePage() {
           <button
             onClick={handleSave}
             disabled={!hasContent || isSaving}
-            className="w-full py-4 rounded-2xl bg-green-600 text-white font-semibold text-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600 transition-colors shadow-lg"
+            className="w-full py-4 rounded-2xl bg-token-accent text-white font-semibold text-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg"
           >
             {isSaving ? (
               <span className="flex items-center justify-center gap-2">

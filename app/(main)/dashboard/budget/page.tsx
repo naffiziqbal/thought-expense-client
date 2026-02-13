@@ -417,7 +417,7 @@ export default function BudgetPage() {
                       onClick={() => handleCategoryClick(b.category)}
                       className="w-full text-left flex items-center gap-3"
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-xl shadow-sm">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-token-card/80 text-xl shadow-sm">
                         {getCategoryEmoji(b.category)}
                       </span>
                       <div className="flex-1 min-w-0">
@@ -435,7 +435,7 @@ export default function BudgetPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
-                    <div className="mt-2 h-1.5 rounded-full bg-white/60 overflow-hidden">
+                    <div className="mt-2 h-1.5 rounded-full bg-token-card/60 overflow-hidden">
                       <div
                         className={`h-full rounded-full ${barColor}`}
                         style={{ width: `${Math.min(pct, 100)}%` }}

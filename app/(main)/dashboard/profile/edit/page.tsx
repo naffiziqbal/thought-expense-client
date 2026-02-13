@@ -129,10 +129,10 @@ export default function EditProfilePage() {
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-token-surface">
         <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-teal-600 border-r-transparent" />
-          <p className="text-gray-600">Loading...</p>
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
+          <p className="text-token-secondary">Loading...</p>
         </div>
       </div>
     );
@@ -140,9 +140,9 @@ export default function EditProfilePage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gray-50 pb-8">
+      <div className="min-h-screen bg-token-surface pb-8">
         {/* Island Header - Avatar Section */}
-        <div className="relative z-10 mt-4 rounded-3xl bg-white px-6 py-8 shadow-sm">
+        <div className="relative z-10 mt-4 rounded-3xl bg-token-card border border-token px-6 py-8 shadow-sm">
           <div className="flex flex-col items-center">
             {/* Hidden file input */}
             <input
@@ -187,19 +187,19 @@ export default function EditProfilePage() {
               </div>
               {/* Camera overlay */}
               <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity">
-                <div className="rounded-full bg-white/90 p-3">
+                <div className="rounded-full bg-token-card/90 p-3">
                   <CameraIcon />
                 </div>
               </div>
             </button>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-token-secondary">
               Tap to change photo
             </p>
           </div>
         </div>
 
         {/* Form Card */}
-        <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
+        <div className="mt-6 rounded-2xl bg-token-card border border-token p-6 shadow-sm">
           <form onSubmit={handleSave} className="space-y-5">
             <Input
               label="Full Name"
@@ -211,14 +211,14 @@ export default function EditProfilePage() {
             />
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Email</label>
+              <label className="mb-2 block text-sm font-medium text-token-primary">Email</label>
               <input
                 type="email"
                 value={user?.email || ''}
                 disabled
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500 cursor-not-allowed"
+                className="w-full rounded-lg border border-token bg-[var(--blueGray-100)] px-4 py-3 text-token-muted cursor-not-allowed"
               />
-              <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+              <p className="mt-1 text-xs text-token-muted">Email cannot be changed</p>
             </div>
 
             <Button

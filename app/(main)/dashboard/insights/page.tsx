@@ -21,17 +21,17 @@ function getInsightCardStyle(type: string): { bg: string; border: string; tag: s
   const lower = type.toLowerCase();
   if (lower.includes('warning') || lower.includes('attention') || lower.includes('high')) {
     return {
-      bg: 'bg-orange-50',
-      border: 'border-orange-200',
-      tag: 'bg-orange-100 text-orange-800',
-      iconColor: 'text-orange-600',
+      bg: 'bg-token-card',
+      border: 'border-orange-400/60',
+      tag: 'bg-orange-500/20 text-orange-500',
+      iconColor: 'text-orange-500',
     };
   }
   return {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    tag: 'bg-blue-100 text-blue-800',
-    iconColor: 'text-blue-600',
+    bg: 'bg-token-card',
+    border: 'border-blue-400/60',
+    tag: 'bg-blue-500/20 text-blue-500',
+    iconColor: 'text-blue-500',
   };
 }
 
@@ -160,10 +160,10 @@ export default function InsightsPage() {
 
   if (authLoading || !isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-token-surface">
         <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-teal-600 border-r-transparent" />
-          <p className="text-gray-600">Loading...</p>
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
+          <p className="text-token-secondary">Loading...</p>
         </div>
       </div>
     );
@@ -176,15 +176,15 @@ export default function InsightsPage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Spending Analysis</h1>
-              <p className="mt-1 text-sm text-gray-500">{dateRange}</p>
+              <h1 className="text-2xl font-bold text-token-primary">Spending Analysis</h1>
+              <p className="mt-1 text-sm text-token-secondary">{dateRange}</p>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleGenerateInsights}
               isLoading={isGenerating}
-              className="text-teal-600"
+              className="text-token-accent"
             >
               Refresh
             </Button>
@@ -193,7 +193,7 @@ export default function InsightsPage() {
 
         {/* B. Big Picture Card - Donut Chart */}
         {summary && summary.transactionCount > 0 && (
-          <div className="rounded-3xl bg-white p-5 shadow-sm">
+          <div className="rounded-3xl bg-token-card border border-token p-5 shadow-sm">
             <div className="flex flex-col gap-4">
               <div className="flex items-stretch gap-4">
                 {/* Donut */}
@@ -227,7 +227,7 @@ export default function InsightsPage() {
                   </ResponsiveContainer>
                   {/* Center text */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg font-bold text-gray-900">
+                    <span className="text-lg font-bold text-token-primary">
                       {summary.totalSpent >= 1000
                         ? `${(summary.totalSpent / 1000).toFixed(0)}k`
                         : Math.round(summary.totalSpent)}
@@ -261,8 +261,8 @@ export default function InsightsPage() {
                               entry.name === 'Others' ? '#9CA3AF' : getCategoryChartColor(entry.name),
                           }}
                         />
-                        <span className="truncate text-gray-700">{entry.name}</span>
-                        <span className="ml-auto shrink-0 text-gray-500">{entry.percentage}%</span>
+                        <span className="truncate text-token-primary">{entry.name}</span>
+                        <span className="ml-auto shrink-0 text-token-secondary">{entry.percentage}%</span>
                       </div>
                     );
                   })}
@@ -274,18 +274,18 @@ export default function InsightsPage() {
 
         {/* C. Top Spending Categories - Horizontal Bar List */}
         {summary && summary.transactionCount > 0 && barData.length > 0 && (
-          <div className="rounded-3xl bg-white p-5 shadow-sm">
-            <h3 className="mb-4 text-base font-semibold text-gray-900">Top Spending Categories</h3>
+          <div className="rounded-3xl bg-token-card border border-token p-5 shadow-sm">
+            <h3 className="mb-4 text-base font-semibold text-token-primary">Top Spending Categories</h3>
             <div className="space-y-4">
               {visibleBarData.map((item) => (
                 <div key={item.category} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="truncate text-sm font-medium text-gray-900">{item.category}</span>
-                    <span className="shrink-0 text-sm font-semibold text-gray-900">
+                    <span className="truncate text-sm font-medium text-token-primary">{item.category}</span>
+                    <span className="shrink-0 text-sm font-semibold text-token-primary">
                       {formatCurrency(item.amount, summary.currency)}
                     </span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--blueGray-100)]">
                     <div
                       className="h-full rounded-full transition-all"
                       style={{
@@ -310,14 +310,14 @@ export default function InsightsPage() {
 
         {/* D. Daily & Weekly Insights - Premium Locked (Free users only) */}
         {!isPremium && (
-          <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 p-6 flex flex-col items-center text-center">
-            <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-3">
-              <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="rounded-3xl border-2 border-dashed border-token bg-[var(--blueGray-50)] p-6 flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-full bg-[var(--blueGray-200)] flex items-center justify-center mb-3">
+              <svg className="w-6 h-6 text-token-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
-            <h3 className="text-base font-semibold text-gray-900 mb-1">Daily & Weekly Insights</h3>
-            <p className="text-sm text-gray-600 mb-4">Get granular spending patterns with daily and weekly AI analysis on Premium.</p>
+            <h3 className="text-base font-semibold text-token-primary mb-1">Daily & Weekly Insights</h3>
+            <p className="text-sm text-token-secondary mb-4">Get granular spending patterns with daily and weekly AI analysis on Premium.</p>
             <Link
               href="/dashboard/premium"
               className="px-5 py-2.5 rounded-xl bg-teal-600 text-white text-sm font-semibold hover:bg-teal-500 transition-colors"
@@ -328,18 +328,18 @@ export default function InsightsPage() {
         )}
 
         {/* E. AI Observations - Smart Cards */}
-        <div className="rounded-3xl bg-white p-5 shadow-sm">
-          <h3 className="mb-4 text-base font-semibold text-gray-900">AI Observations</h3>
+        <div className="rounded-3xl bg-token-card border border-token p-5 shadow-sm">
+          <h3 className="mb-4 text-base font-semibold text-token-primary">AI Observations</h3>
           {isLoading ? (
             <div className="py-12 text-center">
               <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-teal-600 border-r-transparent" />
-              <p className="text-gray-600">Loading insights...</p>
+              <p className="text-token-secondary">Loading insights...</p>
             </div>
           ) : insights.length === 0 ? (
             <div className="py-12 text-center">
               <div className="mb-4 text-5xl">💡</div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">No insights yet</h3>
-              <p className="mb-6 text-sm text-gray-600">
+              <h3 className="mb-2 text-lg font-semibold text-token-primary">No insights yet</h3>
+              <p className="mb-6 text-sm text-token-secondary">
                 Generate insights to get AI-powered analysis of your spending
               </p>
               <Button onClick={handleGenerateInsights} isLoading={isGenerating}>
@@ -381,7 +381,7 @@ export default function InsightsPage() {
                         {tag}
                       </span>
                     </div>
-                    <p className="line-clamp-3 text-sm font-medium text-gray-900">{insight.content}</p>
+                    <p className="line-clamp-3 text-sm font-medium text-token-primary">{insight.content}</p>
                   </div>
                 );
               })}
@@ -401,17 +401,17 @@ export default function InsightsPage() {
             {othersBreakdown.map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3"
+                className="flex items-center justify-between rounded-xl bg-[var(--blueGray-50)] px-4 py-3"
               >
-                <span className="font-medium text-gray-900">{item.name}</span>
-                <span className="text-sm text-gray-600">
+                <span className="font-medium text-token-primary">{item.name}</span>
+                <span className="text-sm text-token-secondary">
                   {formatCurrency(item.value, summary.currency)} ({item.percentage}%)
                 </span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-500">No other categories</p>
+          <p className="text-center text-token-muted">No other categories</p>
         )}
       </BottomSheet>
     </DashboardLayout>

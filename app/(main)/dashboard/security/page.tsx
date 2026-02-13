@@ -92,10 +92,10 @@ export default function SecurityPage() {
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-token-surface">
         <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-teal-600 border-r-transparent" />
-          <p className="text-gray-600">Loading...</p>
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
+          <p className="text-token-secondary">Loading...</p>
         </div>
       </div>
     );
@@ -103,27 +103,27 @@ export default function SecurityPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gray-50 pb-8">
+      <div className="min-h-screen bg-token-surface pb-8">
         {/* Header */}
-        <div className="relative z-10 mt-6 rounded-3xl bg-white px-6 py-8 shadow-sm">
+        <div className="relative z-10 mt-6 rounded-3xl bg-token-card border border-token px-6 py-8 shadow-sm">
           <div className="flex flex-col items-center">
             <div className="h-14 w-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-4">
               <ShieldIcon />
             </div>
-            <h1 className="text-xl font-bold text-gray-900">Security</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-xl font-bold text-token-primary">Security</h1>
+            <p className="mt-1 text-sm text-token-secondary">
               Change your password to keep your account secure
             </p>
           </div>
         </div>
 
         {/* Change Password Form */}
-        <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">Change Password</h2>
+        <div className="mt-6 rounded-2xl bg-token-card border border-token p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-token-primary mb-4">Change Password</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Current Password */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Current password</label>
+              <label className="mb-2 block text-sm font-medium text-token-primary">Current password</label>
               <div className="relative">
                 <input
                   type={showCurrent ? 'text' : 'password'}
@@ -131,15 +131,15 @@ export default function SecurityPage() {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Enter current password"
                   className={cn(
-                    'w-full rounded-lg border px-4 py-3 pr-12 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent',
-                    error ? 'border-red-300' : 'border-gray-200'
+                    'w-full rounded-lg border px-4 py-3 pr-12 text-token-primary placeholder:text-token-muted bg-token-card focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent',
+                    error ? 'border-red-300' : 'border-token'
                   )}
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowCurrent(!showCurrent)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1.5 text-token-muted hover:bg-[var(--blueGray-100)] hover:text-token-primary"
                   aria-label={showCurrent ? 'Hide password' : 'Show password'}
                 >
                   {showCurrent ? <EyeOffIcon /> : <EyeIcon />}
@@ -149,7 +149,7 @@ export default function SecurityPage() {
 
             {/* New Password */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">New password</label>
+              <label className="mb-2 block text-sm font-medium text-token-primary">New password</label>
               <div className="relative">
                 <input
                   type={showNew ? 'text' : 'password'}
@@ -157,15 +157,15 @@ export default function SecurityPage() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password (min 6 characters)"
                   className={cn(
-                    'w-full rounded-lg border px-4 py-3 pr-12 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent',
-                    error ? 'border-red-300' : 'border-gray-200'
+                    'w-full rounded-lg border px-4 py-3 pr-12 text-token-primary placeholder:text-token-muted bg-token-card focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent',
+                    error ? 'border-red-300' : 'border-token'
                   )}
                   autoComplete="new-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNew(!showNew)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1.5 text-token-muted hover:bg-[var(--blueGray-100)] hover:text-token-primary"
                   aria-label={showNew ? 'Hide password' : 'Show password'}
                 >
                   {showNew ? <EyeOffIcon /> : <EyeIcon />}
@@ -175,15 +175,15 @@ export default function SecurityPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Confirm new password</label>
+              <label className="mb-2 block text-sm font-medium text-token-primary">Confirm new password</label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
                 className={cn(
-                  'w-full rounded-lg border px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent',
-                  error ? 'border-red-300' : 'border-gray-200'
+                  'w-full rounded-lg border px-4 py-3 text-token-primary placeholder:text-token-muted bg-token-card focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent',
+                  error ? 'border-red-300' : 'border-token'
                 )}
                 autoComplete="new-password"
               />

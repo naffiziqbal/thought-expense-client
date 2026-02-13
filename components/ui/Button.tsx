@@ -13,11 +13,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
 
     const variants = {
-      primary: 'bg-teal-600 text-white hover:bg-teal-500 focus-visible:ring-teal-600 shadow-sm',
-      secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus-visible:ring-gray-500',
-      outline: 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50 focus-visible:ring-gray-500',
-      ghost: 'text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-500',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600',
+      primary: 'bg-token-accent text-white hover:opacity-90 focus-visible:ring-[var(--accent-primary)] shadow-sm',
+      secondary: 'bg-[var(--blueGray-100)] text-token-primary hover:bg-[var(--blueGray-200)] focus-visible:ring-[var(--blueGray-400)]',
+      outline: 'border-2 border-token text-token-primary hover:bg-[var(--blueGray-50)] focus-visible:ring-[var(--border-default)]',
+      ghost: 'text-token-primary hover:bg-[var(--blueGray-100)] focus-visible:ring-[var(--blueGray-300)]',
+      danger: 'bg-token-error text-white hover:opacity-90 focus-visible:ring-[var(--status-error)]',
     };
 
     const sizes = {

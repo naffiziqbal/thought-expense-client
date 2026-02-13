@@ -56,10 +56,10 @@ export default function CurrenciesPage() {
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-token-surface">
         <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-teal-600 border-r-transparent" />
-          <p className="text-gray-600">Loading...</p>
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
+          <p className="text-token-secondary">Loading...</p>
         </div>
       </div>
     );
@@ -67,23 +67,23 @@ export default function CurrenciesPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gray-50 pb-8">
+      <div className="min-h-screen bg-token-surface pb-8">
         {/* Header */}
-        <div className="relative z-10 mt-6 rounded-3xl bg-white px-6 py-8 shadow-sm">
+        <div className="relative z-10 mt-6 rounded-3xl bg-token-card border border-token px-6 py-8 shadow-sm">
           <div className="flex flex-col items-center">
             <div className="h-14 w-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 mb-4">
               <GlobeIcon />
             </div>
-            <h1 className="text-xl font-bold text-gray-900">Currency</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-xl font-bold text-token-primary">Currency</h1>
+            <p className="mt-1 text-sm text-token-secondary">
               Choose your default currency for expenses
             </p>
           </div>
         </div>
 
         {/* Currency List */}
-        <div className="mt-6 rounded-2xl bg-white shadow-sm overflow-hidden">
-          <div className="divide-y divide-gray-100">
+        <div className="mt-6 rounded-2xl bg-token-card border border-token shadow-sm overflow-hidden">
+          <div className="divide-y divide-[var(--border-default)]">
             {CURRENCIES.map((currency) => (
               <button
                 key={currency.value}
@@ -92,13 +92,13 @@ export default function CurrenciesPage() {
                 className={cn(
                   'flex w-full items-center justify-between px-4 py-4 text-left transition-colors',
                   selectedCurrency === currency.value
-                    ? 'bg-teal-50 text-teal-700'
-                    : 'hover:bg-gray-50 active:bg-gray-100'
+                    ? 'bg-token-accent/10 text-token-accent'
+                    : 'hover:bg-[var(--blueGray-50)] active:bg-[var(--blueGray-100)]'
                 )}
               >
-                <span className="font-medium text-gray-900">{currency.label}</span>
+                <span className="font-medium text-token-primary">{currency.label}</span>
                 {selectedCurrency === currency.value && (
-                  <span className="shrink-0 rounded-full bg-teal-600 p-1 text-white">
+                  <span className="shrink-0 rounded-full bg-token-accent p-1 text-white">
                     <CheckIcon />
                   </span>
                 )}

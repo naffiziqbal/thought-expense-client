@@ -40,16 +40,16 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
       {/* Modal */}
       <div
         className={cn(
-          'relative z-10 w-full max-w-md rounded-xl bg-white shadow-2xl',
+          'relative z-10 w-full max-w-md rounded-xl bg-token-card shadow-2xl border border-token',
           'animate-in fade-in zoom-in duration-200'
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+        <div className="flex items-center justify-between border-b border-token p-6">
+          <h2 className="text-xl font-semibold text-token-primary">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1 text-token-muted hover:bg-[var(--blueGray-100)] hover:text-token-primary"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -67,7 +67,7 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
 
         {/* Footer */}
         {footer && (
-          <div className="border-t border-gray-200 bg-gray-50 p-6">
+          <div className="border-t border-token bg-[var(--blueGray-50)] p-6">
             {footer}
           </div>
         )}
