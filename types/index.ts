@@ -95,6 +95,16 @@ export interface BudgetSummary {
   percentage: number;
 }
 
+export interface CategoryBudgetProgress {
+  month: number;
+  year: number;
+  category: string;
+  limit: number;
+  spent: number;
+  remaining: number;
+  percentage: number;
+}
+
 export interface UpdateExpenseRequest {
   description?: string;
   amount?: number;

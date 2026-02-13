@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
-import type { BudgetSummary } from '@/types';
+import type { BudgetSummary, CategoryBudgetProgress } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 
 const GaugeIcon = () => (
@@ -19,7 +18,6 @@ const GaugeIcon = () => (
 
 export default function BudgetPage() {
   const { isAuthenticated, isLoading } = useProtectedRoute();
-  const router = useRouter();
 
   const initialNow = new Date();
   const [month, setMonth] = useState(initialNow.getMonth() + 1);
@@ -29,6 +27,10 @@ export default function BudgetPage() {
   const [loadingBudgets, setLoadingBudgets] = useState(true);
   const [currentBudget, setCurrentBudget] = useState<BudgetSummary | null>(null);
   const [history, setHistory] = useState<BudgetSummary[]>([]);
+  const [categoryText, setCategoryText] = useState('');
+  const [parsedCategories, setParsedCategories] = useState<{ category: string; limit: number }[]>([]);
+  const [parsing, setParsing] = useState(false);
+  const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudgetProgress[]>([]);
 
   const loadBudgets = async () => {
     try {
@@ -50,9 +52,19 @@ export default function BudgetPage() {
     }
   };
 
+  const loadCategoryBudgets = async () => {
+    try {
+      const res = await api.getCurrentCategoryBudgets();
+      if (res.success) setCategoryBudgets(res.data || []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     if (!isAuthenticated || isLoading) return;
     loadBudgets();
+    loadCategoryBudgets();
   }, [isAuthenticated, isLoading]);
 
   // When current budget loads, prefill form
@@ -271,6 +283,147 @@ export default function BudgetPage() {
                       }`}
                     >
                       {underBudget ? 'Within budget' : 'Over budget'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Category budgets input */}
+        <div className="mx-4 mt-4 rounded-2xl bg-white p-6 shadow-sm space-y-3">
+          <p className="text-sm font-semibold text-gray-900">Category budgets (AI powered)</p>
+          <p className="text-xs text-gray-500">
+            Example: <span className="font-mono">Health 5000, Medical 10000, Groceries 4000</span>
+          </p>
+          <textarea
+            value={categoryText}
+            onChange={(e) => setCategoryText(e.target.value)}
+            rows={2}
+            placeholder="Type your category budgets in plain language"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+          />
+          <Button
+            type="button"
+            size="sm"
+            isLoading={parsing}
+            disabled={!categoryText.trim()}
+            onClick={async () => {
+              setParsing(true);
+              try {
+                const res = await api.parseCategoryBudgets(categoryText, month, year);
+                if (res.success && res.data?.items?.length) {
+                  setParsedCategories(res.data.items);
+                  toast.success('Parsed category budgets');
+                } else {
+                  toast.error('Could not parse any category budgets');
+                }
+              } catch (e: any) {
+                toast.error(e?.response?.data?.message || 'Failed to parse budgets');
+              } finally {
+                setParsing(false);
+              }
+            }}
+          >
+            Parse budgets
+          </Button>
+
+          {parsedCategories.length > 0 && (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                  const cleaned = parsedCategories
+                    .map((i) => ({ ...i, limit: Number(i.limit) }))
+                    .filter((i) => i.category && i.limit > 0);
+                  if (!cleaned.length) {
+                    toast.error('No valid budgets to save');
+                    return;
+                  }
+                  const res = await api.upsertCategoryBudgets({ month, year, items: cleaned });
+                  if (res.success) {
+                    toast.success('Category budgets saved');
+                    setCategoryText('');
+                    setParsedCategories([]);
+                    await loadCategoryBudgets();
+                  } else {
+                    toast.error(res.message || 'Failed to save budgets');
+                  }
+                } catch (err: any) {
+                  toast.error(err?.response?.data?.message || 'Failed to save budgets');
+                }
+              }}
+              className="mt-3 space-y-3 border-t border-gray-100 pt-3"
+            >
+              <p className="text-xs font-medium text-gray-700">Review & adjust</p>
+              <div className="space-y-2">
+                {parsedCategories.map((item, idx) => (
+                  <div key={`${item.category}-${idx}`} className="flex items-center gap-2">
+                    <input
+                      value={item.category}
+                      onChange={(e) =>
+                        setParsedCategories((prev) =>
+                          prev.map((p, i) => (i === idx ? { ...p, category: e.target.value } : p))
+                        )
+                      }
+                      className="flex-1 rounded-lg border border-gray-200 px-2 py-1 text-xs"
+                    />
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={item.limit}
+                      onChange={(e) =>
+                        setParsedCategories((prev) =>
+                          prev.map((p, i) => (i === idx ? { ...p, limit: Number(e.target.value) } : p))
+                        )
+                      }
+                      className="w-24 rounded-lg border border-gray-200 px-2 py-1 text-xs text-right"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setParsedCategories((prev) => prev.filter((_, i) => i !== idx))
+                      }
+                      className="text-xs text-gray-400 hover:text-red-500"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <Button type="submit" size="sm" className="w-full">
+                Save category budgets
+              </Button>
+            </form>
+          )}
+        </div>
+
+        {/* Current category budgets overview */}
+        {categoryBudgets.length > 0 && (
+          <div className="mx-4 mt-4 rounded-2xl bg-white p-6 shadow-sm space-y-2">
+            <p className="text-sm font-semibold text-gray-900">This month&apos;s category budgets</p>
+            <div className="space-y-2">
+              {categoryBudgets.map((b) => {
+                const under = b.spent <= b.limit;
+                return (
+                  <div
+                    key={`${b.year}-${b.month}-${b.category}`}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 px-3 py-2"
+                  >
+                    <div>
+                      <p className="text-xs font-medium text-gray-900">{b.category}</p>
+                      <p className="text-[11px] text-gray-500">
+                        {formatCurrency(b.spent)} / {formatCurrency(b.limit)} ({b.percentage}%)
+                      </p>
+                    </div>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                        under ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+                      }`}
+                    >
+                      {under ? 'Within budget' : 'Over budget'}
                     </span>
                   </div>
                 );

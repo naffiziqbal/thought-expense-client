@@ -14,6 +14,7 @@ import type {
   GenerateInsightsResponse,
   ApiError,
   BudgetSummary,
+  CategoryBudgetProgress,
 } from '@/types';
 
 class ApiClient {
@@ -217,6 +218,34 @@ class ApiClient {
 
   async deleteBudget(id: string): Promise<{ success: boolean; message: string }> {
     const response = await this.client.delete<{ success: boolean; message: string }>(`/api/budgets/${id}`);
+    return response.data;
+  }
+
+  // Category budget endpoints
+  async parseCategoryBudgets(
+    text: string,
+    month?: number,
+    year?: number
+  ): Promise<{ success: boolean; data: { items: { category: string; limit: number }[] } }> {
+    const response = await this.client.post('/api/budgets/categories/parse', {
+      text,
+      month,
+      year,
+    });
+    return response.data;
+  }
+
+  async upsertCategoryBudgets(payload: {
+    month: number;
+    year: number;
+    items: { category: string; limit: number }[];
+  }): Promise<{ success: boolean; message: string }> {
+    const response = await this.client.post('/api/budgets/categories', payload);
+    return response.data;
+  }
+
+  async getCurrentCategoryBudgets(): Promise<{ success: boolean; data: CategoryBudgetProgress[] }> {
+    const response = await this.client.get('/api/budgets/categories/current');
     return response.data;
   }
 

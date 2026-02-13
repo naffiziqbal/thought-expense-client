@@ -83,6 +83,17 @@ body {
     linear-gradient(to bottom, rgba(229, 231, 235, 0.5) 1px, transparent 1px);
 }
 
+/* Remove default number input spinners globally */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
 /* Hide scrollbar globally (scroll still works) */
 * {
   -ms-overflow-style: none;
