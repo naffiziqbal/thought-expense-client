@@ -221,17 +221,18 @@ export default function DashboardPage() {
 
         {/* C. Secondary Metrics (At-a-Glance Row) - 2 Column Grid */}
         <div className="grid grid-cols-2 gap-4">
-          {/* Transactions Card */}
+          {/* Categories Used Card */}
           <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center mb-3">
-              <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center mb-3">
+              <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h10M4 18h6" />
               </svg>
             </div>
-            <p className="text-xs font-medium text-gray-500 mb-1">Total Expenses</p>
+            <p className="text-xs font-medium text-gray-500 mb-1">Active Categories</p>
             <p className="text-2xl font-bold text-gray-900">
-              {loading ? '...' : summary?.transactionCount || 0}
+              {loading ? '...' : Object.keys(summary?.byCategory || {}).length}
             </p>
+            <p className="text-xs text-gray-500 mt-1">Unique categories you&apos;ve spent in recently</p>
           </div>
 
           {/* Budget Card */}
