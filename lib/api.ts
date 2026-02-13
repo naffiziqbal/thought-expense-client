@@ -146,8 +146,20 @@ class ApiClient {
   }
 
   // Expense endpoints
-  async parseExpenses(data: ParseExpenseRequest): Promise<ParseExpenseResponse> {
+  async parseExpenses(data: ParseExpenseRequest & { create?: boolean }): Promise<ParseExpenseResponse> {
     const response = await this.client.post<ParseExpenseResponse>('/api/expenses/parse', data);
+    return response.data;
+  }
+
+  async createExpense(data: {
+    description: string;
+    amount: number;
+    currency?: string;
+    category?: string;
+    date?: string;
+    rawInput?: string;
+  }): Promise<{ success: boolean; message: string; data: { expense: Expense } }> {
+    const response = await this.client.post('/api/expenses', data);
     return response.data;
   }
 

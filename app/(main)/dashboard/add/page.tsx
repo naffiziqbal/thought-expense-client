@@ -67,8 +67,9 @@ export default function AddExpensePage() {
   const [showCamera, setShowCamera] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [saveStage, setSaveStage] = useState<'text' | 'amounts' | 'categorizing' | null>(null);
+  const [saveStage, setSaveStage] = useState<'text' | 'amounts' | 'categorizing' | 'saving' | null>(null);
   const [receiptItems, setReceiptItems] = useState<ReceiptItem[]>([]);
+  const [itemsToSave, setItemsToSave] = useState<ReceiptItem[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -261,21 +262,48 @@ export default function AddExpensePage() {
     const t2 = setTimeout(() => setSaveStage('categorizing'), 900);
 
     try {
-      const response = await api.parseExpenses({ rawInput: toSubmit });
+      const parseRes = await api.parseExpenses({ rawInput: toSubmit, create: false });
       clearTimeout(t1);
       clearTimeout(t2);
-      if (response.success) {
+
+      if (!parseRes.success || !parseRes.data?.expenses?.length) {
         setSaveStage(null);
-        toast.success('Saved!');
-        router.push('/dashboard');
-      } else {
-        setSaveStage(null);
-        toast.error('Failed to save');
+        toast.error('Could not parse expenses');
+        return;
       }
+
+      const parsed = parseRes.data.expenses;
+      const displayItems: ReceiptItem[] = parsed.map((e, i) => ({
+        id: `save-${i}-${e.description}-${e.amount}`,
+        description: e.description,
+        amount: e.amount,
+        category: e.category,
+      }));
+      setItemsToSave(displayItems);
+      setSaveStage('saving');
+
+      for (let i = 0; i < parsed.length; i++) {
+        const exp = parsed[i];
+        await api.createExpense({
+          description: exp.description,
+          amount: exp.amount,
+          currency: exp.currency || currency,
+          category: exp.category,
+          date: exp.date || selectedDate,
+          rawInput: exp.rawInput,
+        });
+        setItemsToSave((prev) => prev.filter((_, idx) => idx !== 0));
+      }
+
+      setSaveStage(null);
+      setItemsToSave([]);
+      toast.success('Saved!');
+      router.push('/dashboard');
     } catch (error: any) {
       clearTimeout(t1);
       clearTimeout(t2);
       setSaveStage(null);
+      setItemsToSave([]);
       toast.error(error.response?.data?.message || 'Failed to save');
     } finally {
       setIsSaving(false);
@@ -283,7 +311,8 @@ export default function AddExpensePage() {
   };
 
   const hasContent = rawInput.trim().length > 0 || receiptItems.length > 0;
-  const showReceiptList = receiptItems.length > 0 || isScanning;
+  const displayItems = itemsToSave.length > 0 ? itemsToSave : receiptItems;
+  const showReceiptList = displayItems.length > 0 || isScanning;
 
   if (authLoading || !isAuthenticated) {
     return (
@@ -395,7 +424,7 @@ export default function AddExpensePage() {
                   <div className="h-14 rounded-2xl bg-gray-100 animate-pulse" />
                 </>
               ) : (
-                receiptItems.map((item) => {
+                displayItems.map((item) => {
                   const CategoryIcon = getCategoryIcon(item.category);
                   return (
                   <div
@@ -492,10 +521,11 @@ export default function AddExpensePage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                <span className="text-left">
-                  {saveStage === 'text' && 'Text received'}
-                  {saveStage === 'amounts' && 'Identifying amounts'}
-                  {saveStage === 'categorizing' && 'Categorizing expenses'}
+                <span>
+                  {saveStage === 'text' && '✓ Text received'}
+                  {saveStage === 'amounts' && '🔍 Identifying amounts'}
+                  {saveStage === 'categorizing' && '🧠 Categorizing expenses'}
+                  {saveStage === 'saving' && `💾 Saving (${itemsToSave.length} left)`}
                 </span>
               </span>
             ) : (
@@ -504,50 +534,6 @@ export default function AddExpensePage() {
           </button>
         </div>
 
-        {/* Staged feedback overlay */}
-        {isSaving && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Processing expenses</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-teal-600 text-sm font-medium">✓</span>
-                  <span className="text-gray-700">Text received</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm ${saveStage !== 'text' ? 'bg-teal-100 text-teal-600' : 'bg-gray-100 text-gray-400'}`}>
-                    {saveStage === 'amounts' ? (
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                    ) : (
-                      saveStage === 'categorizing' ? '✓' : '🔍'
-                    )}
-                  </span>
-                  <span className={saveStage !== 'text' ? 'text-gray-700' : 'text-gray-400'}>
-                    Identifying amounts
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm ${saveStage === 'categorizing' ? 'bg-teal-100 text-teal-600' : 'bg-gray-100 text-gray-400'}`}>
-                    {saveStage === 'categorizing' ? (
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                    ) : (
-                      '🧠'
-                    )}
-                  </span>
-                  <span className={saveStage === 'categorizing' ? 'text-gray-700' : 'text-gray-400'}>
-                    Categorizing expenses
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </DashboardLayout>
   );
