@@ -12,7 +12,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center">
+    <div className="min-h-screen bg-token-surface flex flex-col items-center">
       {/* Mobile/Tablet container - max tablet width */}
       <div className="w-full max-w-[768px] min-h-screen flex flex-col relative">
       {/* Bottom Navigation - Always visible (mobile-only app) */}
