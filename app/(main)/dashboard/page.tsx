@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useIsPremium } from '@/hooks/useIsPremium';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
-import { formatCurrency, formatDate, getCategoryBgColor } from '@/lib/utils';
+import { formatCurrency, formatDate, getCategoryBgColor, getCategoryChartColor } from '@/lib/utils';
 import { getCategoryIcon } from '@/lib/categoryIcons';
 import Link from 'next/link';
 import type { CategorySummary, Expense, Insight, BudgetSummary } from '@/types';
@@ -362,11 +362,11 @@ export default function DashboardPage() {
                         className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0"
                         style={{ backgroundColor: getCategoryBgColor(expense.category) }}
                       >
-                        <CategoryIcon className="w-6 h-6 text-token-primary" aria-hidden />
+                        <CategoryIcon className="w-6 h-6" style={{ color: getCategoryChartColor(expense.category) }} aria-hidden />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-token-primary truncate">{expense.description}</p>
-                        <p className="text-sm text-token-muted">{formatDate(expense.date)}</p>
+                        <p className="text-sm text-token-secondary">{formatDate(expense.date)}</p>
                       </div>
                       <p className="font-bold text-token-primary shrink-0">-{formatCurrency(expense.amount, expense.currency)}</p>
                     </Link>

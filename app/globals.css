@@ -40,7 +40,10 @@
   --status-success: var(--green-600);
   --status-warning: var(--orange-600);
   --status-error: var(--red-600);
-  
+
+  --background-tag: var(--blueGray-100);
+  --text-tag: var(--blueGray-700);
+
   /* Legacy support */
   --background: #ffffff;
   --foreground: var(--blueGray-900);
@@ -49,6 +52,8 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     /* Semantic Tokens - Dark Theme (system preference) */
+    --background-tag: var(--blueGray-600);
+    --text-tag: var(--blueGray-100);
     --background-primary: var(--blueGray-900);
     --background-surface: var(--blueGray-800);
     --background-card: var(--blueGray-700);
@@ -64,6 +69,8 @@
 }
 
 [data-theme="dark"] {
+  --background-tag: var(--blueGray-600);
+  --text-tag: var(--blueGray-100);
   --background-primary: var(--blueGray-900);
   --background-surface: var(--blueGray-800);
   --background-card: var(--blueGray-700);

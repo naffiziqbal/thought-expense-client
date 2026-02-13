@@ -8,6 +8,7 @@ import { getCategoryIcon } from '@/lib/categoryIcons';
 import {
   formatCurrency,
   getCategoryBgColor,
+  getCategoryChartColor,
   getCategoryFromKeyword,
   parseExpenseInputLocally
 } from '@/lib/utils';
@@ -434,10 +435,10 @@ export default function AddExpensePage() {
                     className="flex items-center gap-4 p-4 rounded-2xl bg-token-card border border-token shadow-sm shrink-0"
                   >
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-token-primary shrink-0"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                       style={{ backgroundColor: getCategoryBgColor(item.category) }}
                     >
-                      <CategoryIcon className="w-5 h-5 shrink-0" aria-hidden />
+                      <CategoryIcon className="w-5 h-5 shrink-0" style={{ color: getCategoryChartColor(item.category) }} aria-hidden />
                     </div>
                     <div className="flex-1 min-w-0">
                       {editingId === item.id ? (

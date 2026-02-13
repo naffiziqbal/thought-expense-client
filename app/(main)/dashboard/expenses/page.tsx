@@ -18,6 +18,7 @@ import {
   formatDate,
   getCategoryColor,
   getCategoryBgColor,
+  getCategoryChartColor,
   cleanExpenseDescription,
 } from '@/lib/utils';
 import { subMonths } from 'date-fns';
@@ -407,7 +408,7 @@ export default function ExpensesPage() {
                     className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl shrink-0 flex items-center justify-center"
                     style={{ backgroundColor: getCategoryBgColor(expense.category) }}
                   >
-                    <CategoryIcon className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 text-token-primary" aria-hidden />
+                    <CategoryIcon className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" style={{ color: getCategoryChartColor(expense.category) }} aria-hidden />
                   </div>
 
                   {/* Middle: Title & Subtitle */}
@@ -415,7 +416,7 @@ export default function ExpensesPage() {
                     <p className="font-bold text-token-primary truncate">
                       {cleanExpenseDescription(expense.description)}
                     </p>
-                    <p className="text-sm text-token-muted mt-0.5">
+                    <p className="text-sm text-token-secondary mt-0.5">
                       {formatDate(expense.date)}
                     </p>
                   </div>
@@ -425,7 +426,7 @@ export default function ExpensesPage() {
                     <p className="font-bold text-token-primary text-sm sm:text-base">
                       -{formatCurrency(expense.amount, expense.currency)}
                     </p>
-                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--blueGray-100)] text-token-secondary">
+                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--background-tag)] text-[var(--text-tag)]">
                       {expense.category}
                     </span>
                   </div>
