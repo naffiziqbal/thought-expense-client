@@ -84,6 +84,16 @@ export interface ExpensesResponse {
   cached: boolean;
 }
 
+// Budget Types
+export interface BudgetSummary {
+  month: number;
+  year: number;
+  total_limit: number;
+  total_spent: number;
+  remaining: number;
+  percentage: number;
+}
+
 export interface UpdateExpenseRequest {
   description?: string;
   amount?: number;

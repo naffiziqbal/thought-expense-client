@@ -13,6 +13,7 @@ import type {
   InsightsResponse,
   GenerateInsightsResponse,
   ApiError,
+  BudgetSummary,
 } from '@/types';
 
 class ApiClient {
@@ -193,6 +194,17 @@ class ApiClient {
       params: { format, from, to },
       responseType: 'blob',
     });
+    return response.data;
+  }
+
+  // Budget endpoints
+  async setBudget(payload: { month: number; year: number; total_limit: number }): Promise<{ success: boolean; message: string }> {
+    const response = await this.client.post<{ success: boolean; message: string }>('/api/budgets', payload);
+    return response.data;
+  }
+
+  async getCurrentBudget(): Promise<{ success: boolean; data: BudgetSummary | null }> {
+    const response = await this.client.get<{ success: boolean; data: BudgetSummary | null }>('/api/budgets/current');
     return response.data;
   }
 

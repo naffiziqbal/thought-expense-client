@@ -9,7 +9,7 @@ import { api } from '@/lib/api';
 import { formatCurrency, formatDate, getCategoryColor, getCategoryBgColor } from '@/lib/utils';
 import { getCategoryIcon } from '@/lib/categoryIcons';
 import Link from 'next/link';
-import type { CategorySummary, Expense, Insight } from '@/types';
+import type { CategorySummary, Expense, Insight, BudgetSummary } from '@/types';
 import { AdPlaceholder } from '@/components/landing/AdPlaceholder';
 
 export default function DashboardPage() {
@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<CategorySummary | null>(null);
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
   const [insights, setInsights] = useState<Insight[]>([]);
+  const [budget, setBudget] = useState<BudgetSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -30,10 +31,11 @@ export default function DashboardPage() {
 
     const fetchData = async () => {
       try {
-        const [summaryRes, expensesRes, insightsRes] = await Promise.all([
+        const [summaryRes, expensesRes, insightsRes, budgetRes] = await Promise.all([
           api.getCategorySummary(),
           api.getExpenses({ limit: 5 }),
           api.getInsights({ limit: 10 }),
+          api.getCurrentBudget(),
         ]);
 
         if (summaryRes.success) {
@@ -46,6 +48,10 @@ export default function DashboardPage() {
 
         if (insightsRes.success) {
           setInsights(insightsRes.data.insights);
+        }
+
+        if (budgetRes.success) {
+          setBudget(budgetRes.data);
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
@@ -228,17 +234,57 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Top Category Card */}
+          {/* Budget Card */}
           <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center mb-3">
-              <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center mb-3">
+              <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-xs font-medium text-gray-500 mb-1">Top Category</p>
-            <p className="text-2xl font-bold text-gray-900 truncate">
-              {loading ? '...' : summary?.topCategories?.[0] || 'N/A'}
-            </p>
+            <p className="text-xs font-medium text-gray-500 mb-2">Monthly Budget</p>
+            {budget ? (
+              <>
+                <div className="flex items-baseline justify-between mb-2">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {formatCurrency(budget.total_spent, summary?.currency || user?.currency || 'USD')} spent
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    of {formatCurrency(budget.total_limit, summary?.currency || user?.currency || 'USD')}
+                  </p>
+                </div>
+                <div className="w-full h-2.5 rounded-full bg-gray-100 overflow-hidden mb-1">
+                  <div
+                    className={`h-full rounded-full ${
+                      budget.percentage < 70
+                        ? 'bg-emerald-500'
+                        : budget.percentage < 90
+                        ? 'bg-amber-500'
+                        : 'bg-red-500'
+                    }`}
+                    style={{ width: `${Math.min(budget.percentage, 120)}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-xs text-gray-500">
+                    {budget.percentage.toFixed(0)}% used
+                  </span>
+                  <span className={`text-xs font-medium ${budget.remaining >= 0 ? 'text-gray-700' : 'text-red-600'}`}>
+                    {budget.remaining >= 0 ? 'Remaining' : 'Over'}{' '}
+                    {formatCurrency(Math.abs(budget.remaining), summary?.currency || user?.currency || 'USD')}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">No budget set for this month.</p>
+                <Link
+                  href="/dashboard/budget"
+                  className="inline-flex items-center text-xs font-semibold text-teal-600 hover:text-teal-700"
+                >
+                  Set monthly budget
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
