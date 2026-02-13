@@ -53,7 +53,6 @@ export const maybeNotifyBudgetStatus = async (params: {
           ? `You spent ${spentLabel} of your ${limitLabel} limit.`
           : `You have already spent ${spentLabel} of your ${limitLabel} limit.`,
       tag: `budget-${year}-${month}`,
-      renotify: false,
     }
   );
 
