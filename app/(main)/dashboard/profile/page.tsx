@@ -198,7 +198,7 @@ export default function ProfilePage() {
       title: 'Currencies',
       subtitle: `${user?.currency || 'USD'} and more`,
       href: '/dashboard/currencies',
-      comingSoon: true,
+      comingSoon: false,
     },
   ];
 

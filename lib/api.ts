@@ -101,7 +101,7 @@ class ApiClient {
     return response.data;
   }
 
-  async updateProfile(data: { name?: string | null }) {
+  async updateProfile(data: { name?: string | null; currency?: string }) {
     const response = await this.client.patch('/api/auth/profile', data);
     return response.data;
   }
