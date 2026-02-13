@@ -86,6 +86,7 @@ export interface ExpensesResponse {
 
 // Budget Types
 export interface BudgetSummary {
+  id?: string;
   month: number;
   year: number;
   total_limit: number;

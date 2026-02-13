@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
@@ -14,12 +13,6 @@ import { api } from '@/lib/api';
 import { getImageUrl } from '@/lib/utils';
 import type { User } from '@/types';
 import toast from 'react-hot-toast';
-
-const BackIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-  </svg>
-);
 
 const CameraIcon = () => (
   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,17 +141,6 @@ export default function EditProfilePage() {
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-gray-50 pb-8">
-        {/* Back Button */}
-        <div className="px-4 pt-4">
-          <Link
-            href="/dashboard/profile"
-            className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
-          >
-            <BackIcon />
-            <span className="text-base font-medium">Back</span>
-          </Link>
-        </div>
-
         {/* Island Header - Avatar Section */}
         <div className="relative z-10 mx-4 mt-4 rounded-3xl bg-white px-6 py-8 shadow-sm">
           <div className="flex flex-col items-center">

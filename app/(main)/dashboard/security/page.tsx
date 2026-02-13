@@ -1,19 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
-
-const BackIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-  </svg>
-);
 
 const ShieldIcon = () => (
   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,19 +104,8 @@ export default function SecurityPage() {
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-gray-50 pb-8">
-        {/* Back Button */}
-        <div className="px-4 pt-4">
-          <Link
-            href="/dashboard/profile"
-            className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
-          >
-            <BackIcon />
-            <span className="text-base font-medium">Back</span>
-          </Link>
-        </div>
-
         {/* Header */}
-        <div className="relative z-10 mx-4 mt-4 rounded-3xl bg-white px-6 py-8 shadow-sm">
+        <div className="relative z-10 mx-4 mt-6 rounded-3xl bg-white px-6 py-8 shadow-sm">
           <div className="flex flex-col items-center">
             <div className="h-14 w-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-4">
               <ShieldIcon />

@@ -265,7 +265,7 @@ export default function DashboardPage() {
                     style={{ width: `${Math.min(budget.percentage, 120)}%` }}
                   />
                 </div>
-                <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center justify-between mt-1 mb-2">
                   <span className="text-xs text-gray-500">
                     {budget.percentage.toFixed(0)}% used
                   </span>
@@ -274,6 +274,12 @@ export default function DashboardPage() {
                     {formatCurrency(Math.abs(budget.remaining), summary?.currency || user?.currency || 'USD')}
                   </span>
                 </div>
+                <Link
+                  href="/dashboard/budget"
+                  className="inline-flex items-center text-xs font-semibold text-teal-600 hover:text-teal-700"
+                >
+                  View budget details
+                </Link>
               </>
             ) : (
               <div className="space-y-2">

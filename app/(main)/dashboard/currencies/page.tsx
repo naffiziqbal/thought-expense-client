@@ -12,12 +12,6 @@ import { CURRENCIES } from '@/lib/currencies';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
-const BackIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-  </svg>
-);
-
 const GlobeIcon = () => (
   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0h.5a2.5 2.5 0 002.5-2.5V3.935M12 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -74,19 +68,8 @@ export default function CurrenciesPage() {
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-gray-50 pb-8">
-        {/* Back Button */}
-        <div className="px-4 pt-4">
-          <Link
-            href="/dashboard/profile"
-            className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
-          >
-            <BackIcon />
-            <span className="text-base font-medium">Back</span>
-          </Link>
-        </div>
-
         {/* Header */}
-        <div className="relative z-10 mx-4 mt-4 rounded-3xl bg-white px-6 py-8 shadow-sm">
+        <div className="relative z-10 mx-4 mt-6 rounded-3xl bg-white px-6 py-8 shadow-sm">
           <div className="flex flex-col items-center">
             <div className="h-14 w-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 mb-4">
               <GlobeIcon />

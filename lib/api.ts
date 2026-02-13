@@ -208,6 +208,18 @@ class ApiClient {
     return response.data;
   }
 
+  async getBudgetHistory(limit: number = 6): Promise<{ success: boolean; data: BudgetSummary[] }> {
+    const response = await this.client.get<{ success: boolean; data: BudgetSummary[] }>('/api/budgets/history', {
+      params: { limit },
+    });
+    return response.data;
+  }
+
+  async deleteBudget(id: string): Promise<{ success: boolean; message: string }> {
+    const response = await this.client.delete<{ success: boolean; message: string }>(`/api/budgets/${id}`);
+    return response.data;
+  }
+
   async getCategorySummary(filters?: {
     startDate?: string;
     endDate?: string;
