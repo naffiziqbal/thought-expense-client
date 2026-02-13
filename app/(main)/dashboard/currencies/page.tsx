@@ -48,8 +48,8 @@ export default function CurrenciesPage() {
       const res = await api.updateProfile({ currency: selectedCurrency });
       if (res.success && res.data?.user) {
         setUser({ ...user, ...res.data.user });
-        toast.success('Currency updated');
-        router.push('/dashboard/profile');
+        toast.success('Currency updated — all amounts will now display in ' + selectedCurrency);
+        router.push('/dashboard');
       } else {
         toast.error('Failed to update currency. Please try again.');
       }
