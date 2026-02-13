@@ -1,6 +1,7 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { api } from '@/lib/api';
 import { getCategoryIcon } from '@/lib/categoryIcons';
@@ -298,6 +299,7 @@ export default function AddExpensePage() {
       setSaveStage(null);
       setItemsToSave([]);
       toast.success('Saved!');
+      window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
       router.push('/dashboard');
     } catch (error: any) {
       clearTimeout(t1);

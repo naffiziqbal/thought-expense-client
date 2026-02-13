@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
 import { useIsPremium } from '@/hooks/useIsPremium';
@@ -12,6 +13,17 @@ import Link from 'next/link';
 import type { CategorySummary, Expense, Insight, BudgetSummary } from '@/types';
 import { AdPlaceholder } from '@/components/landing/AdPlaceholder';
 import { maybeNotifyBudgetStatus } from '@/lib/notifications';
+import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
+
+function getCurrentMonthRange() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+  return {
+    startDate: start.toISOString().slice(0, 10),
+    endDate: end.toISOString().slice(0, 10),
+  };
+}
 
 /** SVG Donut chart: grey track, teal fill for percentage used */
 function DonutChart({ percentage, size = 96 }: { percentage: number; size?: number }) {
@@ -64,6 +76,7 @@ function DonutChart({ percentage, size = 96 }: { percentage: number; size?: numb
 }
 
 export default function DashboardPage() {
+  const pathname = usePathname();
   const { isAuthenticated, isLoading } = useProtectedRoute();
   const { user } = useAuthStore();
   const isPremium = useIsPremium();
@@ -77,31 +90,55 @@ export default function DashboardPage() {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (!isAuthenticated || isLoading) return;
 
-    const fetchData = async () => {
-      try {
-        const [summaryRes, expensesRes, insightsRes, budgetRes] = await Promise.all([
-          api.getCategorySummary(),
-          api.getExpenses({ limit: 5 }),
-          api.getInsights({ limit: 10 }),
-          api.getCurrentBudget(),
-        ]);
+    const { startDate, endDate } = getCurrentMonthRange();
+    setLoading(true);
+    try {
+      const [summaryRes, expensesRes, insightsRes, budgetRes] = await Promise.all([
+        api.getCategorySummary({ startDate, endDate }),
+        api.getExpenses({ limit: 5, startDate, endDate }),
+        api.getInsights({ limit: 10 }),
+        api.getCurrentBudget(),
+      ]);
 
-        if (summaryRes.success) setSummary(summaryRes.data);
-        if (expensesRes.success) setRecentExpenses(expensesRes.data.expenses);
-        if (insightsRes.success) setInsights(insightsRes.data.insights);
-        if (budgetRes.success) setBudget(budgetRes.data);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setLoading(false);
+      if (summaryRes.success) setSummary(summaryRes.data);
+      if (expensesRes.success) setRecentExpenses(expensesRes.data.expenses);
+      if (insightsRes.success) setInsights(insightsRes.data.insights);
+      if (budgetRes.success) setBudget(budgetRes.data);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated, isLoading]);
+
+  // Fetch when on dashboard (mount + navigation)
+  useEffect(() => {
+    if (!isAuthenticated || isLoading || pathname !== '/dashboard') return;
+    fetchData();
+  }, [isAuthenticated, isLoading, pathname, fetchData]);
+
+  // Refetch when tab becomes visible (user returns to app)
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && isAuthenticated && pathname === '/dashboard') {
+        fetchData();
       }
     };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [isAuthenticated, pathname, fetchData]);
 
-    fetchData();
-  }, [isAuthenticated, isLoading]);
+  // Refetch when expense is added/edited/deleted (from add or expenses pages)
+  useEffect(() => {
+    const onRefresh = () => {
+      if (isAuthenticated) fetchData();
+    };
+    window.addEventListener(DASHBOARD_REFRESH_EVENT, onRefresh);
+    return () => window.removeEventListener(DASHBOARD_REFRESH_EVENT, onRefresh);
+  }, [isAuthenticated, fetchData]);
 
   const fetchInsights = async () => {
     setInsightsLoading(true);

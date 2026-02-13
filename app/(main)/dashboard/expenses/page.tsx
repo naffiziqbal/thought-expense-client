@@ -22,6 +22,7 @@ import {
 } from '@/lib/utils';
 import { subMonths } from 'date-fns';
 import { getCategoryIcon } from '@/lib/categoryIcons';
+import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
 
 export default function ExpensesPage() {
   const { isAuthenticated, isLoading: authLoading } = useProtectedRoute();
@@ -163,6 +164,7 @@ export default function ExpensesPage() {
         toast.success('Expense updated successfully');
         setIsEditModalOpen(false);
         fetchExpenses();
+        window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
       }
     } catch (error) {
       toast.error('Failed to update expense');
@@ -183,6 +185,7 @@ export default function ExpensesPage() {
         toast.success('Expense deleted successfully');
         setIsDeleteModalOpen(false);
         fetchExpenses();
+        window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
       }
     } catch (error) {
       toast.error('Failed to delete expense');
