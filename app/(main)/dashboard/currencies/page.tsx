@@ -69,7 +69,7 @@ export default function CurrenciesPage() {
     <DashboardLayout>
       <div className="min-h-screen bg-gray-50 pb-8">
         {/* Header */}
-        <div className="relative z-10 mx-4 mt-6 rounded-3xl bg-white px-6 py-8 shadow-sm">
+        <div className="relative z-10 mt-6 rounded-3xl bg-white px-6 py-8 shadow-sm">
           <div className="flex flex-col items-center">
             <div className="h-14 w-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 mb-4">
               <GlobeIcon />
@@ -82,7 +82,7 @@ export default function CurrenciesPage() {
         </div>
 
         {/* Currency List */}
-        <div className="mx-4 mt-6 rounded-2xl bg-white shadow-sm overflow-hidden">
+        <div className="mt-6 rounded-2xl bg-white shadow-sm overflow-hidden">
           <div className="divide-y divide-gray-100">
             {CURRENCIES.map((currency) => (
               <button
@@ -108,7 +108,7 @@ export default function CurrenciesPage() {
         </div>
 
         {/* Save Button */}
-        <div className="mx-4 mt-6">
+        <div className="mt-6">
           <Button
             type="button"
             onClick={handleSave}

@@ -144,7 +144,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content - Mobile/Tablet only */}
       <main
         className={cn(
-          'w-full max-w-[768px] px-4 pt-6 pb-24',
+          'w-full max-w-[768px] px-2.5 sm:px-4 pt-6 pb-24',
           (pathname === '/dashboard/add' || pathname === '/dashboard/expenses') && 'h-screen overflow-hidden flex flex-col'
         )}
       >

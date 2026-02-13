@@ -233,7 +233,7 @@ export default function BudgetPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-token-surface pb-8 px-4 md:px-6">
+      <div className="min-h-screen bg-token-surface pb-8">
         {/* Zone A: Header */}
         <div className="pt-6 pb-4">
           <h1 className="text-2xl font-bold text-token-primary tracking-tight">Monthly Budget</h1>
@@ -249,7 +249,7 @@ export default function BudgetPage() {
         </div>
 
         {/* Zone B: Scoreboard (Hero Card) */}
-        <div className="rounded-3xl bg-token-card p-6 shadow-sm">
+        <div className="rounded-3xl bg-token-card p-4 sm:p-6 shadow-sm">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-token-muted mb-1">Safe to Spend</p>
@@ -304,9 +304,9 @@ export default function BudgetPage() {
         </div>
 
         {/* Zone C: Magic Wand (AI Setup) */}
-        <div className="mt-6 rounded-3xl bg-token-card p-4 shadow-sm">
-          <div className="flex gap-3 items-center">
-            <div className="flex-1 flex items-center gap-2 h-11 rounded-full border border-token bg-[var(--blueGray-50)] px-4 focus-within:border-[var(--accent-primary)] focus-within:bg-teal-50/30 focus-within:ring-2 focus-within:ring-[var(--accent-primary)]/20 transition-all">
+        <div className="mt-6 rounded-3xl bg-token-card p-3 sm:p-4 shadow-sm">
+          <div className="flex gap-2 sm:gap-3 items-center">
+            <div className="flex-1 flex items-center gap-2 h-11 rounded-full border border-token bg-[var(--blueGray-50)] px-3 sm:px-4 focus-within:border-[var(--accent-primary)] focus-within:bg-teal-50/30 focus-within:ring-2 focus-within:ring-[var(--accent-primary)]/20 transition-all">
               <svg className="h-5 w-5 shrink-0 text-token-accent" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.916 1.916l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.916 1.916l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.916-1.916l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.916-1.916l.258-1.036A.75.75 0 0118 1.5zM3 13.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.916 1.916l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.916 1.916l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.916-1.916l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.916-1.916l.258-1.036A.75.75 0 013 13.5z" clipRule="evenodd" />
             </svg>
@@ -332,7 +332,7 @@ export default function BudgetPage() {
           </div>
 
           {parsedCategories.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-token space-y-3">
+            <div className="mt-3 pt-3 sm:pt-4 border-t border-token space-y-2 sm:space-y-3">
               <p className="text-xs font-medium text-token-secondary">Review & save</p>
               <div className="flex items-center justify-between gap-2 rounded-xl bg-teal-50 px-3 py-2">
                 <span className="text-xs text-[var(--blueGray-800)]">
@@ -399,7 +399,7 @@ export default function BudgetPage() {
 
         {/* Zone D: Breakdown (Category List) */}
         {categoryBudgets.length > 0 && (
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
             <h2 className="text-base font-semibold text-token-primary">Breakdown</h2>
             <div className="space-y-3">
               {categoryBudgets.map((b) => {
@@ -410,7 +410,7 @@ export default function BudgetPage() {
                 return (
                   <div
                     key={`${b.year}-${b.month}-${b.category}`}
-                    className={`rounded-3xl bg-token-card p-4 shadow-sm ${getProgressBgColor(pct)} border border-transparent`}
+                    className={`rounded-3xl bg-token-card p-3 sm:p-4 shadow-sm ${getProgressBgColor(pct)} border border-transparent`}
                   >
                     <button
                       type="button"
@@ -474,7 +474,7 @@ export default function BudgetPage() {
 
         {/* Past budgets - compact */}
         {history.length > 0 && (
-          <div className="mt-8 rounded-3xl bg-token-card p-6 shadow-sm">
+          <div className="mt-8 rounded-3xl bg-token-card p-4 sm:p-6 shadow-sm">
             <h2 className="text-base font-semibold text-token-primary mb-3">Past months</h2>
             <div className="space-y-2">
               {history.slice(0, 6).map((b) => {

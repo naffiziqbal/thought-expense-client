@@ -142,7 +142,7 @@ export default function EditProfilePage() {
     <DashboardLayout>
       <div className="min-h-screen bg-gray-50 pb-8">
         {/* Island Header - Avatar Section */}
-        <div className="relative z-10 mx-4 mt-4 rounded-3xl bg-white px-6 py-8 shadow-sm">
+        <div className="relative z-10 mt-4 rounded-3xl bg-white px-6 py-8 shadow-sm">
           <div className="flex flex-col items-center">
             {/* Hidden file input */}
             <input
@@ -199,7 +199,7 @@ export default function EditProfilePage() {
         </div>
 
         {/* Form Card */}
-        <div className="mx-4 mt-6 rounded-2xl bg-white p-6 shadow-sm">
+        <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
           <form onSubmit={handleSave} className="space-y-5">
             <Input
               label="Full Name"

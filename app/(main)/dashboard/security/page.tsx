@@ -105,7 +105,7 @@ export default function SecurityPage() {
     <DashboardLayout>
       <div className="min-h-screen bg-gray-50 pb-8">
         {/* Header */}
-        <div className="relative z-10 mx-4 mt-6 rounded-3xl bg-white px-6 py-8 shadow-sm">
+        <div className="relative z-10 mt-6 rounded-3xl bg-white px-6 py-8 shadow-sm">
           <div className="flex flex-col items-center">
             <div className="h-14 w-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-4">
               <ShieldIcon />
@@ -118,7 +118,7 @@ export default function SecurityPage() {
         </div>
 
         {/* Change Password Form */}
-        <div className="mx-4 mt-6 rounded-2xl bg-white p-6 shadow-sm">
+        <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="text-base font-semibold text-gray-900 mb-4">Change Password</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Current Password */}

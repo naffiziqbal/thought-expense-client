@@ -327,7 +327,7 @@ export default function AddExpensePage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-full overflow-hidden px-4 pb-28">
+      <div className="flex flex-col h-full overflow-hidden px-3 sm:px-4 pb-28">
         {/* 1. Top Header - Fixed */}
         <div className="shrink-0 pt-4 pb-4">
           <h1 className="text-2xl font-bold text-gray-900">Quick Log</h1>

@@ -14,7 +14,7 @@ import { AdPlaceholder } from '@/components/landing/AdPlaceholder';
 import { maybeNotifyBudgetStatus } from '@/lib/notifications';
 
 /** SVG Donut chart: grey track, teal fill for percentage used */
-function DonutChart({ percentage, size = 120 }: { percentage: number; size?: number }) {
+function DonutChart({ percentage, size = 96 }: { percentage: number; size?: number }) {
   const r = (size - 12) / 2;
   const cx = size / 2;
   const cy = size / 2;
@@ -164,8 +164,8 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-token-surface pb-32">
-        <div className="space-y-6">
+      <div className="min-h-screen bg-token-surface pb-24">
+        <div className="space-y-4 sm:space-y-6">
           {/* Zone A: Personal Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -238,34 +238,33 @@ export default function DashboardPage() {
           )}
 
           {/* Zone B: Hero (Visual Summary) - White Card */}
-          <div className="rounded-[24px] bg-token-card border border-token p-6 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
-            <div className="flex items-center justify-between gap-6">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 mb-1">
+          <div className="rounded-[24px] bg-token-card border border-token p-3 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+            <div className="flex items-center justify-between gap-3 sm:gap-6">
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
                   <span className="text-xs font-bold uppercase tracking-wider text-token-muted">Total Spent</span>
-                  {/* Trend badge - placeholder; can wire real % change later */}
-                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-red-100 text-red-700">
+                  <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold bg-red-100 text-red-700">
                     +0%
                   </span>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-extrabold text-token-primary tracking-tight">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-token-primary tracking-tight truncate">
                   {loading ? '...' : formatCurrency(summary?.totalSpent ?? 0, currency)}
                 </h2>
-                <p className="text-sm font-medium text-token-secondary mt-2">
+                <p className="text-xs sm:text-sm font-medium text-token-secondary mt-1.5 sm:mt-2">
                   {summary?.transactionCount ?? 0} transactions
                 </p>
               </div>
-              <DonutChart percentage={budgetPct} size={120} />
+              <DonutChart percentage={budgetPct} size={96} />
             </div>
           </div>
 
           {/* Zone C: Context Grid */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4">
             {/* Card 1: Safe to Spend */}
-            <Link href="/dashboard/budget" className="block">
-              <div className="rounded-2xl bg-token-card border border-token p-5 shadow-sm h-[140px] flex flex-col justify-between hover:border-[var(--accent-primary)]/30 transition-colors">
-                <p className="text-xs font-bold uppercase tracking-wider text-token-muted">Safe to Spend</p>
-                <p className="text-xl font-extrabold text-token-primary">
+            <Link href="/dashboard/budget" className="block min-w-0">
+              <div className="rounded-2xl bg-token-card border border-token p-2.5 sm:p-5 shadow-sm h-[130px] sm:h-[140px] flex flex-col justify-between hover:border-[var(--accent-primary)]/30 transition-colors">
+                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-token-muted">Safe to Spend</p>
+                <p className="text-base sm:text-xl font-extrabold text-token-primary truncate" title={budget ? formatCurrency(Math.max(0, budget.remaining), currency) : undefined}>
                   {budget ? formatCurrency(Math.max(0, budget.remaining), currency) : '—'}
                 </p>
                 <div className="space-y-1">
@@ -281,11 +280,11 @@ export default function DashboardPage() {
             </Link>
 
             {/* Card 2: Top Category */}
-            <div className="rounded-2xl bg-token-card border border-token p-5 shadow-sm h-[140px] flex flex-col justify-between">
-              <p className="text-xs font-bold uppercase tracking-wider text-token-muted">Top Category</p>
-              <div className="flex items-center gap-3">
+            <div className="rounded-2xl bg-token-card border border-token p-2.5 sm:p-5 shadow-sm h-[130px] sm:h-[140px] flex flex-col justify-between min-w-0">
+              <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-token-muted">Top Category</p>
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0"
                   style={{ backgroundColor: topCategory ? getCategoryBgColor(topCategory) : 'var(--blueGray-100)' }}
                 >
                   {topCategory ? (
@@ -317,13 +316,13 @@ export default function DashboardPage() {
             </div>
 
             {recentExpenses.length > 0 ? (
-              <div className="rounded-2xl bg-token-card border border-token divide-y divide-[var(--border-default)] overflow-hidden shadow-sm">
+              <div className="rounded-2xl bg-token-card border border-token divide-y divide-[var(--border-default)] overflow-hidden shadow-sm px-0">
                 {recentExpenses.map((expense) => {
                   const CategoryIcon = getCategoryIcon(expense.category);
                   return (
-                    <Link key={expense.id} href="/dashboard/expenses" className="flex items-center gap-4 px-4 py-4 hover:bg-[var(--blueGray-50)] transition-colors">
+                    <Link key={expense.id} href="/dashboard/expenses" className="flex items-center gap-2 sm:gap-4 px-2.5 sm:px-4 py-3 hover:bg-[var(--blueGray-50)] transition-colors">
                       <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0"
                         style={{ backgroundColor: getCategoryBgColor(expense.category) }}
                       >
                         <CategoryIcon className="w-6 h-6 text-token-primary" aria-hidden />
@@ -342,7 +341,7 @@ export default function DashboardPage() {
 
           {/* Empty State */}
           {!loading && (summary?.transactionCount ?? 0) === 0 && (
-            <div className="rounded-2xl bg-token-card border border-token p-12 text-center shadow-sm">
+            <div className="rounded-2xl bg-token-card border border-token p-6 sm:p-12 text-center shadow-sm">
               <div className="mb-4 text-6xl">📝</div>
               <h3 className="mb-2 text-xl font-semibold text-token-primary">No expenses yet</h3>
               <p className="mb-6 text-token-secondary">Start tracking your expenses by adding your first entry</p>
@@ -357,16 +356,6 @@ export default function DashboardPage() {
           {!isPremium && !loading && <AdPlaceholder />}
         </div>
 
-        {/* FAB - Fixed Bottom Right */}
-        <Link
-          href="/dashboard/add"
-          className="fixed bottom-24 right-6 z-40 w-14 h-14 rounded-full bg-token-accent flex items-center justify-center text-white shadow-[0_8px_24px_rgba(14,165,164,0.4)] hover:opacity-90 transition-opacity active:scale-95"
-          aria-label="Add expense"
-        >
-          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-        </Link>
       </div>
     </DashboardLayout>
   );
