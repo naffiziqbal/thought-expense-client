@@ -204,8 +204,8 @@ class ApiClient {
     return response.data;
   }
 
-  async getCurrentBudget(): Promise<{ success: boolean; data: BudgetSummary | null }> {
-    const response = await this.client.get<{ success: boolean; data: BudgetSummary | null }>('/api/budgets/current');
+  async getCurrentBudget(params?: { month?: number; year?: number }): Promise<{ success: boolean; data: BudgetSummary | null }> {
+    const response = await this.client.get<{ success: boolean; data: BudgetSummary | null }>('/api/budgets/current', { params });
     return response.data;
   }
 
@@ -244,8 +244,8 @@ class ApiClient {
     return response.data;
   }
 
-  async getCurrentCategoryBudgets(): Promise<{ success: boolean; data: CategoryBudgetProgress[] }> {
-    const response = await this.client.get('/api/budgets/categories/current');
+  async getCurrentCategoryBudgets(params?: { month?: number; year?: number }): Promise<{ success: boolean; data: CategoryBudgetProgress[] }> {
+    const response = await this.client.get('/api/budgets/categories/current', { params });
     return response.data;
   }
 
