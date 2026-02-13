@@ -307,7 +307,9 @@ export default function BudgetPage() {
         <div className="mt-6 rounded-3xl bg-white p-4 shadow-sm">
           <div className="flex gap-3 items-end">
             <div className="flex-1 flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 focus-within:border-purple-300 focus-within:bg-purple-50/30 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all">
-              <span className="text-purple-500 shrink-0">✨</span>
+              <svg className="h-5 w-5 shrink-0 text-purple-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.916 1.916l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.916 1.916l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.916-1.916l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.916-1.916l.258-1.036A.75.75 0 0118 1.5zM3 13.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.916 1.916l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.916 1.916l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.916-1.916l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.916-1.916l.258-1.036A.75.75 0 013 13.5z" clipRule="evenodd" />
+            </svg>
               <input
                 type="text"
                 value={categoryText}
