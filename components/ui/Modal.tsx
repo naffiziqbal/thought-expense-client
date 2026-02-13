@@ -49,7 +49,7 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
           <h2 className="text-xl font-semibold text-token-primary">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-token-muted hover:bg-[var(--blueGray-100)] hover:text-token-primary"
+            className="rounded-lg p-1 text-token-muted hover:bg-[var(--surface-hover)] hover:text-token-primary"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -67,7 +67,7 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
 
         {/* Footer */}
         {footer && (
-          <div className="border-t border-token bg-[var(--blueGray-50)] p-6">
+          <div className="border-t border-token bg-token-surface p-6">
             {footer}
           </div>
         )}

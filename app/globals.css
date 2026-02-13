@@ -43,6 +43,7 @@
 
   --background-tag: var(--blueGray-100);
   --text-tag: var(--blueGray-700);
+  --surface-hover: var(--blueGray-100);
 
   /* Legacy support */
   --background: #ffffff;
@@ -54,6 +55,7 @@
     /* Semantic Tokens - Dark Theme (system preference) */
     --background-tag: var(--blueGray-600);
     --text-tag: var(--blueGray-100);
+    --surface-hover: var(--blueGray-600);
     --background-primary: var(--blueGray-900);
     --background-surface: var(--blueGray-800);
     --background-card: var(--blueGray-700);
@@ -71,6 +73,7 @@
 [data-theme="dark"] {
   --background-tag: var(--blueGray-600);
   --text-tag: var(--blueGray-100);
+  --surface-hover: var(--blueGray-600);
   --background-primary: var(--blueGray-900);
   --background-surface: var(--blueGray-800);
   --background-card: var(--blueGray-700);
@@ -123,6 +126,11 @@ input[type='number']::-webkit-inner-spin-button {
 
 input[type='number'] {
   -moz-appearance: textfield;
+}
+
+/* Ensure native date picker icon is visible in dark mode */
+[data-theme="dark"] input[type="date"] {
+  color-scheme: dark;
 }
 
 /* Hide scrollbar globally (scroll still works) */

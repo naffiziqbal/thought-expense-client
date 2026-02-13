@@ -68,7 +68,7 @@ export const CategoryInput: React.FC<CategoryInputProps> = ({
   return (
     <div className="relative w-full">
       {label && (
-        <label className="mb-2 block text-sm font-medium text-gray-700">
+        <label className="mb-2 block text-sm font-medium text-token-primary">
           {label}
           {required && <span className="ml-1 text-red-500">*</span>}
         </label>
@@ -82,9 +82,9 @@ export const CategoryInput: React.FC<CategoryInputProps> = ({
         onFocus={() => setIsOpen(true)}
         placeholder={placeholder}
         className={cn(
-          'w-full rounded-lg border border-gray-300 px-4 py-3 text-base transition-colors',
-          'focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20',
-          'disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500',
+          'w-full rounded-lg border border-token bg-token-card px-4 py-3 text-base text-token-primary transition-colors',
+          'focus:border-[var(--accent-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-opacity-20',
+          'placeholder:text-token-muted disabled:cursor-not-allowed disabled:bg-[var(--blueGray-100)] disabled:text-token-muted',
           error && 'border-red-500 focus:border-red-500 focus:ring-red-500'
         )}
       />
@@ -95,7 +95,7 @@ export const CategoryInput: React.FC<CategoryInputProps> = ({
       {isOpen && filteredSuggestions.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg"
+          className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-token bg-token-card shadow-lg"
         >
           {filteredSuggestions.map((category, index) => (
             <button
@@ -103,9 +103,9 @@ export const CategoryInput: React.FC<CategoryInputProps> = ({
               type="button"
               onClick={() => handleSelectCategory(category)}
               className={cn(
-                'w-full px-4 py-2 text-left text-sm transition-colors',
-                'hover:bg-blue-50 focus:bg-blue-50 focus:outline-none',
-                value === category && 'bg-blue-100 font-medium'
+                'w-full px-4 py-2 text-left text-sm text-token-primary transition-colors',
+                'hover:bg-[var(--surface-hover)] focus:bg-[var(--surface-hover)] focus:outline-none',
+                value === category && 'bg-[var(--surface-hover)] font-medium'
               )}
             >
               {category}
@@ -113,7 +113,7 @@ export const CategoryInput: React.FC<CategoryInputProps> = ({
           ))}
           
           {value && !filteredSuggestions.includes(value) && (
-            <div className="border-t border-gray-200 px-4 py-2 text-sm text-gray-600">
+            <div className="border-t border-token px-4 py-2 text-sm text-token-secondary">
               <span className="font-medium">Create new:</span> &quot;{value}&quot;
             </div>
           )}
@@ -122,7 +122,7 @@ export const CategoryInput: React.FC<CategoryInputProps> = ({
 
       {/* Helper text */}
       {!error && (
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-token-secondary">
           Type to create a new category or select from suggestions
         </p>
       )}
