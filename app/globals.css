@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 /* Design Token System - CSS Variables */
-:root {
+:root,
+[data-theme="light"] {
   /* Base Colors - Primitives */
   --blueGray-900: #0B1220;
   --blueGray-800: #111827;
@@ -46,25 +47,34 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    /* Semantic Tokens - Dark Theme */
+  :root:not([data-theme="light"]) {
+    /* Semantic Tokens - Dark Theme (system preference) */
     --background-primary: var(--blueGray-900);
     --background-surface: var(--blueGray-800);
     --background-card: var(--blueGray-700);
-    
     --text-primary: var(--blueGray-50);
     --text-secondary: var(--blueGray-300);
     --text-muted: var(--blueGray-400);
-    
     --border-default: var(--blueGray-600);
-    
     --accent-primary: var(--teal-400);
     --accent-hover: var(--teal-500);
-    
-    /* Legacy support */
     --background: #0a0a0a;
     --foreground: var(--blueGray-50);
   }
+}
+
+[data-theme="dark"] {
+  --background-primary: var(--blueGray-900);
+  --background-surface: var(--blueGray-800);
+  --background-card: var(--blueGray-700);
+  --text-primary: var(--blueGray-50);
+  --text-secondary: var(--blueGray-300);
+  --text-muted: var(--blueGray-400);
+  --border-default: var(--blueGray-600);
+  --accent-primary: var(--teal-400);
+  --accent-hover: var(--teal-500);
+  --background: #0a0a0a;
+  --foreground: var(--blueGray-50);
 }
 
 body {

@@ -21,7 +21,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Subtle shadow above nav */}
         <div className="absolute -top-6 left-0 right-0 h-6 bg-gradient-to-b from-transparent to-black/5 pointer-events-none" />
         
-        <div className="bg-white shadow-2xl">
+        <div className="bg-token-card shadow-2xl border-t border-token">
           <div className="flex items-center justify-around px-6 pb-safe safe-area-inset-bottom" style={{ height: '72px' }}>
             {/* Home */}
             <Link
@@ -35,8 +35,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   'transition-all duration-200',
                   pathname === '/dashboard' 
-                    ? 'w-7 h-7 text-teal-600' 
-                    : 'w-6 h-6 text-gray-400'
+                    ? 'w-7 h-7 text-token-accent' 
+                    : 'w-6 h-6 text-token-muted'
                 )} 
                 fill="none"
                 stroke="currentColor" 
@@ -59,8 +59,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   'transition-all duration-200',
                   pathname === '/dashboard/expenses' 
-                    ? 'w-7 h-7 text-teal-600' 
-                    : 'w-6 h-6 text-gray-400'
+                    ? 'w-7 h-7 text-token-accent' 
+                    : 'w-6 h-6 text-token-muted'
                 )} 
                 fill="none"
                 stroke="currentColor" 
@@ -101,8 +101,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   'transition-all duration-200',
                   pathname === '/dashboard/insights' 
-                    ? 'w-7 h-7 text-teal-600' 
-                    : 'w-6 h-6 text-gray-400'
+                    ? 'w-7 h-7 text-token-accent' 
+                    : 'w-6 h-6 text-token-muted'
                 )} 
                 fill="none"
                 stroke="currentColor" 
@@ -125,8 +125,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   'transition-all duration-200',
                   pathname === '/dashboard/profile' 
-                    ? 'w-7 h-7 text-teal-600' 
-                    : 'w-6 h-6 text-gray-400'
+                    ? 'w-7 h-7 text-token-accent' 
+                    : 'w-6 h-6 text-token-muted'
                 )} 
                 fill="none"
                 stroke="currentColor" 
