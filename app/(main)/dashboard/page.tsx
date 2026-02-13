@@ -110,6 +110,13 @@ export default function DashboardPage() {
     );
   }
 
+  const budgetWarning =
+    budget && budget.percentage >= 100
+      ? 'over'
+      : budget && budget.percentage >= 90
+      ? 'near'
+      : null;
+
   return (
     <DashboardLayout>
       {/* Modern Hierarchical Layout - Spatial Model */}
@@ -189,6 +196,45 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+
+        {/* Budget status notification */}
+        {budgetWarning && (
+          <div
+            className={`flex items-start gap-3 rounded-2xl border px-4 py-3 ${
+              budgetWarning === 'over'
+                ? 'border-red-200 bg-red-50'
+                : 'border-amber-200 bg-amber-50'
+            }`}
+          >
+            <div
+              className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+                budgetWarning === 'over'
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-amber-100 text-amber-700'
+              }`}
+            >
+              !
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-sm font-semibold text-gray-900">
+                {budgetWarning === 'over'
+                  ? 'You have exceeded your monthly budget'
+                  : 'You are about to exceed your monthly budget'}
+              </p>
+              {budget && (
+                <p className="text-xs text-gray-600">
+                  {`You’ve spent ${formatCurrency(
+                    budget.total_spent,
+                    summary?.currency || user?.currency || 'USD'
+                  )} of your ${formatCurrency(
+                    budget.total_limit,
+                    summary?.currency || user?.currency || 'USD'
+                  )} limit (${budget.percentage.toFixed(0)}%).`}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* B. Hero Card (Total Balance Anchor) - Credit Card Metaphor */}
         <div className="relative aspect-[1.58/1] max-w-full overflow-hidden rounded-3xl bg-gradient-to-br from-teal-600 to-teal-700 p-6 shadow-2xl">

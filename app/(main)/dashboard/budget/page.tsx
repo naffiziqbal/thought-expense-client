@@ -73,6 +73,13 @@ export default function BudgetPage() {
       setMonth(currentBudget.month);
       setYear(currentBudget.year);
       setAmount(String(currentBudget.total_limit));
+      if (currentBudget.percentage >= 100) {
+        toast.error('You have exceeded your monthly budget.');
+      } else if (currentBudget.percentage >= 90) {
+        toast('You are close to exceeding your monthly budget.', {
+          icon: '⚠️',
+        });
+      }
     } else {
       setAmount('');
       const now = new Date();
