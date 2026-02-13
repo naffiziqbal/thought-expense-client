@@ -72,6 +72,20 @@ body {
   background: var(--background);
 }
 
+/* Design token utility classes */
+.bg-token-surface { background-color: var(--background-primary); }
+.bg-token-card { background-color: var(--background-card); }
+.bg-token-accent { background-color: var(--accent-primary); }
+.text-token-primary { color: var(--text-primary); }
+.text-token-secondary { color: var(--text-secondary); }
+.text-token-muted { color: var(--text-muted); }
+.text-token-accent { color: var(--accent-primary); }
+.border-token { border-color: var(--border-default); }
+.bg-token-success { background-color: var(--status-success); }
+.bg-token-warning { background-color: var(--status-warning); }
+.bg-token-error { background-color: var(--status-error); }
+.text-token-error { color: var(--status-error); }
+
 .font-mono {
   font-family: var(--font-mono), ui-monospace, monospace;
 }

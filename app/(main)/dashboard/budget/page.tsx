@@ -42,16 +42,16 @@ function getCategoryEmoji(category: string): string {
   return CATEGORY_EMOJI[key] ?? '📦';
 }
 
-// Progress bar color per spec: Safe <75%, Warning 75-95%, Danger >95%
+// Progress bar color per design tokens: Safe <75% (accent), Warning 75-95% (orange), Danger >95% (red)
 function getProgressColor(percentage: number): string {
-  if (percentage < 75) return 'bg-teal-500';
-  if (percentage < 95) return 'bg-yellow-500';
-  return 'bg-red-500';
+  if (percentage < 75) return 'bg-token-accent';
+  if (percentage < 95) return 'bg-token-warning';
+  return 'bg-token-error';
 }
 
 function getProgressBgColor(percentage: number): string {
   if (percentage < 75) return 'bg-teal-50';
-  if (percentage < 95) return 'bg-yellow-50';
+  if (percentage < 95) return 'bg-orange-50';
   return 'bg-red-50';
 }
 
@@ -224,8 +224,8 @@ export default function BudgetPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-teal-600 border-r-transparent" />
-          <p className="text-gray-600">Loading...</p>
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
+          <p className="text-token-secondary">Loading...</p>
         </div>
       </div>
     );
@@ -233,28 +233,28 @@ export default function BudgetPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gray-50 pb-8 px-4 md:px-6">
+      <div className="min-h-screen bg-token-surface pb-8 px-4 md:px-6">
         {/* Zone A: Header */}
         <div className="pt-6 pb-4">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Monthly Budget</h1>
+          <h1 className="text-2xl font-bold text-token-primary tracking-tight">Monthly Budget</h1>
           <button
             onClick={() => setDatePickerOpen(true)}
-            className="mt-2 flex items-center gap-1.5 text-base font-semibold text-gray-700 hover:text-teal-600 transition-colors"
+            className="mt-2 flex items-center gap-1.5 text-base font-semibold text-token-secondary hover:text-[var(--accent-primary)] transition-colors"
           >
             {dateLabel}
-            <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-4 w-4 text-token-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
         </div>
 
         {/* Zone B: Scoreboard (Hero Card) */}
-        <div className="rounded-3xl bg-white p-6 shadow-sm">
+        <div className="rounded-3xl bg-token-card p-6 shadow-sm">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-slate-400 mb-1">Safe to Spend</p>
+              <p className="text-xs font-medium text-token-muted mb-1">Safe to Spend</p>
               <p
-                className={`text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 ${
+                className={`text-4xl md:text-5xl font-extrabold tracking-tight text-token-primary ${
                   loadingBudgets ? 'opacity-50' : ''
                 }`}
               >
@@ -267,7 +267,7 @@ export default function BudgetPage() {
             </div>
             <button
               onClick={() => setEditLimitOpen(true)}
-              className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+              className="rounded-lg p-2 text-token-muted hover:bg-[var(--blueGray-100)] hover:text-token-secondary transition-colors"
               title="Edit budget"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -283,13 +283,13 @@ export default function BudgetPage() {
 
           {budget && (
             <>
-              <div className="mt-4 h-3 rounded-full bg-gray-100 overflow-hidden">
+              <div className="mt-4 h-3 rounded-full bg-[var(--blueGray-100)] overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${getProgressColor(budget.percentage)}`}
                   style={{ width: `${Math.min(budget.percentage, 120)}%` }}
                 />
               </div>
-              <div className="mt-2 flex justify-between text-xs font-medium text-slate-500">
+              <div className="mt-2 flex justify-between text-xs font-medium text-token-secondary">
                 <span>{formatCurrency(budget.total_spent, currency)} spent</span>
                 <span>{formatCurrency(budget.total_limit, currency)} limit</span>
               </div>
@@ -297,17 +297,17 @@ export default function BudgetPage() {
           )}
 
           {!budget && !loadingBudgets && (
-            <p className="mt-4 text-sm text-slate-500">
+            <p className="mt-4 text-sm text-token-secondary">
               Set a total limit using the pencil icon, or generate from category budgets below.
             </p>
           )}
         </div>
 
         {/* Zone C: Magic Wand (AI Setup) */}
-        <div className="mt-6 rounded-3xl bg-white p-4 shadow-sm">
-          <div className="flex gap-3 items-end">
-            <div className="flex-1 flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 focus-within:border-purple-300 focus-within:bg-purple-50/30 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all">
-              <svg className="h-5 w-5 shrink-0 text-purple-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+        <div className="mt-6 rounded-3xl bg-token-card p-4 shadow-sm">
+          <div className="flex gap-3 items-center">
+            <div className="flex-1 flex items-center gap-2 h-11 rounded-full border border-token bg-[var(--blueGray-50)] px-4 focus-within:border-[var(--accent-primary)] focus-within:bg-teal-50/30 focus-within:ring-2 focus-within:ring-[var(--accent-primary)]/20 transition-all">
+              <svg className="h-5 w-5 shrink-0 text-token-accent" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.916 1.916l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.916 1.916l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.916-1.916l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.916-1.916l.258-1.036A.75.75 0 0118 1.5zM3 13.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.916 1.916l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.916 1.916l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.916-1.916l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.916-1.916l.258-1.036A.75.75 0 013 13.5z" clipRule="evenodd" />
             </svg>
               <input
@@ -315,27 +315,27 @@ export default function BudgetPage() {
                 value={categoryText}
                 onChange={(e) => setCategoryText(e.target.value)}
                 placeholder="e.g. Food 500, Rent 2000, Gas 100..."
-                className="flex-1 min-w-0 bg-transparent text-sm text-gray-900 placeholder:text-slate-400 focus:outline-none"
+                className="flex-1 min-w-0 bg-transparent text-sm text-token-primary placeholder:text-token-muted focus:outline-none"
                 onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
               />
             </div>
             <Button
               type="button"
-              size="sm"
+              size="md"
               onClick={handleGenerate}
               isLoading={parsing}
               disabled={!categoryText.trim()}
-              className="shrink-0 rounded-full bg-purple-600 hover:bg-purple-700 text-white px-5"
+              className="shrink-0 h-11 rounded-full bg-token-accent hover:bg-[var(--accent-hover)] text-white px-5"
             >
               Generate
             </Button>
           </div>
 
           {parsedCategories.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
-              <p className="text-xs font-medium text-slate-600">Review & save</p>
-              <div className="flex items-center justify-between gap-2 rounded-xl bg-purple-50 px-3 py-2">
-                <span className="text-xs text-purple-800">
+            <div className="mt-4 pt-4 border-t border-token space-y-3">
+              <p className="text-xs font-medium text-token-secondary">Review & save</p>
+              <div className="flex items-center justify-between gap-2 rounded-xl bg-teal-50 px-3 py-2">
+                <span className="text-xs text-[var(--blueGray-800)]">
                   Total from categories: {formatCurrency(parsedCategories.reduce((s, i) => s + i.limit, 0), currency)}
                 </span>
                 <button
@@ -351,7 +351,7 @@ export default function BudgetPage() {
                       toast.error(e?.response?.data?.message || 'Failed');
                     }
                   }}
-                  className="text-xs font-semibold text-purple-600 hover:text-purple-700"
+                  className="text-xs font-semibold text-token-accent hover:text-[var(--accent-hover)]"
                 >
                   Set as monthly limit
                 </button>
@@ -366,7 +366,7 @@ export default function BudgetPage() {
                           prev.map((p, i) => (i === idx ? { ...p, category: e.target.value } : p))
                         )
                       }
-                      className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      className="flex-1 rounded-lg border border-token px-3 py-2 text-sm text-token-primary"
                     />
                     <input
                       type="number"
@@ -378,12 +378,12 @@ export default function BudgetPage() {
                           prev.map((p, i) => (i === idx ? { ...p, limit: Number(e.target.value) } : p))
                         )
                       }
-                      className="w-24 rounded-lg border border-slate-200 px-3 py-2 text-sm text-right"
+                      className="w-24 rounded-lg border border-token px-3 py-2 text-sm text-right text-token-primary"
                     />
                     <button
                       type="button"
                       onClick={() => setParsedCategories((prev) => prev.filter((_, i) => i !== idx))}
-                      className="text-slate-400 hover:text-red-500 p-1"
+                      className="text-token-muted hover:text-token-error p-1"
                     >
                       ✕
                     </button>
@@ -400,7 +400,7 @@ export default function BudgetPage() {
         {/* Zone D: Breakdown (Category List) */}
         {categoryBudgets.length > 0 && (
           <div className="mt-6 space-y-3">
-            <h2 className="text-base font-semibold text-gray-900">Breakdown</h2>
+            <h2 className="text-base font-semibold text-token-primary">Breakdown</h2>
             <div className="space-y-3">
               {categoryBudgets.map((b) => {
                 const pct = b.limit > 0 ? Math.min(100, Math.round((b.spent / b.limit) * 100)) : 0;
@@ -410,7 +410,7 @@ export default function BudgetPage() {
                 return (
                   <div
                     key={`${b.year}-${b.month}-${b.category}`}
-                    className={`rounded-3xl bg-white p-4 shadow-sm ${getProgressBgColor(pct)} border border-transparent`}
+                    className={`rounded-3xl bg-token-card p-4 shadow-sm ${getProgressBgColor(pct)} border border-transparent`}
                   >
                     <button
                       type="button"
@@ -421,13 +421,13 @@ export default function BudgetPage() {
                         {getCategoryEmoji(b.category)}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-base font-semibold text-gray-900">{b.category}</p>
-                        <p className="text-xs font-medium text-slate-500">
+                        <p className="text-base font-semibold text-token-primary">{b.category}</p>
+                        <p className="text-xs font-medium text-token-secondary">
                           {formatCurrency(b.spent, currency)} / {formatCurrency(b.limit, currency)}
                         </p>
                       </div>
                       <svg
-                        className={`h-5 w-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        className={`h-5 w-5 text-token-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -443,11 +443,11 @@ export default function BudgetPage() {
                     </div>
 
                     {isExpanded && (
-                      <div className="mt-4 pt-4 border-t border-slate-200/80">
+                      <div className="mt-4 pt-4 border-t border-token">
                         {loadingExpenses ? (
-                          <div className="py-4 text-center text-sm text-slate-500">Loading...</div>
+                          <div className="py-4 text-center text-sm text-token-secondary">Loading...</div>
                         ) : categoryExpenses.length === 0 ? (
-                          <p className="text-sm text-slate-500">No transactions this month</p>
+                          <p className="text-sm text-token-secondary">No transactions this month</p>
                         ) : (
                           <ul className="space-y-2">
                             {categoryExpenses.map((e) => (
@@ -455,8 +455,8 @@ export default function BudgetPage() {
                                 key={e.id}
                                 className="flex justify-between text-sm"
                               >
-                                <span className="text-gray-700 truncate pr-2">{e.description}</span>
-                                <span className="font-medium text-gray-900 shrink-0">
+                                <span className="text-token-secondary truncate pr-2">{e.description}</span>
+                                <span className="font-medium text-token-primary shrink-0">
                                   {formatCurrency(e.amount, e.currency)}
                                 </span>
                               </li>
@@ -474,8 +474,8 @@ export default function BudgetPage() {
 
         {/* Past budgets - compact */}
         {history.length > 0 && (
-          <div className="mt-8 rounded-3xl bg-white p-6 shadow-sm">
-            <h2 className="text-base font-semibold text-gray-900 mb-3">Past months</h2>
+          <div className="mt-8 rounded-3xl bg-token-card p-6 shadow-sm">
+            <h2 className="text-base font-semibold text-token-primary mb-3">Past months</h2>
             <div className="space-y-2">
               {history.slice(0, 6).map((b) => {
                 const label = new Date(b.year, b.month - 1, 1).toLocaleString('en-US', {
@@ -493,15 +493,15 @@ export default function BudgetPage() {
                       setDatePickerOpen(false);
                     }}
                     className={`w-full flex items-center justify-between rounded-xl px-4 py-2.5 text-left transition-colors ${
-                      isSelected ? 'bg-teal-50' : 'hover:bg-slate-50'
+                      isSelected ? 'bg-teal-50' : 'hover:bg-[var(--blueGray-100)]'
                     }`}
                   >
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-token-primary">
                       {label} {isSelected && '(viewing)'}
                     </span>
                     <span
                       className={`text-xs font-semibold ${
-                        b.total_spent <= b.total_limit ? 'text-teal-600' : 'text-red-600'
+                        b.total_spent <= b.total_limit ? 'text-token-accent' : 'text-token-error'
                       }`}
                     >
                       {b.percentage}%
@@ -536,7 +536,7 @@ export default function BudgetPage() {
                     setDatePickerOpen(false);
                   }}
                   className={`w-full text-left py-3 px-4 rounded-xl text-base font-medium ${
-                    isSelected ? 'bg-teal-50 text-teal-700' : 'text-gray-900 hover:bg-slate-50'
+                    isSelected ? 'bg-teal-50 text-[var(--accent-primary)]' : 'text-token-primary hover:bg-[var(--blueGray-100)]'
                   }`}
                 >
                   {label}
@@ -563,7 +563,7 @@ export default function BudgetPage() {
           }
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Total monthly limit</label>
+            <label className="block text-sm font-medium text-token-secondary mb-2">Total monthly limit</label>
             <input
               type="number"
               min={0}
@@ -571,9 +571,9 @@ export default function BudgetPage() {
               value={editAmount}
               onChange={(e) => setEditAmount(e.target.value)}
               placeholder="Enter amount"
-              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
             />
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-token-muted">
               {dateLabel} · Your currency: {currency}
             </p>
           </div>
