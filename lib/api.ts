@@ -96,6 +96,21 @@ class ApiClient {
     return response.data;
   }
 
+  async forgotPassword(email: string): Promise<{ success: boolean; message: string }> {
+    const response = await this.client.post<{ success: boolean; message: string }>('/api/auth/forgot-password', {
+      email,
+    });
+    return response.data;
+  }
+
+  async resetPassword(token: string, password: string): Promise<{ success: boolean; message: string }> {
+    const response = await this.client.post<{ success: boolean; message: string }>('/api/auth/reset-password', {
+      token,
+      password,
+    });
+    return response.data;
+  }
+
   async getCurrentUser() {
     const response = await this.client.get('/api/auth/me');
     return response.data;
