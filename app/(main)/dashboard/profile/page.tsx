@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,7 +10,6 @@ import { useIsPremium } from '@/hooks/useIsPremium';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { api } from '@/lib/api';
 import { getImageUrl } from '@/lib/utils';
 
 const UserIcon = () => (
@@ -28,12 +27,6 @@ const CrownIcon = () => (
 const WalletIcon = () => (
   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-  </svg>
-);
-
-const LayersIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
   </svg>
 );
 
@@ -56,7 +49,7 @@ const LogOutIcon = () => (
 );
 
 const ChevronIcon = () => (
-  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="h-5 w-5 text-token-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
   </svg>
 );
@@ -80,15 +73,15 @@ function MenuItem({ icon, iconBg, iconColor, title, subtitle, href, isLast, comi
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-        <p className="text-sm text-gray-500 truncate">{subtitle}</p>
+        <h3 className="text-base font-semibold text-token-primary">{title}</h3>
+        <p className="text-sm text-token-secondary truncate">{subtitle}</p>
       </div>
       <ChevronIcon />
     </>
   );
 
-  const rowClass = `flex h-[72px] w-full items-center gap-4 px-4 text-left transition-colors active:bg-gray-50 ${
-    !isLast ? 'border-b border-gray-100' : ''
+  const rowClass = `flex h-[64px] sm:h-[72px] w-full items-center gap-3 sm:gap-4 px-3 sm:px-4 text-left transition-colors active:bg-[var(--blueGray-50)] ${
+    !isLast ? 'border-b border-token' : ''
   }`;
 
   if (comingSoon) {
@@ -115,25 +108,7 @@ export default function ProfilePage() {
   const { user, logout } = useAuthStore();
   const isPremium = useIsPremium();
   const router = useRouter();
-  const [transactionCount, setTransactionCount] = useState<number | null>(null);
-  const [categoryCount, setCategoryCount] = useState<number>(0);
   const [comingSoonModal, setComingSoonModal] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const fetchStats = async () => {
-      try {
-        const res = await api.getCategorySummary();
-        if (res.success && res.data) {
-          setTransactionCount(res.data.transactionCount);
-          setCategoryCount(Object.keys(res.data.byCategory).length || 0);
-        }
-      } catch {
-        setTransactionCount(0);
-      }
-    };
-    fetchStats();
-  }, [isAuthenticated]);
 
   const handleLogout = () => {
     logout();
@@ -142,10 +117,10 @@ export default function ProfilePage() {
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-token-surface">
         <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-teal-600 border-r-transparent" />
-          <p className="text-gray-600">Loading...</p>
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
+          <p className="text-token-secondary">Loading...</p>
         </div>
       </div>
     );
@@ -183,15 +158,6 @@ export default function ProfilePage() {
       comingSoon: true,
     },
     {
-      icon: <LayersIcon />,
-      iconBg: 'bg-pink-50',
-      iconColor: 'text-pink-600',
-      title: 'Categories',
-      subtitle: 'Add or edit expense types',
-      href: '/dashboard/categories',
-      comingSoon: true,
-    },
-    {
       icon: <GlobeIcon />,
       iconBg: 'bg-indigo-50',
       iconColor: 'text-indigo-600',
@@ -216,13 +182,22 @@ export default function ProfilePage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gray-50 pb-8">
+      <div className="min-h-screen bg-token-surface pb-8">
         {/* A. Island Header */}
-        <div className="relative z-10 rounded-b-3xl bg-white px-6 pb-8 shadow-sm">
-          <div className="flex flex-col items-center pt-8">
+        <div className="relative z-10 rounded-b-3xl bg-token-card px-4 sm:px-6 pb-6 sm:pb-8 pt-6 sm:pt-8 shadow-sm border-b border-token">
+          {/* Logout icon - top right */}
+          <button
+            onClick={handleLogout}
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full text-token-secondary hover:text-red-500 hover:bg-red-50 transition-colors"
+            aria-label="Logout"
+          >
+            <LogOutIcon />
+          </button>
+
+          <div className="flex flex-col items-center">
             {/* Avatar with Badge */}
             <div className="relative mb-4">
-              <div className="h-24 w-24 rounded-full bg-teal-600 flex items-center justify-center shadow-md overflow-hidden relative">
+              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-token-accent flex items-center justify-center shadow-md overflow-hidden relative">
                 {getImageUrl(user?.profilePicture || user?.profilePictureUrl) ? (
                   <Image
                     src={getImageUrl(user?.profilePicture || user?.profilePictureUrl)!}
@@ -232,46 +207,35 @@ export default function ProfilePage() {
                     sizes="96px"
                   />
                 ) : (
-                  <span className="text-4xl font-bold text-white">
+                  <span className="text-3xl sm:text-4xl font-bold text-white">
                     {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
                   </span>
                 )}
               </div>
-              <span className={`absolute -bottom-1 -right-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                isPremium ? 'bg-amber-100 text-amber-800' : 'bg-gray-200 text-gray-700'
+              <span className={`absolute -bottom-1 -right-1 rounded-full px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold ${
+                isPremium ? 'bg-amber-100 text-amber-800' : 'bg-[var(--blueGray-200)] text-token-secondary'
               }`}>
                 {isPremium ? 'PREMIUM' : 'FREE'}
               </span>
             </div>
 
             {/* Identity */}
-            <h1 className="text-xl font-bold text-gray-900">
+            <h1 className="text-lg sm:text-xl font-bold text-token-primary">
               {user?.name || 'User'}
             </h1>
-            <p className="mt-1 text-xs text-gray-500 font-mono">
+            <p className="mt-1 text-xs text-token-muted font-mono">
               ID: {user?.id.slice(0, 8).toUpperCase()}
             </p>
-
-            {/* Quick Stats */}
-            <div className="mt-4 flex items-center gap-4">
-              <span className="text-sm font-medium text-gray-600">
-                {transactionCount !== null ? `${transactionCount} Transactions` : '— Transactions'}
-              </span>
-              <span className="h-4 w-px bg-gray-200" />
-              <span className="text-sm font-medium text-gray-600">
-                {categoryCount > 0 ? `${categoryCount} Categories` : '1 Account'}
-              </span>
-            </div>
           </div>
         </div>
 
         {/* B. Settings Body */}
-        <div className="px-6 pt-6">
+        <div className="px-4 sm:px-6 pt-4 sm:pt-6">
           {/* General */}
-          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-token-muted">
             General
           </p>
-          <div className="mb-6 overflow-hidden rounded-2xl bg-white shadow-sm">
+          <div className="mb-4 sm:mb-6 overflow-hidden rounded-2xl bg-token-card shadow-sm border border-token">
             {generalItems.map((item, i) => (
               <MenuItem
                 key={item.title}
@@ -283,10 +247,10 @@ export default function ProfilePage() {
           </div>
 
           {/* App Settings */}
-          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-token-muted">
             App Settings
           </p>
-          <div className="mb-6 overflow-hidden rounded-2xl bg-white shadow-sm">
+          <div className="mb-4 sm:mb-6 overflow-hidden rounded-2xl bg-token-card shadow-sm border border-token">
             {appItems.map((item, i) => (
               <MenuItem
                 key={item.title}
@@ -298,10 +262,10 @@ export default function ProfilePage() {
           </div>
 
           {/* Security */}
-          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-token-muted">
             Security
           </p>
-          <div className="mb-8 overflow-hidden rounded-2xl bg-white shadow-sm">
+          <div className="mb-6 overflow-hidden rounded-2xl bg-token-card shadow-sm border border-token">
             {securityItems.map((item, i) => (
               <MenuItem
                 key={item.title}
@@ -311,15 +275,6 @@ export default function ProfilePage() {
               />
             ))}
           </div>
-
-          {/* Logout Button */}
-          <button
-            onClick={handleLogout}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-red-50 text-red-500 font-semibold transition-colors hover:bg-red-100 active:bg-red-100"
-          >
-            <LogOutIcon />
-            Logout
-          </button>
         </div>
       </div>
 
@@ -334,7 +289,7 @@ export default function ProfilePage() {
           </Button>
         }
       >
-        <p className="text-gray-600">This feature is under development. Check back soon!</p>
+        <p className="text-token-secondary">This feature is under development. Check back soon!</p>
       </Modal>
     </DashboardLayout>
   );
