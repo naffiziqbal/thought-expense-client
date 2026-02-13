@@ -8,6 +8,8 @@ import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
 import { useIsPremium } from '@/hooks/useIsPremium';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { getImageUrl } from '@/lib/utils';
 
@@ -68,9 +70,10 @@ interface MenuItemProps {
   href: string;
   isLast?: boolean;
   comingSoon?: boolean;
+  onComingSoonClick?: (title: string) => void;
 }
 
-function MenuItem({ icon, iconBg, iconColor, title, subtitle, href, isLast, comingSoon }: MenuItemProps) {
+function MenuItem({ icon, iconBg, iconColor, title, subtitle, href, isLast, comingSoon, onComingSoonClick }: MenuItemProps) {
   const content = (
     <>
       <div className={`shrink-0 h-10 w-10 rounded-xl flex items-center justify-center ${iconBg} ${iconColor}`}>
@@ -92,7 +95,7 @@ function MenuItem({ icon, iconBg, iconColor, title, subtitle, href, isLast, comi
     return (
       <button
         type="button"
-        onClick={() => alert(`${title} - Coming soon!`)}
+        onClick={() => onComingSoonClick?.(title)}
         className={rowClass}
       >
         {content}
@@ -114,6 +117,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const [transactionCount, setTransactionCount] = useState<number | null>(null);
   const [categoryCount, setCategoryCount] = useState<number>(0);
+  const [comingSoonModal, setComingSoonModal] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -273,6 +277,7 @@ export default function ProfilePage() {
                 key={item.title}
                 {...item}
                 isLast={i === generalItems.length - 1}
+                onComingSoonClick={setComingSoonModal}
               />
             ))}
           </div>
@@ -287,6 +292,7 @@ export default function ProfilePage() {
                 key={item.title}
                 {...item}
                 isLast={i === appItems.length - 1}
+                onComingSoonClick={setComingSoonModal}
               />
             ))}
           </div>
@@ -301,6 +307,7 @@ export default function ProfilePage() {
                 key={item.title}
                 {...item}
                 isLast={i === securityItems.length - 1}
+                onComingSoonClick={setComingSoonModal}
               />
             ))}
           </div>
@@ -315,6 +322,20 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
+
+      {/* Coming Soon Modal */}
+      <Modal
+        isOpen={!!comingSoonModal}
+        onClose={() => setComingSoonModal(null)}
+        title={comingSoonModal ? `${comingSoonModal} - Coming soon!` : ''}
+        footer={
+          <Button onClick={() => setComingSoonModal(null)} className="w-full">
+            OK
+          </Button>
+        }
+      >
+        <p className="text-gray-600">This feature is under development. Check back soon!</p>
+      </Modal>
     </DashboardLayout>
   );
 }
