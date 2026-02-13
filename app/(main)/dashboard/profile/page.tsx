@@ -208,9 +208,9 @@ export default function ProfilePage() {
       iconBg: 'bg-emerald-50',
       iconColor: 'text-emerald-600',
       title: 'Security',
-      subtitle: 'FaceID & PIN',
+      subtitle: 'Change password & PIN',
       href: '/dashboard/security',
-      comingSoon: true,
+      comingSoon: false,
     },
   ];
 
