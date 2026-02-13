@@ -11,6 +11,7 @@ import { getCategoryIcon } from '@/lib/categoryIcons';
 import Link from 'next/link';
 import type { CategorySummary, Expense, Insight, BudgetSummary } from '@/types';
 import { AdPlaceholder } from '@/components/landing/AdPlaceholder';
+import { maybeNotifyBudgetStatus } from '@/lib/notifications';
 
 export default function DashboardPage() {
   const { isAuthenticated, isLoading } = useProtectedRoute();
@@ -98,6 +99,24 @@ export default function DashboardPage() {
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [notificationOpen]);
+
+  // Device notification when user is near / over budget
+  useEffect(() => {
+    if (!budget || !summary) return;
+    maybeNotifyBudgetStatus({
+      year: budget.year,
+      month: budget.month,
+      percentage: budget.percentage,
+      spentLabel: formatCurrency(
+        budget.total_spent,
+        summary.currency || user?.currency || 'USD'
+      ),
+      limitLabel: formatCurrency(
+        budget.total_limit,
+        summary.currency || user?.currency || 'USD'
+      ),
+    });
+  }, [budget, summary, user]);
 
   if (isLoading || !isAuthenticated) {
     return (
