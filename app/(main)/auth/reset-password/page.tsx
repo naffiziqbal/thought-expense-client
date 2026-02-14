@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/landing/ThemeToggle';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { AxiosError } from 'axios';
@@ -93,21 +94,24 @@ function ResetPasswordContent() {
 
   if (!token) {
     return (
-      <div className="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-white px-4 py-4">
+      <div className="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-token-surface px-4 py-4">
+        <div className="absolute right-4 top-4 z-20">
+          <ThemeToggle />
+        </div>
         <div className="relative z-10 w-full max-w-[420px] shrink-0 py-1 text-center">
-          <h1 className="text-xl font-bold text-gray-900">Invalid reset link</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <h1 className="text-xl font-bold text-token-primary">Invalid reset link</h1>
+          <p className="mt-2 text-sm text-token-secondary">
             This password reset link is invalid or has expired. Please request a new one.
           </p>
           <Link
             href="/auth/forgot-password"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-6 py-3 font-semibold text-white hover:bg-teal-500"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-token-accent px-6 py-3 font-semibold text-white hover:opacity-90"
           >
             Request new link
           </Link>
           <Link
             href="/auth/login"
-            className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+            className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-token-secondary hover:text-token-primary"
           >
             <ArrowLeftIcon className="h-5 w-5" />
             Back to login
@@ -118,13 +122,16 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-white px-4 py-4">
+    <div className="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-token-surface px-4 py-4">
+      <div className="absolute right-4 top-4 z-20">
+        <ThemeToggle />
+      </div>
       <div
-        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-teal-400 opacity-60 blur-3xl"
+        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-teal-400 opacity-40 dark:opacity-30 blur-3xl"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-teal-500 opacity-60 blur-3xl"
+        className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-teal-500 opacity-40 dark:opacity-30 blur-3xl"
         aria-hidden
       />
 
@@ -132,13 +139,12 @@ function ResetPasswordContent() {
         <div className="flex flex-col items-center">
           <Link
             href="/"
-            className="mb-3 inline-block rounded-xl bg-teal-500 px-4 py-2.5 shadow-lg"
-            style={{ background: 'linear-gradient(to bottom right, #2dd4bf, #14b8a6)' }}
+            className="mb-3 inline-block rounded-xl bg-linear-to-br from-teal-500 to-teal-600 px-4 py-2.5 shadow-lg"
           >
             <span className="text-lg font-bold text-white">TE</span>
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">Set new password</h1>
-          <p className="mt-0.5 text-xs text-gray-500">
+          <h1 className="text-xl font-bold text-token-primary">Set new password</h1>
+          <p className="mt-0.5 text-xs text-token-secondary">
             Enter your new password below
           </p>
         </div>
@@ -148,15 +154,15 @@ function ResetPasswordContent() {
             <div
               className={cn(
                 'flex h-11 items-center gap-2.5 rounded-xl px-3 transition-all',
-                'bg-gray-50',
-                passwordFocused && 'bg-white ring-2 ring-teal-500 ring-offset-2 shadow-sm',
-                errors.password && 'bg-red-50'
+                'bg-[var(--background-tag)]',
+                passwordFocused && 'bg-token-card ring-2 ring-[var(--accent-primary)] ring-offset-2 dark:ring-offset-[var(--background-surface)] shadow-sm',
+                errors.password && 'bg-red-50 dark:bg-red-950/30'
               )}
             >
               <LockIcon
                 className={cn(
                   'h-5 w-5 shrink-0',
-                  passwordFocused ? 'text-teal-600' : 'text-gray-400'
+                  passwordFocused ? 'text-token-accent' : 'text-token-muted'
                 )}
               />
               <input
@@ -166,35 +172,35 @@ function ResetPasswordContent() {
                 onChange={(e) => setPassword(e.target.value)}
                 onFocus={() => setPasswordFocused(true)}
                 onBlur={() => setPasswordFocused(false)}
-                className="flex-1 bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                className="flex-1 bg-transparent text-base text-token-primary placeholder:text-token-muted focus:outline-none"
                 autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                className="shrink-0 rounded-lg p-1.5 text-token-muted hover:bg-[var(--surface-hover)] hover:text-token-secondary"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 tabIndex={-1}
               >
                 {showPassword ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
               </button>
             </div>
-            {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+            {errors.password && <p className="mt-1 text-sm text-token-error">{errors.password}</p>}
           </div>
 
           <div>
             <div
               className={cn(
                 'flex h-11 items-center gap-2.5 rounded-xl px-3 transition-all',
-                'bg-gray-50',
-                confirmFocused && 'bg-white ring-2 ring-teal-500 ring-offset-2 shadow-sm',
-                errors.confirmPassword && 'bg-red-50'
+                'bg-[var(--background-tag)]',
+                confirmFocused && 'bg-token-card ring-2 ring-[var(--accent-primary)] ring-offset-2 dark:ring-offset-[var(--background-surface)] shadow-sm',
+                errors.confirmPassword && 'bg-red-50 dark:bg-red-950/30'
               )}
             >
               <LockIcon
                 className={cn(
                   'h-5 w-5 shrink-0',
-                  confirmFocused ? 'text-teal-600' : 'text-gray-400'
+                  confirmFocused ? 'text-token-accent' : 'text-token-muted'
                 )}
               />
               <input
@@ -204,19 +210,19 @@ function ResetPasswordContent() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 onFocus={() => setConfirmFocused(true)}
                 onBlur={() => setConfirmFocused(false)}
-                className="flex-1 bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                className="flex-1 bg-transparent text-base text-token-primary placeholder:text-token-muted focus:outline-none"
                 autoComplete="new-password"
               />
             </div>
             {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              <p className="mt-1 text-sm text-token-error">{errors.confirmPassword}</p>
             )}
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 font-semibold text-white shadow-lg shadow-teal-200 transition-all hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-token-accent px-6 font-semibold text-white shadow-lg shadow-teal-200/50 dark:shadow-teal-900/30 transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -234,7 +240,7 @@ function ResetPasswordContent() {
 
         <Link
           href="/auth/login"
-          className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+          className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-token-secondary hover:text-token-primary"
         >
           <ArrowLeftIcon className="h-5 w-5" />
           Back to login
@@ -248,8 +254,8 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-r-transparent" />
+        <div className="flex min-h-screen items-center justify-center bg-token-surface">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--accent-primary)] border-r-transparent" />
         </div>
       }
     >

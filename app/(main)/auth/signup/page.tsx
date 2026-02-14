@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/landing/ThemeToggle';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -167,14 +168,17 @@ export default function SignupPage() {
   const selectedCurrency = CURRENCIES.find((c) => c.value === formData.currency);
 
   return (
-    <div className="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-white px-4 py-4">
+    <div className="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-token-surface px-4 py-4">
+      <div className="absolute right-4 top-4 z-20">
+        <ThemeToggle />
+      </div>
       {/* Teal Gradient Orbs (design token accent) */}
       <div
-        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-linear-to-br from-teal-400 to-teal-600 opacity-60 blur-3xl"
+        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-linear-to-br from-teal-400 to-teal-600 opacity-40 dark:opacity-30 blur-3xl"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-linear-to-br from-teal-500 to-teal-600 opacity-60 blur-3xl"
+        className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-linear-to-br from-teal-500 to-teal-600 opacity-40 dark:opacity-30 blur-3xl"
         aria-hidden
       />
 
@@ -188,8 +192,8 @@ export default function SignupPage() {
           >
             <span className="text-lg font-bold text-white">TE</span>
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">Create Account</h1>
-          <p className="mt-0.5 text-xs text-gray-500">Start tracking expenses naturally</p>
+          <h1 className="text-xl font-bold text-token-primary">Create Account</h1>
+          <p className="mt-0.5 text-xs text-token-secondary">Start tracking expenses naturally</p>
         </div>
 
         {/* Smart Form */}
@@ -199,13 +203,13 @@ export default function SignupPage() {
             <div
               className={cn(
                 'flex h-11 items-center gap-2.5 rounded-xl px-3 transition-all',
-                'bg-gray-50',
-                nameFocused && 'bg-white ring-2 ring-teal-500 ring-offset-2 shadow-sm',
-                errors.name && 'bg-red-50'
+                'bg-[var(--background-tag)]',
+                nameFocused && 'bg-token-card ring-2 ring-[var(--accent-primary)] ring-offset-2 dark:ring-offset-[var(--background-surface)] shadow-sm',
+                errors.name && 'bg-red-50 dark:bg-red-950/30'
               )}
             >
               <UserIcon
-                className={cn('h-5 w-5 shrink-0', nameFocused ? 'text-teal-600' : 'text-gray-400')}
+                className={cn('h-5 w-5 shrink-0', nameFocused ? 'text-token-accent' : 'text-token-muted')}
               />
               <input
                 ref={nameInputRef}
@@ -215,12 +219,12 @@ export default function SignupPage() {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 onFocus={() => setNameFocused(true)}
                 onBlur={() => setNameFocused(false)}
-                className="flex-1 bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                className="flex-1 bg-transparent text-base text-token-primary placeholder:text-token-muted focus:outline-none"
                 autoComplete="name"
                 aria-label="Full Name"
               />
             </div>
-            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+            {errors.name && <p className="mt-1 text-sm text-token-error">{errors.name}</p>}
           </div>
 
           {/* Email */}
@@ -228,13 +232,13 @@ export default function SignupPage() {
             <div
               className={cn(
                 'flex h-11 items-center gap-2.5 rounded-xl px-3 transition-all',
-                'bg-gray-50',
-                emailFocused && 'bg-white ring-2 ring-teal-500 ring-offset-2 shadow-sm',
-                errors.email && 'bg-red-50'
+                'bg-[var(--background-tag)]',
+                emailFocused && 'bg-token-card ring-2 ring-[var(--accent-primary)] ring-offset-2 dark:ring-offset-[var(--background-surface)] shadow-sm',
+                errors.email && 'bg-red-50 dark:bg-red-950/30'
               )}
             >
               <MailIcon
-                className={cn('h-5 w-5 shrink-0', emailFocused ? 'text-teal-600' : 'text-gray-400')}
+                className={cn('h-5 w-5 shrink-0', emailFocused ? 'text-token-accent' : 'text-token-muted')}
               />
               <input
                 type="email"
@@ -243,12 +247,12 @@ export default function SignupPage() {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 onFocus={() => setEmailFocused(true)}
                 onBlur={() => setEmailFocused(false)}
-                className="flex-1 bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                className="flex-1 bg-transparent text-base text-token-primary placeholder:text-token-muted focus:outline-none"
                 autoComplete="email"
                 aria-label="Email"
               />
             </div>
-            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+            {errors.email && <p className="mt-1 text-sm text-token-error">{errors.email}</p>}
           </div>
 
           {/* Password + Strength Meter */}
@@ -256,15 +260,15 @@ export default function SignupPage() {
             <div
               className={cn(
                 'flex h-11 items-center gap-2.5 rounded-xl px-3 transition-all',
-                'bg-gray-50',
-                passwordFocused && 'bg-white ring-2 ring-teal-500 ring-offset-2 shadow-sm',
-                errors.password && 'bg-red-50'
+                'bg-[var(--background-tag)]',
+                passwordFocused && 'bg-token-card ring-2 ring-[var(--accent-primary)] ring-offset-2 dark:ring-offset-[var(--background-surface)] shadow-sm',
+                errors.password && 'bg-red-50 dark:bg-red-950/30'
               )}
             >
               <LockIcon
                 className={cn(
                   'h-5 w-5 shrink-0',
-                  passwordFocused ? 'text-teal-600' : 'text-gray-400'
+                  passwordFocused ? 'text-token-accent' : 'text-token-muted'
                 )}
               />
               <input
@@ -274,14 +278,14 @@ export default function SignupPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 onFocus={() => setPasswordFocused(true)}
                 onBlur={() => setPasswordFocused(false)}
-                className="flex-1 bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                className="flex-1 bg-transparent text-base text-token-primary placeholder:text-token-muted focus:outline-none"
                 autoComplete="new-password"
                 aria-label="Password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                className="shrink-0 rounded-lg p-1.5 text-token-muted hover:bg-[var(--surface-hover)] hover:text-token-secondary transition-colors"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 tabIndex={-1}
               >
@@ -295,16 +299,16 @@ export default function SignupPage() {
                   key={i}
                   className={cn(
                     'h-1.5 flex-1 rounded-full transition-colors',
-                    strength === 0 && 'bg-gray-200',
-                    strength === 1 && (i === 0 ? 'bg-red-600' : 'bg-gray-200'),
-                    strength === 2 && (i < 2 ? 'bg-orange-600' : 'bg-gray-200'),
-                    strength === 3 && (i < 3 ? 'bg-orange-600' : 'bg-gray-200'),
-                    strength === 4 && 'bg-green-600'
+                    strength === 0 && 'bg-[var(--border-default)]',
+                    strength === 1 && (i === 0 ? 'bg-token-error' : 'bg-[var(--border-default)]'),
+                    strength === 2 && (i < 2 ? 'bg-token-warning' : 'bg-[var(--border-default)]'),
+                    strength === 3 && (i < 3 ? 'bg-token-warning' : 'bg-[var(--border-default)]'),
+                    strength === 4 && 'bg-token-success'
                   )}
                 />
               ))}
             </div>
-            {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+            {errors.password && <p className="mt-1 text-sm text-token-error">{errors.password}</p>}
           </div>
 
           {/* Currency Selector */}
@@ -312,13 +316,13 @@ export default function SignupPage() {
             <button
               type="button"
               onClick={() => setCurrencySheetOpen(true)}
-              className="flex h-11 w-full items-center gap-2.5 rounded-xl bg-gray-50 px-3 text-left transition-all hover:bg-gray-100"
+              className="flex h-11 w-full items-center gap-2.5 rounded-xl bg-[var(--background-tag)] px-3 text-left transition-all hover:bg-[var(--surface-hover)]"
             >
-              <CoinsIcon className="h-5 w-5 shrink-0 text-gray-400" />
-              <span className="flex-1 text-base text-gray-900">
+              <CoinsIcon className="h-5 w-5 shrink-0 text-token-muted" />
+              <span className="flex-1 text-base text-token-primary">
                 {selectedCurrency?.label ?? formData.currency}
               </span>
-              <ChevronDownIcon className="h-5 w-5 shrink-0 text-gray-400" />
+              <ChevronDownIcon className="h-5 w-5 shrink-0 text-token-muted" />
             </button>
           </div>
 
@@ -326,7 +330,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={isLoading || !isPasswordValid}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 font-semibold text-white shadow-lg shadow-teal-200 transition-all hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-teal-600"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-token-accent px-6 font-semibold text-white shadow-lg shadow-teal-200/50 dark:shadow-teal-900/30 transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:opacity-50"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -345,13 +349,13 @@ export default function SignupPage() {
           </button>
 
           {/* Legal */}
-          <p className="text-center text-[11px] leading-tight text-gray-500">
+          <p className="text-center text-[11px] leading-tight text-token-secondary">
             By signing up, you agree to our{' '}
-            <Link href="/terms" className="font-medium text-gray-700 underline hover:text-gray-900">
+            <Link href="/terms" className="font-medium text-token-primary underline hover:text-token-accent">
               Terms of Service
             </Link>{' '}
             and{' '}
-            <Link href="/privacy" className="font-medium text-gray-700 underline hover:text-gray-900">
+            <Link href="/privacy" className="font-medium text-token-primary underline hover:text-token-accent">
               Privacy Policy
             </Link>
             .
@@ -361,15 +365,15 @@ export default function SignupPage() {
         {/* Social Sign-Up */}
         <div className="mt-4">
           <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-gray-200" />
-            <span className="text-xs font-medium text-gray-500">Or continue with</span>
-            <div className="h-px flex-1 bg-gray-200" />
+            <div className="h-px flex-1 bg-[var(--border-default)]" />
+            <span className="text-xs font-medium text-token-secondary">Or continue with</span>
+            <div className="h-px flex-1 bg-[var(--border-default)]" />
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => handleSocialSignup('Google')}
-              className="flex h-10 items-center justify-center gap-2 rounded-xl border border-gray-100 bg-white text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              className="flex h-10 items-center justify-center gap-2 rounded-xl border border-token bg-token-card text-sm font-medium text-token-primary transition-colors hover:bg-[var(--surface-hover)]"
             >
               <GoogleIcon className="h-5 w-5" />
               Google
@@ -377,18 +381,18 @@ export default function SignupPage() {
             <button
               type="button"
               onClick={() => handleSocialSignup('Apple')}
-              className="flex h-10 items-center justify-center gap-2 rounded-xl border border-gray-100 bg-white text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50"
+              className="flex h-10 items-center justify-center gap-2 rounded-xl border border-token bg-token-card text-sm font-medium text-token-primary transition-colors hover:bg-[var(--surface-hover)]"
             >
-              <AppleIcon className="h-5 w-5 text-gray-900" />
+              <AppleIcon className="h-5 w-5" />
               Apple
             </button>
           </div>
         </div>
 
         {/* Login Link */}
-        <p className="mt-4 text-center text-sm text-gray-600">
+        <p className="mt-4 text-center text-sm text-token-secondary">
           Already have an account?{' '}
-          <Link href="/auth/login" className="font-semibold text-teal-600 hover:text-teal-700">
+          <Link href="/auth/login" className="font-semibold text-token-accent hover:opacity-90">
             Sign in
           </Link>
         </p>
@@ -411,12 +415,12 @@ export default function SignupPage() {
               }}
               className={cn(
                 'flex w-full items-center justify-between rounded-xl px-4 py-3 text-left transition-colors',
-                formData.currency === c.value ? 'bg-teal-50 text-teal-700' : 'hover:bg-gray-50'
+                formData.currency === c.value ? 'bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300' : 'hover:bg-[var(--surface-hover)]'
               )}
             >
-              <span className="font-medium">{c.label}</span>
+              <span className="font-medium text-token-primary">{c.label}</span>
               {formData.currency === c.value && (
-                <svg className="h-5 w-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5 text-token-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               )}

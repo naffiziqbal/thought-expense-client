@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/landing/ThemeToggle';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -111,14 +112,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-white px-4 py-4">
+    <div className="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-token-surface px-4 py-4">
+      {/* Theme toggle */}
+      <div className="absolute right-4 top-4 z-20">
+        <ThemeToggle />
+      </div>
       {/* Teal Gradient Orbs (design token accent) */}
       <div
-        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-linear-to-br from-teal-400 to-teal-500 opacity-60 blur-3xl"
+        className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-linear-to-br from-teal-400 to-teal-500 opacity-40 dark:opacity-30 blur-3xl"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-linear-to-br from-teal-500 to-teal-600 opacity-60 blur-3xl"
+        className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-linear-to-br from-teal-500 to-teal-600 opacity-40 dark:opacity-30 blur-3xl"
         aria-hidden
       />
 
@@ -133,8 +138,8 @@ export default function LoginPage() {
           >
             <span className="text-lg font-bold text-white">TE</span>
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">Welcome Back</h1>
-          <p className="mt-0.5 text-xs text-gray-500">Securely login to your wallet</p>
+          <h1 className="text-xl font-bold text-token-primary">Welcome Back</h1>
+          <p className="mt-0.5 text-xs text-token-secondary">Securely login to your wallet</p>
         </div>
 
         {/* Tactile Form */}
@@ -144,15 +149,15 @@ export default function LoginPage() {
             <div
               className={cn(
                 'flex h-11 items-center gap-2.5 rounded-xl px-3 transition-all',
-                'bg-gray-50',
-                emailFocused && 'bg-white ring-2 ring-teal-500 ring-offset-2 shadow-sm',
-                errors.email && 'bg-red-50'
+                'bg-[var(--background-tag)]',
+                emailFocused && 'bg-token-card ring-2 ring-[var(--accent-primary)] ring-offset-2 dark:ring-offset-[var(--background-surface)] shadow-sm',
+                errors.email && 'bg-red-50 dark:bg-red-950/30'
               )}
             >
               <MailIcon
                 className={cn(
                   'h-5 w-5 shrink-0',
-                  emailFocused ? 'text-teal-600' : 'text-gray-400'
+                  emailFocused ? 'text-token-accent' : 'text-token-muted'
                 )}
               />
               <input
@@ -162,11 +167,11 @@ export default function LoginPage() {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 onFocus={() => setEmailFocused(true)}
                 onBlur={() => setEmailFocused(false)}
-                className="flex-1 bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                className="flex-1 bg-transparent text-base text-token-primary placeholder:text-token-muted focus:outline-none"
                 autoComplete="email"
               />
             </div>
-            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+            {errors.email && <p className="mt-1 text-sm text-token-error">{errors.email}</p>}
           </div>
 
           {/* Password */}
@@ -174,15 +179,15 @@ export default function LoginPage() {
             <div
               className={cn(
                 'flex h-11 items-center gap-2.5 rounded-xl px-3 transition-all',
-                'bg-gray-50',
-                passwordFocused && 'bg-white ring-2 ring-teal-500 ring-offset-2 shadow-sm',
-                errors.password && 'bg-red-50'
+                'bg-[var(--background-tag)]',
+                passwordFocused && 'bg-token-card ring-2 ring-[var(--accent-primary)] ring-offset-2 dark:ring-offset-[var(--background-surface)] shadow-sm',
+                errors.password && 'bg-red-50 dark:bg-red-950/30'
               )}
             >
               <LockIcon
                 className={cn(
                   'h-5 w-5 shrink-0',
-                  passwordFocused ? 'text-teal-600' : 'text-gray-400'
+                  passwordFocused ? 'text-token-accent' : 'text-token-muted'
                 )}
               />
               <input
@@ -192,13 +197,13 @@ export default function LoginPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 onFocus={() => setPasswordFocused(true)}
                 onBlur={() => setPasswordFocused(false)}
-                className="flex-1 bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                className="flex-1 bg-transparent text-base text-token-primary placeholder:text-token-muted focus:outline-none"
                 autoComplete="current-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                className="shrink-0 rounded-lg p-1.5 text-token-muted hover:bg-[var(--surface-hover)] hover:text-token-secondary transition-colors"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 tabIndex={-1}
               >
@@ -209,14 +214,14 @@ export default function LoginPage() {
                 )}
               </button>
             </div>
-            {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+            {errors.password && <p className="mt-1 text-sm text-token-error">{errors.password}</p>}
           </div>
 
           {/* Forgot Password */}
           <div className="flex justify-end">
             <Link
               href="/auth/forgot-password"
-              className="text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors"
+              className="text-sm font-medium text-token-accent hover:opacity-90 transition-colors"
             >
               Forgot password?
             </Link>
@@ -226,7 +231,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 font-semibold text-white shadow-lg shadow-teal-200 transition-all hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-token-accent px-6 font-semibold text-white shadow-lg shadow-teal-200/50 dark:shadow-teal-900/30 transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -248,16 +253,16 @@ export default function LoginPage() {
         {/* Social Login */}
         <div className="mt-4">
           <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-gray-200" />
-            <span className="text-xs font-medium text-gray-500">Or continue with</span>
-            <div className="h-px flex-1 bg-gray-200" />
+            <div className="h-px flex-1 bg-[var(--border-default)]" />
+            <span className="text-xs font-medium text-token-secondary">Or continue with</span>
+            <div className="h-px flex-1 bg-[var(--border-default)]" />
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => handleSocialLogin('Google')}
-              className="flex h-10 items-center justify-center gap-2 rounded-xl border border-gray-100 bg-white text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              className="flex h-10 items-center justify-center gap-2 rounded-xl border border-token bg-token-card text-sm font-medium text-token-primary transition-colors hover:bg-[var(--surface-hover)]"
             >
               <GoogleIcon className="h-5 w-5" />
               Google
@@ -265,18 +270,18 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => handleSocialLogin('Apple')}
-              className="flex h-10 items-center justify-center gap-2 rounded-xl border border-gray-100 bg-white text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50"
+              className="flex h-10 items-center justify-center gap-2 rounded-xl border border-token bg-token-card text-sm font-medium text-token-primary transition-colors hover:bg-[var(--surface-hover)]"
             >
-              <AppleIcon className="h-5 w-5 text-gray-900" />
+              <AppleIcon className="h-5 w-5" />
               Apple
             </button>
           </div>
         </div>
 
         {/* Sign Up Link */}
-        <p className="mt-4 text-center text-sm text-gray-600">
+        <p className="mt-4 text-center text-sm text-token-secondary">
           Don&apos;t have an account?{' '}
-          <Link href="/auth/signup" className="font-semibold text-teal-600 hover:text-teal-700">
+          <Link href="/auth/signup" className="font-semibold text-token-accent hover:opacity-90">
             Sign up for free
           </Link>
         </p>
