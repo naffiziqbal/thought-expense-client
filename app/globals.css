@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Dark mode variant: respond to data-theme="dark" on document */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* Design Token System - CSS Variables */
 :root,
 [data-theme="light"] {

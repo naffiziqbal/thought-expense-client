@@ -75,14 +75,14 @@ export function MagicInputHero() {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="rounded-[24px] border border-gray-200 bg-white p-2 shadow-lg">
-        <div className="flex items-center gap-3 rounded-2xl bg-gray-50 px-5 py-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xl">
+      <div className="rounded-[24px] border border-token bg-token-card p-2 shadow-lg">
+        <div className="flex items-center gap-3 rounded-2xl bg-[var(--background-tag)] px-5 py-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-950/50 text-xl">
             ✏️
           </div>
-          <div className="min-h-[2.5rem] flex-1 py-2 text-lg text-gray-700">
+          <div className="min-h-[2.5rem] flex-1 py-2 text-lg text-token-primary">
             {visibleText}
-            <span className="animate-cursor-blink text-teal-500" aria-hidden>|</span>
+            <span className="animate-cursor-blink text-token-accent" aria-hidden>|</span>
           </div>
         </div>
       </div>
@@ -91,7 +91,7 @@ export function MagicInputHero() {
           tags.map((tag, i) => (
             <span
               key={tag.label}
-              className="animate-in flex items-center gap-1.5 rounded-full bg-teal-50 px-4 py-2 text-sm font-medium text-teal-700"
+              className="animate-in flex items-center gap-1.5 rounded-full bg-teal-50 dark:bg-teal-950/50 px-4 py-2 text-sm font-medium text-teal-700 dark:text-teal-300"
               style={{ animationDelay: `${i * 150}ms` }}
             >
               <span>{tag.emoji}</span>

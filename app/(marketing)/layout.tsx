@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
+import { ThemeToggle } from '@/components/landing/ThemeToggle';
 
 export default function MarketingLayout({
   children,
@@ -20,12 +21,13 @@ export default function MarketingLayout({
               </div>
               <span className="text-xl font-medium text-token-primary">ThoughtExpense</span>
             </Link>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1 sm:space-x-3">
+              <ThemeToggle />
               <Link href="/#pricing" className="hidden sm:inline text-sm font-medium text-token-secondary hover:text-token-accent transition-colors">
                 Pricing
               </Link>
               <Link href="/auth/login">
-                <Button variant="ghost" size="md" className="rounded-full text-token-primary hover:bg-[var(--blueGray-100)]">
+                <Button variant="ghost" size="md" className="rounded-full text-token-primary hover:bg-[var(--surface-hover)]">
                   Login
                 </Button>
               </Link>

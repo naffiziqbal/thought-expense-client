@@ -29,12 +29,12 @@ export function FAQAccordion() {
       {FAQ_ITEMS.map((item, i) => (
         <div
           key={i}
-          className="rounded-lg border border-gray-200 bg-white shadow-sm"
+          className="rounded-lg border border-token bg-token-card shadow-sm"
         >
           <button
             type="button"
             onClick={() => setOpen(open === i ? null : i)}
-            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-gray-900 hover:bg-gray-50"
+            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-token-primary hover:bg-[var(--surface-hover)]"
           >
             {item.q}
             <svg
@@ -47,7 +47,7 @@ export function FAQAccordion() {
             </svg>
           </button>
           {open === i && (
-            <div className="border-t border-gray-200 px-4 py-3 text-sm text-gray-500">
+            <div className="border-t border-token px-4 py-3 text-sm text-token-secondary">
               {item.a}
             </div>
           )}
