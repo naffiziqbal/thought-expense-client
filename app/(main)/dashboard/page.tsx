@@ -195,6 +195,37 @@ export default function DashboardPage() {
   const topCategory = summary?.topCategories?.[0];
   const topCategoryAmount = topCategory ? (summary?.byCategory?.[topCategory] ?? 0) : 0;
 
+  // Build notifications: budget alerts first (urgent), then AI insights
+  type NotificationItem = { id: string; type: 'budget-exceeded' | 'budget-warning' | 'insight'; content: string; meta?: string };
+  const notifications: NotificationItem[] = [];
+
+  if (budget && budget.percentage >= 100) {
+    notifications.push({
+      id: 'budget-exceeded',
+      type: 'budget-exceeded',
+      content: 'You have exceeded your monthly budget',
+      meta: `${formatCurrency(budget.total_spent, currency)} of ${formatCurrency(budget.total_limit, currency)} (${budget.percentage}%)`,
+    });
+  } else if (budget && budget.percentage >= 90) {
+    notifications.push({
+      id: 'budget-warning',
+      type: 'budget-warning',
+      content: 'You are about to exceed your monthly budget',
+      meta: `${formatCurrency(budget.total_spent, currency)} of ${formatCurrency(budget.total_limit, currency)} (${budget.percentage}%)`,
+    });
+  }
+
+  insights.forEach((insight) => {
+    notifications.push({
+      id: insight.id,
+      type: 'insight',
+      content: insight.content,
+      meta: new Date(insight.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    });
+  });
+
+  const notificationCount = notifications.length;
+
   // Progress bar color: Teal (safe), Yellow (warning), Red (danger)
   const progressColor =
     budgetPct < 75 ? 'bg-[var(--accent-primary)]' : budgetPct < 95 ? 'bg-[var(--status-warning)]' : 'bg-[var(--status-error)]';
@@ -217,42 +248,55 @@ export default function DashboardPage() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
-                {insights.length > 0 && (
+                {notificationCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-token-error text-white text-[10px] font-bold flex items-center justify-center">
-                    {insights.length > 9 ? '9+' : insights.length}
+                    {notificationCount > 9 ? '9+' : notificationCount}
                   </span>
                 )}
               </button>
               {notificationOpen && (
                 <div className="absolute right-0 top-full mt-2 w-[min(calc(100vw-2rem),384px)] rounded-2xl bg-token-card shadow-xl border border-token z-50 overflow-hidden">
                   <div className="px-4 py-3 border-b border-token">
-                    <h3 className="font-semibold text-token-primary">AI Insights</h3>
-                    <p className="text-xs text-token-secondary">Your spending analysis</p>
+                    <h3 className="font-semibold text-token-primary">Notifications</h3>
+                    <p className="text-xs text-token-secondary">Budget alerts and spending insights</p>
                   </div>
                   <div className="max-h-[min(60vh,320px)] overflow-y-auto">
-                    {insightsLoading ? (
+                    {insightsLoading && notifications.length === 0 ? (
                       <div className="flex justify-center py-12">
                         <div className="w-8 h-8 animate-spin rounded-full border-2 border-[var(--accent-primary)] border-r-transparent" />
                       </div>
-                    ) : insights.length === 0 ? (
+                    ) : notifications.length === 0 ? (
                       <div className="px-4 py-8 text-center">
-                        <p className="text-sm text-token-secondary">No insights yet</p>
+                        <p className="text-sm text-token-secondary">No notifications yet</p>
+                        <p className="text-xs text-token-muted mt-1">You&apos;ll see budget alerts and AI insights here</p>
                         <Link href="/dashboard/insights" onClick={() => setNotificationOpen(false)} className="mt-3 inline-block text-sm font-semibold text-token-accent">
                           Go to Insights
                         </Link>
                       </div>
                     ) : (
                       <div className="p-2 space-y-2">
-                        {insights.map((insight) => (
-                          <div key={insight.id} className="p-3 rounded-xl bg-teal-50/50 hover:bg-teal-50 transition-colors">
-                            <p className="text-sm text-token-primary">{insight.content}</p>
-                            <p className="text-xs text-token-muted mt-2">{new Date(insight.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                        {notifications.map((n) => (
+                          <div
+                            key={n.id}
+                            className={`p-3 rounded-xl transition-colors ${
+                              n.type === 'budget-exceeded'
+                                ? 'bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50'
+                                : n.type === 'budget-warning'
+                                  ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50'
+                                  : 'bg-teal-50/50 dark:bg-teal-950/20 hover:bg-teal-50 dark:hover:bg-teal-950/30'
+                            }`}
+                          >
+                            <p className="text-sm font-medium text-token-primary">{n.content}</p>
+                            {n.meta && <p className="text-xs text-token-muted mt-2">{n.meta}</p>}
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
-                  <div className="px-4 py-2 border-t border-token bg-token-surface">
+                  <div className="px-4 py-2 border-t border-token bg-token-surface flex justify-between items-center gap-2">
+                    <Link href="/dashboard/budget" onClick={() => setNotificationOpen(false)}>
+                      <span className="text-sm font-semibold text-token-accent">View budget</span>
+                    </Link>
                     <Link href="/dashboard/insights" onClick={() => setNotificationOpen(false)}>
                       <span className="text-sm font-semibold text-token-accent">View all insights</span>
                     </Link>
