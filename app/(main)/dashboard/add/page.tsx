@@ -49,6 +49,7 @@ interface ReceiptItem {
   description: string;
   amount: number;
   category: string;
+  rawInput?: string; // original text segment for sync with input box
   isEditing?: boolean;
 }
 
@@ -91,6 +92,7 @@ export default function AddExpensePage() {
           description: p.description,
           amount: p.amount,
           category: getCategoryFromKeyword(p.description),
+          rawInput: p.rawInput,
           isEditing: false,
         }))
       );
@@ -239,6 +241,20 @@ export default function AddExpensePage() {
           : item
       )
     );
+  };
+
+  const handleDeleteItem = (id: string) => {
+    const item = receiptItems.find((i) => i.id === id);
+    if (!item) return;
+
+    const remaining = receiptItems.filter((i) => i.id !== id);
+    setReceiptItems(remaining);
+
+    // Rebuild rawInput from remaining items and sync input box
+    const newRawInput = remaining
+      .map((i) => i.rawInput ?? `${i.description} ${i.amount}`)
+      .join(', ');
+    setRawInput(newRawInput);
   };
 
   const handleSave = async () => {
@@ -429,6 +445,7 @@ export default function AddExpensePage() {
               ) : (
                 displayItems.map((item) => {
                   const CategoryIcon = getCategoryIcon(item.category);
+                  const canDelete = itemsToSave.length === 0 && receiptItems.some((i) => i.id === item.id);
                   return (
                   <div
                     key={item.id}
@@ -459,6 +476,17 @@ export default function AddExpensePage() {
                       )}
                     </div>
                     <span className="font-bold text-token-primary shrink-0">-{formatCurrency(item.amount, currency)}</span>
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDeleteItem(item.id)}
+                        aria-label={`Remove ${item.description}`}
+                        className="p-1.5 rounded-full text-token-secondary hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors shrink-0"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 );
                 })
