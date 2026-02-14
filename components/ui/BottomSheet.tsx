@@ -55,7 +55,7 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
           <h2 className="text-lg font-semibold text-token-primary">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-token-muted hover:bg-[var(--blueGray-100)] hover:text-token-primary"
+            className="rounded-lg p-2 text-token-muted hover:bg-[var(--surface-hover)] hover:text-token-primary"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

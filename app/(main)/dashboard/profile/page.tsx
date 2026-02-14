@@ -86,7 +86,7 @@ function MenuItem({ icon, iconBg, iconColor, title, subtitle, href, isLast, comi
     </>
   );
 
-  const rowClass = `flex h-[64px] sm:h-[72px] w-full items-center gap-3 sm:gap-4 px-3 sm:px-4 text-left transition-colors active:bg-[var(--blueGray-50)] ${
+  const rowClass = `flex h-[64px] sm:h-[72px] w-full items-center gap-3 sm:gap-4 px-3 sm:px-4 text-left transition-colors hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)] ${
     !isLast ? 'border-b border-token' : ''
   }`;
 

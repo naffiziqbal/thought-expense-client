@@ -139,7 +139,7 @@ export default function SecurityPage() {
                 <button
                   type="button"
                   onClick={() => setShowCurrent(!showCurrent)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1.5 text-token-muted hover:bg-[var(--blueGray-100)] hover:text-token-primary"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1.5 text-token-muted hover:bg-[var(--surface-hover)] hover:text-token-primary"
                   aria-label={showCurrent ? 'Hide password' : 'Show password'}
                 >
                   {showCurrent ? <EyeOffIcon /> : <EyeIcon />}
@@ -165,7 +165,7 @@ export default function SecurityPage() {
                 <button
                   type="button"
                   onClick={() => setShowNew(!showNew)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1.5 text-token-muted hover:bg-[var(--blueGray-100)] hover:text-token-primary"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1.5 text-token-muted hover:bg-[var(--surface-hover)] hover:text-token-primary"
                   aria-label={showNew ? 'Hide password' : 'Show password'}
                 >
                   {showNew ? <EyeOffIcon /> : <EyeIcon />}

@@ -402,7 +402,7 @@ export default function AddExpensePage() {
                 <button
                   onClick={handleGallery}
                   disabled={isScanning}
-                  className="p-2.5 rounded-full text-token-secondary hover:bg-[var(--blueGray-100)] transition-colors disabled:opacity-60"
+                  className="p-2.5 rounded-full text-token-secondary hover:bg-[var(--surface-hover)] transition-colors disabled:opacity-60"
                 >
                   <span className="text-xl">🖼️</span>
                 </button>
@@ -418,7 +418,7 @@ export default function AddExpensePage() {
             )}
             <button
               onClick={handleDateClick}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-token-secondary hover:bg-[var(--blueGray-100)] text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-token-secondary hover:bg-[var(--surface-hover)] text-sm font-medium transition-colors"
             >
               <span className="whitespace-nowrap">
                 {selectedDate === new Date().toISOString().split('T')[0]

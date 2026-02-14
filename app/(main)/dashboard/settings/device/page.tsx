@@ -58,7 +58,7 @@ export default function DeviceSettingsPage() {
         <div className="flex items-center gap-3 px-4 sm:px-6 pt-4 pb-6">
           <Link
             href="/dashboard/profile"
-            className="p-2 -ml-2 rounded-lg text-token-secondary hover:bg-[var(--blueGray-100)] hover:text-token-primary transition-colors"
+            className="p-2 -ml-2 rounded-lg text-token-secondary hover:bg-[var(--surface-hover)] hover:text-token-primary transition-colors"
             aria-label="Back"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

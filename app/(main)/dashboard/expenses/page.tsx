@@ -356,7 +356,7 @@ export default function ExpensesPage() {
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={clearFilters}
-                    className="flex-1 py-2 text-sm font-medium text-token-secondary border border-token rounded-lg hover:bg-[var(--blueGray-50)] transition-colors"
+                    className="flex-1 py-2 text-sm font-medium text-token-secondary border border-token rounded-lg hover:bg-[var(--surface-hover)] transition-colors"
                   >
                     Clear
                   </button>
@@ -401,7 +401,7 @@ export default function ExpensesPage() {
                   key={expense.id}
                   type="button"
                   onClick={() => handleEdit(expense)}
-                  className="w-full flex items-center gap-2 sm:gap-4 px-2.5 sm:px-4 py-3 min-h-[64px] sm:min-h-[72px] text-left bg-token-card hover:bg-[var(--blueGray-50)] active:bg-[var(--blueGray-100)] transition-colors"
+                  className="w-full flex items-center gap-2 sm:gap-4 px-2.5 sm:px-4 py-3 min-h-[64px] sm:min-h-[72px] text-left bg-token-card hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)] transition-colors"
                 >
                   {/* Left: Category Icon (squircle) */}
                   <div
@@ -625,7 +625,7 @@ export default function ExpensesPage() {
           Are you sure you want to delete this expense? This action cannot be undone.
         </p>
         {selectedExpense && (
-          <div className="mt-4 rounded-lg bg-[var(--blueGray-50)] p-4">
+          <div className="mt-4 rounded-lg bg-[var(--background-tag)] p-4">
             <p className="font-medium text-token-primary">{selectedExpense.description}</p>
             <p className="text-sm text-token-secondary">
               {formatCurrency(selectedExpense.amount, selectedExpense.currency)} •{' '}

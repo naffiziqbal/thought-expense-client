@@ -14,9 +14,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary: 'bg-token-accent text-white hover:opacity-90 focus-visible:ring-[var(--accent-primary)] shadow-sm',
-      secondary: 'bg-[var(--blueGray-100)] text-token-primary hover:bg-[var(--blueGray-200)] focus-visible:ring-[var(--blueGray-400)]',
-      outline: 'border-2 border-token text-token-primary hover:bg-[var(--blueGray-50)] focus-visible:ring-[var(--border-default)]',
-      ghost: 'text-token-primary hover:bg-[var(--blueGray-100)] focus-visible:ring-[var(--blueGray-300)]',
+      secondary: 'bg-[var(--background-tag)] text-token-primary hover:bg-[var(--surface-hover)] focus-visible:ring-[var(--blueGray-400)]',
+      outline: 'border-2 border-token text-token-primary hover:bg-[var(--surface-hover)] focus-visible:ring-[var(--border-default)]',
+      ghost: 'text-token-primary hover:bg-[var(--surface-hover)] focus-visible:ring-[var(--blueGray-300)]',
       danger: 'bg-token-error text-white hover:opacity-90 focus-visible:ring-[var(--status-error)]',
     };
 

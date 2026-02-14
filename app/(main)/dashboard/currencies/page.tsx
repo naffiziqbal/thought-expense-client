@@ -93,7 +93,7 @@ export default function CurrenciesPage() {
                   'flex w-full items-center justify-between px-4 py-4 text-left transition-colors',
                   selectedCurrency === currency.value
                     ? 'bg-token-accent/10 text-token-accent'
-                    : 'hover:bg-[var(--blueGray-50)] active:bg-[var(--blueGray-100)]'
+                    : 'hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
                 )}
               >
                 <span className="font-medium text-token-primary">{currency.label}</span>

@@ -270,7 +270,7 @@ export default function BudgetPage() {
             </div>
             <button
               onClick={() => setEditLimitOpen(true)}
-              className="rounded-lg p-2 text-token-muted hover:bg-[var(--blueGray-100)] hover:text-token-secondary transition-colors"
+              className="rounded-lg p-2 text-token-muted hover:bg-[var(--surface-hover)] hover:text-token-secondary transition-colors"
               title="Edit budget"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,7 +309,7 @@ export default function BudgetPage() {
         {/* Zone C: Magic Wand (AI Setup) */}
         <div className="mt-6 rounded-3xl bg-token-card p-3 sm:p-4 shadow-sm">
           <div className="flex gap-2 sm:gap-3 items-center">
-            <div className="flex-1 flex items-center gap-2 h-11 rounded-full border border-token bg-[var(--blueGray-50)] px-3 sm:px-4 focus-within:border-[var(--accent-primary)] focus-within:bg-teal-50/30 focus-within:ring-2 focus-within:ring-[var(--accent-primary)]/20 transition-all">
+            <div className="flex-1 flex items-center gap-2 h-11 rounded-full border border-token bg-[var(--background-tag)] px-3 sm:px-4 focus-within:border-[var(--accent-primary)] focus-within:bg-teal-50/30 dark:focus-within:bg-teal-950/30 focus-within:ring-2 focus-within:ring-[var(--accent-primary)]/20 transition-all">
               <svg className="h-5 w-5 shrink-0 text-token-accent" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.916 1.916l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.916 1.916l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.916-1.916l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.916-1.916l.258-1.036A.75.75 0 0118 1.5zM3 13.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.916 1.916l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.916 1.916l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.916-1.916l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.916-1.916l.258-1.036A.75.75 0 013 13.5z" clipRule="evenodd" />
             </svg>
@@ -496,7 +496,7 @@ export default function BudgetPage() {
                       setDatePickerOpen(false);
                     }}
                     className={`w-full flex items-center justify-between rounded-xl px-4 py-2.5 text-left transition-colors ${
-                      isSelected ? 'bg-teal-50' : 'hover:bg-[var(--blueGray-100)]'
+                      isSelected ? 'bg-teal-50 dark:bg-teal-950/50' : 'hover:bg-[var(--surface-hover)]'
                     }`}
                   >
                     <span className="text-sm font-medium text-token-primary">
@@ -539,7 +539,7 @@ export default function BudgetPage() {
                     setDatePickerOpen(false);
                   }}
                   className={`w-full text-left py-3 px-4 rounded-xl text-base font-medium ${
-                    isSelected ? 'bg-teal-50 text-[var(--accent-primary)]' : 'text-token-primary hover:bg-[var(--blueGray-100)]'
+                    isSelected ? 'bg-teal-50 dark:bg-teal-950/50 text-[var(--accent-primary)]' : 'text-token-primary hover:bg-[var(--surface-hover)]'
                   }`}
                 >
                   {label}

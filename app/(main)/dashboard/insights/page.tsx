@@ -310,7 +310,7 @@ export default function InsightsPage() {
 
         {/* D. Daily & Weekly Insights - Premium Locked (Free users only) */}
         {!isPremium && (
-          <div className="rounded-3xl border-2 border-dashed border-token bg-[var(--blueGray-50)] p-6 flex flex-col items-center text-center">
+          <div className="rounded-3xl border-2 border-dashed border-token bg-[var(--background-tag)] p-6 flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-full bg-[var(--blueGray-200)] flex items-center justify-center mb-3">
               <svg className="w-6 h-6 text-token-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -401,7 +401,7 @@ export default function InsightsPage() {
             {othersBreakdown.map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between rounded-xl bg-[var(--blueGray-50)] px-4 py-3"
+                className="flex items-center justify-between rounded-xl bg-[var(--background-tag)] px-4 py-3"
               >
                 <span className="font-medium text-token-primary">{item.name}</span>
                 <span className="text-sm text-token-secondary">

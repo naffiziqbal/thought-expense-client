@@ -401,7 +401,7 @@ export default function DashboardPage() {
                 {recentExpenses.map((expense) => {
                   const CategoryIcon = getCategoryIcon(expense.category);
                   return (
-                    <Link key={expense.id} href="/dashboard/expenses" className="flex items-center gap-2 sm:gap-4 px-2.5 sm:px-4 py-3 hover:bg-[var(--blueGray-50)] transition-colors">
+                    <Link key={expense.id} href="/dashboard/expenses" className="flex items-center gap-2 sm:gap-4 px-2.5 sm:px-4 py-3 hover:bg-[var(--surface-hover)] transition-colors">
                       <div
                         className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0"
                         style={{ backgroundColor: getCategoryBgColor(expense.category) }}
