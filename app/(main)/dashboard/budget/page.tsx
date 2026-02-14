@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Modal } from '@/components/ui/Modal';
 import { api } from '@/lib/api';
+import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
 import toast from 'react-hot-toast';
 import type { BudgetSummary, CategoryBudgetProgress, Expense } from '@/types';
 import { formatCurrency } from '@/lib/utils';
@@ -126,6 +127,7 @@ export default function BudgetPage() {
         toast.success('Budget updated');
         setEditLimitOpen(false);
         await loadBudgets();
+        window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
       } else {
         toast.error(res.message || 'Failed to save');
       }
@@ -173,6 +175,7 @@ export default function BudgetPage() {
         setCategoryText('');
         setParsedCategories([]);
         await loadBudgets();
+        window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
       } else {
         toast.error(res.message || 'Failed to save');
       }
