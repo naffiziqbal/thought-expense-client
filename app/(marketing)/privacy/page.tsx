@@ -1,8 +1,16 @@
 import Link from 'next/link';
 
-export const metadata = {
-  title: 'Privacy Policy - ThoughtExpense',
-  description: 'Privacy Policy for ThoughtExpense expense tracking app',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description:
+    'Read how ThoughtExpense collects, uses, and protects your data. We value your privacy and transparency in our AI-powered expense tracking service.',
+  openGraph: {
+    title: 'Privacy Policy | ThoughtExpense',
+    description: 'How ThoughtExpense handles your data. Privacy-first expense tracking.',
+    url: '/privacy',
+  },
 };
 
 export default function PrivacyPage() {

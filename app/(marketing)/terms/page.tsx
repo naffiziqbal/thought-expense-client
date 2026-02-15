@@ -1,8 +1,16 @@
 import Link from 'next/link';
 
-export const metadata = {
-  title: 'Terms of Service - ThoughtExpense',
-  description: 'Terms of Service for ThoughtExpense expense tracking app',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description:
+    'Terms of Service for ThoughtExpense. Learn about your rights and responsibilities when using our AI-powered expense tracking app.',
+  openGraph: {
+    title: 'Terms of Service | ThoughtExpense',
+    description: 'Terms and conditions for using ThoughtExpense expense tracker.',
+    url: '/terms',
+  },
 };
 
 export default function TermsPage() {

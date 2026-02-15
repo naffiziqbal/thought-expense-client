@@ -4,10 +4,89 @@ import { MagicInputHero } from '@/components/landing/MagicInputHero';
 import { TransformationShowcase } from '@/components/landing/TransformationShowcase';
 import { SocialTrust } from '@/components/landing/SocialTrust';
 import { FAQAccordion } from '@/components/landing/FAQAccordion';
+import type { Metadata } from 'next';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thoughtexpense.com';
+
+export const metadata: Metadata = {
+  title: 'Track Expenses. Just by Typing.',
+  description:
+    'No categories. No dates. Just say "Coffee 15, Rent 5000" and we handle the rest. AI-powered expense tracking. Free to start.',
+  openGraph: {
+    url: siteUrl,
+    type: 'website',
+  },
+  alternates: {
+    canonical: siteUrl,
+  },
+};
+
+const faqItems = [
+  {
+    q: "What's included in Free?",
+    a: 'Free gets you natural language text input, 3 months of expense history, monthly AI insights, and multi-currency support. Upgrade to Premium for receipt scanning, full history, export (CSV/PDF), and daily & weekly insights.',
+  },
+  {
+    q: 'Is my data encrypted?',
+    a: 'Yes. All data is encrypted at rest using industry-standard AES-256. In transit, we use TLS 1.3. Your expense data is never shared or sold.',
+  },
+  {
+    q: 'Can I export my data?',
+    a: 'Premium users can export expenses as CSV or PDF anytime. Free users can upgrade to Premium to unlock export. Your data is yours—no lock-in.',
+  },
+  {
+    q: 'How does receipt scanning work?',
+    a: 'Premium users can snap or upload receipts. We use Tesseract.js for OCR with custom preprocessing. Typical accuracy is high on clean receipts. You can always correct entries manually.',
+  },
+];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'ThoughtExpense',
+    description:
+      'AI-powered expense tracker. Log expenses in natural language — no categories or dates to pick. Just type "Coffee 15, Rent 5000" and we handle the rest.',
+    url: siteUrl,
+    applicationCategory: 'FinanceApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    featureList: [
+      'Natural language expense input',
+      'AI-powered categorization',
+      'Multi-currency support',
+      'Monthly spending insights',
+      'Receipt scan (Premium)',
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.a,
+      },
+    })),
+  },
+];
 
 export default function HomePage() {
   return (
     <>
+      {jsonLd.map((schema, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
       {/* Section 01: The Magic Hero */}
       <section className="flex min-h-[85vh] flex-col items-center justify-center px-4 py-20">
         <div className="mx-auto max-w-3xl text-center">

@@ -6,9 +6,57 @@ import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thoughtexpense.com';
+
 export const metadata: Metadata = {
-  title: 'ThoughtExpense - Track Expenses. Just by Typing.',
-  description: 'No categories. No dates. Just say "Coffee 15, Rent 5000" and we handle the rest. Free to start.',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'ThoughtExpense - Track Expenses. Just by Typing.',
+    template: '%s | ThoughtExpense',
+  },
+  description:
+    'No categories. No dates. Just say "Coffee 15, Rent 5000" and we handle the rest. AI-powered expense tracking. Free to start.',
+  keywords: [
+    'expense tracker',
+    'budget app',
+    'natural language expenses',
+    'AI expense tracking',
+    'spending tracker',
+    'personal finance',
+    'receipt scanner',
+  ],
+  authors: [{ name: 'ThoughtExpense', url: siteUrl }],
+  creator: 'ThoughtExpense',
+  applicationName: 'ThoughtExpense',
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: siteUrl,
+    siteName: 'ThoughtExpense',
+    title: 'ThoughtExpense - Track Expenses. Just by Typing.',
+    description:
+      'No categories. No dates. Just say "Coffee 15, Rent 5000" and we handle the rest. AI-powered expense tracking. Free to start.',
+    // opengraph-image.tsx generates the OG image automatically
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ThoughtExpense - Track Expenses. Just by Typing.',
+    description:
+      'No categories. No dates. Just say "Coffee 15, Rent 5000" and we handle the rest. Free to start.',
+    // Uses opengraph-image.tsx
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  alternates: {
+    canonical: siteUrl,
+  },
+  category: 'finance',
 };
 
 export default function RootLayout({
