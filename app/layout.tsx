@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Instrument_Sans } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const instrumentSans = Instrument_Sans({ subsets: ['latin'] });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thoughtexpense.com';
 
@@ -73,7 +73,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>
+      <body className={instrumentSans.className}>
         <ThemeProvider>
           {children}
           <Toaster
