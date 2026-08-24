@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
+import { useAuthStore } from '@/store/authStore';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
@@ -29,6 +31,8 @@ const EyeOffIcon = () => (
 
 export default function SecurityPage() {
   const { isAuthenticated, isLoading } = useProtectedRoute();
+  const router = useRouter();
+  const { logout } = useAuthStore();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -37,6 +41,31 @@ export default function SecurityPage() {
   const [showNew, setShowNew] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) return;
+    if (!window.confirm('Permanently delete your account and ALL data? This cannot be undone.')) return;
+    setIsDeleting(true);
+    try {
+      const res = await api.deleteAccount(deletePassword);
+      if (res.success) {
+        toast.success('Your account has been deleted');
+        logout();
+        router.push('/');
+      }
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : null;
+      toast.error(msg || 'Failed to delete account');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
 
   const validate = () => {
     setError(null);
@@ -201,6 +230,33 @@ export default function SecurityPage() {
               Update Password
             </Button>
           </form>
+        </div>
+
+        {/* Danger Zone */}
+        <div className="mt-6 rounded-2xl bg-token-card border border-red-300 dark:border-red-900/60 p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-red-600 mb-1">Danger Zone</h2>
+          <p className="text-sm text-token-secondary mb-4">
+            Permanently delete your account and all data — expenses, budgets, insights and your profile. This cannot
+            be undone.
+          </p>
+          <input
+            type="password"
+            value={deletePassword}
+            onChange={(e) => setDeletePassword(e.target.value)}
+            placeholder="Confirm your password"
+            autoComplete="current-password"
+            className="w-full rounded-lg border border-token px-4 py-3 text-token-primary placeholder:text-token-muted bg-token-card focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          />
+          <Button
+            type="button"
+            variant="danger"
+            className="w-full mt-3"
+            onClick={handleDeleteAccount}
+            isLoading={isDeleting}
+            disabled={!deletePassword}
+          >
+            Delete my account
+          </Button>
         </div>
       </div>
     </DashboardLayout>

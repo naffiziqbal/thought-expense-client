@@ -148,6 +148,14 @@ class ApiClient {
     return response.data;
   }
 
+  async deleteAccount(password: string): Promise<{ success: boolean; message: string }> {
+    const response = await this.client.delete('/api/auth/account', { data: { password } });
+    if (response.data?.success) {
+      this.clearToken();
+    }
+    return response.data;
+  }
+
   logout(): void {
     this.clearToken();
   }
