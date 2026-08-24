@@ -120,7 +120,7 @@ export default function HomePage() {
       </section>
 
       {/* Section 02: The Transformation */}
-      <section id="how-it-works" className="border-t border-token bg-token-surface px-4 py-24">
+      <section id="how-it-works" className="border-t border-token bg-token-card px-4 py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-4xl font-bold tracking-tight text-token-primary">
             Turn your brain dump into a budget.
@@ -135,7 +135,7 @@ export default function HomePage() {
       </section>
 
       {/* Section 03: Lifestyle Features */}
-      <section id="features" className="border-t border-token bg-token-card px-4 py-24">
+      <section id="features" className="border-t border-token bg-token-surface px-4 py-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-4xl font-bold tracking-tight text-token-primary">
             More than just typing.
@@ -206,28 +206,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section 04: Social Trust */}
-      <section className="border-t border-token bg-token-surface px-4 py-16">
-        <div className="mx-auto max-w-4xl">
-          <SocialTrust />
-        </div>
-      </section>
-
-      {/* Section 04b: FAQ */}
-      <section id="faq" className="border-t border-token bg-token-card px-4 py-24">
-        <div className="mx-auto max-w-2xl">
-          <h2 className="text-center text-4xl font-bold tracking-tight text-token-primary">
-            Frequently asked
-          </h2>
-          <p className="mt-4 text-center text-lg text-token-secondary mb-12">
-            Quick answers about ThoughtExpense
-          </p>
-          <FAQAccordion />
-        </div>
-      </section>
-
       {/* Section 05: Pricing */}
-      <section id="pricing" className="border-t border-token bg-token-surface px-4 py-24">
+      <section id="pricing" className="border-t border-token bg-token-card px-4 py-24">
         <div className="mx-auto max-w-4xl">
           <h2 className="text-center text-4xl font-bold tracking-tight text-token-primary">
             Simple pricing
@@ -285,6 +265,25 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Section 04b: FAQ */}
+      <section id="faq" className="border-t border-token bg-token-surface px-4 py-24">
+        <div className="mx-auto max-w-2xl">
+          <h2 className="text-center text-4xl font-bold tracking-tight text-token-primary">
+            Frequently asked
+          </h2>
+          <div className="mt-12">
+            <FAQAccordion />
+          </div>
+        </div>
+      </section>
+
+      {/* Section 04: Social Trust */}
+      <section className="border-t border-token bg-token-card px-4 py-16">
+        <div className="mx-auto max-w-4xl">
+          <SocialTrust />
+        </div>
+      </section>
+
       {/* Section 06: CTA band */}
       <section className="bg-token-accent px-4 py-24">
         <div className="mx-auto max-w-2xl text-center">
@@ -316,6 +315,10 @@ export default function HomePage() {
               Android
             </span>
             <span className="flex items-center gap-2 rounded-xl bg-white/10 px-5 py-3 text-sm font-semibold text-white/60">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20.5c-4 0-6.5-3.4-6.5-7.2 0-3.7 2.5-5.6 4.7-5.6 1 0 1.8 0.4 1.8 0.4s0.8-0.4 1.8-0.4c2.2 0 4.7 1.9 4.7 5.6 0 3.8-2.5 7.2-6.5 7.2z" />
+                <path d="M12 7.5c0-2 1.5-3.5 3-3.5 0 2-1.5 3.5-3 3.5z" />
+              </svg>
               iOS coming soon
             </span>
           </div>
