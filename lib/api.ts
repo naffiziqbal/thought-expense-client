@@ -282,6 +282,25 @@ class ApiClient {
     return response.data;
   }
 
+  async getRecurringExpenses(): Promise<{
+    success: boolean;
+    data: {
+      recurring: Array<{
+        description: string;
+        category: string;
+        averageAmount: number;
+        currency: string;
+        occurrences: number;
+        monthsSeen: number;
+        lastDate: string;
+      }>;
+      windowMonths: number;
+    };
+  }> {
+    const response = await this.client.get('/api/expenses/recurring');
+    return response.data;
+  }
+
   // Insight endpoints
   async generateInsights(): Promise<GenerateInsightsResponse> {
     const response = await this.client.post<GenerateInsightsResponse>('/api/insights/generate');

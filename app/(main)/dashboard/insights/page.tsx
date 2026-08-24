@@ -46,13 +46,18 @@ export default function InsightsPage() {
   const [othersSheetOpen, setOthersSheetOpen] = useState(false);
   const [categoriesExpanded, setCategoriesExpanded] = useState(false);
   const [period, setPeriod] = useState<'month' | 'all'>('month');
+  const now = new Date();
+  const [selYear, setSelYear] = useState(now.getFullYear());
+  const [selMonth, setSelMonth] = useState(now.getMonth() + 1);
+  const [prevSummary, setPrevSummary] = useState<CategorySummary | null>(null);
+  const [recurring, setRecurring] = useState<
+    { description: string; category: string; averageAmount: number; currency: string; monthsSeen: number }[]
+  >([]);
 
   const dateRange = useMemo(() => {
     if (period === 'all') return isPremium ? 'All time' : 'Last 3 months (free plan)';
-    const start = startOfMonth(new Date());
-    const end = endOfMonth(new Date());
-    return `${format(start, 'MMM dd')} - ${format(end, 'MMM dd, yyyy')}`;
-  }, [period, isPremium]);
+    return new Date(selYear, selMonth - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  }, [period, isPremium, selYear, selMonth]);
 
   const fetchInsights = async () => {
     setIsLoading(true);
@@ -70,15 +75,24 @@ export default function InsightsPage() {
 
   const fetchSummary = async () => {
     try {
-      const iso = (d: Date) => d.toISOString().slice(0, 10);
-      const filters =
+      const iso = (d: Date) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const range = (y: number, m: number) => ({
+        startDate: iso(new Date(y, m - 1, 1)),
+        endDate: iso(new Date(y, m, 0)),
+      });
+      const filters = period === 'month' ? range(selYear, selMonth) : undefined;
+      const prevDate = new Date(selYear, selMonth - 2, 1);
+      const [response, prevRes, recurringRes] = await Promise.all([
+        api.getCategorySummary(filters),
         period === 'month'
-          ? { startDate: iso(startOfMonth(new Date())), endDate: iso(endOfMonth(new Date())) }
-          : undefined;
-      const response = await api.getCategorySummary(filters);
-      if (response.success) {
-        setSummary(response.data);
-      }
+          ? api.getCategorySummary(range(prevDate.getFullYear(), prevDate.getMonth() + 1))
+          : Promise.resolve(null),
+        api.getRecurringExpenses().catch(() => null),
+      ]);
+      if (response.success) setSummary(response.data);
+      setPrevSummary(prevRes?.success ? prevRes.data : null);
+      if (recurringRes?.success) setRecurring(recurringRes.data.recurring);
     } catch (error) {
       console.error('Failed to fetch summary:', error);
     }
@@ -89,7 +103,7 @@ export default function InsightsPage() {
     fetchInsights();
     fetchSummary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, authLoading, period]);
+  }, [isAuthenticated, authLoading, period, selYear, selMonth]);
 
   const handleGenerateInsights = async () => {
     setIsGenerating(true);
@@ -197,19 +211,45 @@ export default function InsightsPage() {
               Refresh
             </Button>
           </div>
-          <div className="mt-4 inline-flex rounded-xl border border-token bg-token-card p-1">
-            {(['month', 'all'] as const).map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setPeriod(p)}
-                className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${
-                  period === p ? 'bg-token-accent text-white' : 'text-token-secondary hover:text-token-primary'
-                }`}
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="inline-flex rounded-xl border border-token bg-token-card p-1">
+              {(['month', 'all'] as const).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPeriod(p)}
+                  className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${
+                    period === p ? 'bg-token-accent text-white' : 'text-token-secondary hover:text-token-primary'
+                  }`}
+                >
+                  {p === 'month' ? 'Monthly' : 'All time'}
+                </button>
+              ))}
+            </div>
+            {period === 'month' && (
+              <select
+                value={`${selYear}-${selMonth}`}
+                onChange={(e) => {
+                  const [y, m] = e.target.value.split('-').map(Number);
+                  setSelYear(y);
+                  setSelMonth(m);
+                }}
+                className="rounded-xl border border-token bg-token-card px-3 py-2 text-sm font-medium text-token-primary focus:border-[var(--accent-primary)] focus:outline-none"
               >
-                {p === 'month' ? 'This month' : 'All time'}
-              </button>
-            ))}
+                {Array.from({ length: 24 }, (_, i) => {
+                  const d = new Date();
+                  d.setDate(1);
+                  d.setMonth(d.getMonth() - i);
+                  const y = d.getFullYear();
+                  const m = d.getMonth() + 1;
+                  return (
+                    <option key={`${y}-${m}`} value={`${y}-${m}`}>
+                      {d.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
+                    </option>
+                  );
+                })}
+              </select>
+            )}
           </div>
         </div>
 
@@ -299,12 +339,31 @@ export default function InsightsPage() {
           <div className="rounded-3xl bg-token-card border border-token p-5 shadow-sm">
             <h3 className="mb-4 text-base font-semibold text-token-primary">Top Spending Categories</h3>
             <div className="space-y-4">
-              {visibleBarData.map((item) => (
+              {visibleBarData.map((item) => {
+                const prev = period === 'month' && prevSummary ? prevSummary.byCategory[item.category] : undefined;
+                const deltaPct = prev && prev > 0 ? Math.round(((item.amount - prev) / prev) * 100) : null;
+                const isNew = period === 'month' && prevSummary && (!prev || prev <= 0);
+                return (
                 <div key={item.category} className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <span className="truncate text-sm font-medium text-token-primary">{item.category}</span>
-                    <span className="shrink-0 text-sm font-semibold text-token-primary">
-                      {formatCurrency(item.amount, summary.currency)}
+                    <span className="flex shrink-0 items-center gap-2">
+                      {isNew ? (
+                        <span className="rounded-full bg-[var(--accent-primary)]/10 px-2 py-0.5 text-[11px] font-semibold text-token-accent">new</span>
+                      ) : deltaPct !== null && deltaPct !== 0 ? (
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                            deltaPct > 0
+                              ? 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300'
+                              : 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300'
+                          }`}
+                        >
+                          {deltaPct > 0 ? '\u2191' : '\u2193'}{Math.abs(deltaPct)}% vs prev
+                        </span>
+                      ) : null}
+                      <span className="text-sm font-semibold text-token-primary">
+                        {formatCurrency(item.amount, summary.currency)}
+                      </span>
                     </span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--blueGray-100)]">
@@ -317,7 +376,8 @@ export default function InsightsPage() {
                     />
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
             {hasMoreCategories && (
               <button
@@ -346,6 +406,26 @@ export default function InsightsPage() {
             >
               Upgrade to Premium
             </Link>
+          </div>
+        )}
+
+        {recurring.length > 0 && (
+          <div className="rounded-3xl bg-token-card border border-token p-5 shadow-sm">
+            <h3 className="text-base font-semibold text-token-primary">Recurring</h3>
+            <p className="mt-0.5 text-xs text-token-muted">Detected from your history — likely subscriptions &amp; bills</p>
+            <div className="mt-4 space-y-3">
+              {recurring.map((item) => (
+                <div key={item.description} className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-token-primary">{item.description}</p>
+                    <p className="text-xs text-token-muted">{item.category} &middot; seen {item.monthsSeen} months</p>
+                  </div>
+                  <span className="shrink-0 text-sm font-semibold text-token-primary">
+                    ~{formatCurrency(item.averageAmount, item.currency)}/mo
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
