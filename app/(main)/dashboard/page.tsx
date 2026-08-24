@@ -88,6 +88,16 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [seenIds, setSeenIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('seen-notifications');
+      if (raw) setSeenIds(JSON.parse(raw));
+    } catch {
+      // ignore
+    }
+  }, []);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const fetchData = useCallback(async () => {
@@ -156,6 +166,16 @@ export default function DashboardPage() {
     const willOpen = !notificationOpen;
     setNotificationOpen(willOpen);
     if (willOpen && insights.length === 0 && !insightsLoading) fetchInsights();
+    if (willOpen) {
+      const ids = notifications.map((n) => n.id);
+      const merged = Array.from(new Set([...seenIds, ...ids])).slice(-100);
+      setSeenIds(merged);
+      try {
+        localStorage.setItem('seen-notifications', JSON.stringify(merged));
+      } catch {
+        // ignore
+      }
+    }
   };
 
   useEffect(() => {
@@ -201,14 +221,14 @@ export default function DashboardPage() {
 
   if (budget && budget.percentage >= 100) {
     notifications.push({
-      id: 'budget-exceeded',
+      id: `budget-exceeded-${budget.year}-${budget.month}`,
       type: 'budget-exceeded',
       content: 'You have exceeded your monthly budget',
       meta: `${formatCurrency(budget.total_spent, currency)} of ${formatCurrency(budget.total_limit, currency)} (${budget.percentage}%)`,
     });
   } else if (budget && budget.percentage >= 90) {
     notifications.push({
-      id: 'budget-warning',
+      id: `budget-warning-${budget.year}-${budget.month}`,
       type: 'budget-warning',
       content: 'You are about to exceed your monthly budget',
       meta: `${formatCurrency(budget.total_spent, currency)} of ${formatCurrency(budget.total_limit, currency)} (${budget.percentage}%)`,
@@ -224,7 +244,7 @@ export default function DashboardPage() {
     });
   });
 
-  const notificationCount = notifications.length;
+  const notificationCount = notifications.filter((n) => !seenIds.includes(n.id)).length;
 
   // Progress bar color: Teal (safe), Yellow (warning), Red (danger)
   const progressColor =

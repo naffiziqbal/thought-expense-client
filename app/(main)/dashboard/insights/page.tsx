@@ -45,12 +45,14 @@ export default function InsightsPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [othersSheetOpen, setOthersSheetOpen] = useState(false);
   const [categoriesExpanded, setCategoriesExpanded] = useState(false);
+  const [period, setPeriod] = useState<'month' | 'all'>('month');
 
   const dateRange = useMemo(() => {
+    if (period === 'all') return isPremium ? 'All time' : 'Last 3 months (free plan)';
     const start = startOfMonth(new Date());
     const end = endOfMonth(new Date());
     return `${format(start, 'MMM dd')} - ${format(end, 'MMM dd, yyyy')}`;
-  }, []);
+  }, [period, isPremium]);
 
   const fetchInsights = async () => {
     setIsLoading(true);
@@ -68,7 +70,12 @@ export default function InsightsPage() {
 
   const fetchSummary = async () => {
     try {
-      const response = await api.getCategorySummary();
+      const iso = (d: Date) => d.toISOString().slice(0, 10);
+      const filters =
+        period === 'month'
+          ? { startDate: iso(startOfMonth(new Date())), endDate: iso(endOfMonth(new Date())) }
+          : undefined;
+      const response = await api.getCategorySummary(filters);
       if (response.success) {
         setSummary(response.data);
       }
@@ -81,7 +88,8 @@ export default function InsightsPage() {
     if (!isAuthenticated || authLoading) return;
     fetchInsights();
     fetchSummary();
-  }, [isAuthenticated, authLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, authLoading, period]);
 
   const handleGenerateInsights = async () => {
     setIsGenerating(true);
@@ -188,6 +196,20 @@ export default function InsightsPage() {
             >
               Refresh
             </Button>
+          </div>
+          <div className="mt-4 inline-flex rounded-xl border border-token bg-token-card p-1">
+            {(['month', 'all'] as const).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPeriod(p)}
+                className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${
+                  period === p ? 'bg-token-accent text-white' : 'text-token-secondary hover:text-token-primary'
+                }`}
+              >
+                {p === 'month' ? 'This month' : 'All time'}
+              </button>
+            ))}
           </div>
         </div>
 
