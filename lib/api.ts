@@ -105,6 +105,11 @@ class ApiClient {
     return response.data;
   }
 
+  async verifyResetOtp(email: string, otp: string): Promise<{ success: boolean; data?: { resetToken: string } }> {
+    const response = await this.client.post('/api/auth/verify-otp', { email, otp });
+    return response.data;
+  }
+
   async resetPassword(token: string, password: string): Promise<{ success: boolean; message: string }> {
     const response = await this.client.post<{ success: boolean; message: string }>('/api/auth/reset-password', {
       token,
