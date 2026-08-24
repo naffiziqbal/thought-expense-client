@@ -85,10 +85,10 @@ export function getConfidenceColor(confidence: number): string {
 }
 
 export function getConfidenceBadgeColor(confidence: number): string {
-  if (confidence >= 0.9) return 'bg-green-100 text-green-800';
-  if (confidence >= 0.7) return 'bg-yellow-100 text-yellow-800';
-  if (confidence >= 0.5) return 'bg-orange-100 text-orange-800';
-  return 'bg-red-100 text-red-800';
+  if (confidence >= 0.9) return 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300';
+  if (confidence >= 0.7) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-300';
+  if (confidence >= 0.5) return 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300';
+  return 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300';
 }
 
 // Generate consistent color for any category using hash
@@ -105,17 +105,17 @@ function hashString(str: string): number {
 export function getCategoryColor(category: string): string {
   // Predefined colors for common categories
   const predefinedColors: Record<string, string> = {
-    Food: 'bg-blue-100 text-blue-800',
-    Transport: 'bg-purple-100 text-purple-800',
-    Rent: 'bg-red-100 text-red-800',
-    Utilities: 'bg-yellow-100 text-yellow-800',
-    Shopping: 'bg-pink-100 text-pink-800',
-    Entertainment: 'bg-indigo-100 text-indigo-800',
-    Healthcare: 'bg-green-100 text-green-800',
-    Education: 'bg-teal-100 text-teal-800',
-    'Personal Care': 'bg-orange-100 text-orange-800',
-    Fees: 'bg-gray-100 text-gray-800',
-    Other: 'bg-slate-100 text-slate-800',
+    Food: 'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300',
+    Transport: 'bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300',
+    Rent: 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300',
+    Utilities: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-300',
+    Shopping: 'bg-pink-100 text-pink-800 dark:bg-pink-500/15 dark:text-pink-300',
+    Entertainment: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300',
+    Healthcare: 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300',
+    Education: 'bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-300',
+    'Personal Care': 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300',
+    Fees: 'bg-gray-100 text-gray-800 dark:bg-gray-500/15 dark:text-gray-300',
+    Other: 'bg-slate-100 text-slate-800 dark:bg-slate-500/15 dark:text-slate-300',
   };
 
   // Return predefined color if exists
@@ -125,18 +125,18 @@ export function getCategoryColor(category: string): string {
 
   // Generate consistent color for dynamic categories
   const colorPalette = [
-    'bg-blue-100 text-blue-800',
-    'bg-purple-100 text-purple-800',
-    'bg-pink-100 text-pink-800',
-    'bg-indigo-100 text-indigo-800',
-    'bg-green-100 text-green-800',
-    'bg-teal-100 text-teal-800',
-    'bg-orange-100 text-orange-800',
-    'bg-cyan-100 text-cyan-800',
-    'bg-lime-100 text-lime-800',
-    'bg-amber-100 text-amber-800',
-    'bg-rose-100 text-rose-800',
-    'bg-violet-100 text-violet-800',
+    'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300',
+    'bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300',
+    'bg-pink-100 text-pink-800 dark:bg-pink-500/15 dark:text-pink-300',
+    'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300',
+    'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300',
+    'bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-300',
+    'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300',
+    'bg-cyan-100 text-cyan-800 dark:bg-cyan-500/15 dark:text-cyan-300',
+    'bg-lime-100 text-lime-800 dark:bg-lime-500/15 dark:text-lime-300',
+    'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+    'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
+    'bg-violet-100 text-violet-800 dark:bg-violet-500/15 dark:text-violet-300',
   ];
 
   const hash = hashString(category);
