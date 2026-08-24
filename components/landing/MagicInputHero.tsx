@@ -77,8 +77,11 @@ export function MagicInputHero() {
     <div className="w-full max-w-2xl mx-auto">
       <div className="rounded-[24px] border border-token bg-token-card p-2 shadow-lg">
         <div className="flex items-center gap-3 rounded-2xl bg-[var(--background-tag)] px-5 py-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-950/50 text-xl">
-            ✏️
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent-primary)]/12 text-token-accent">
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M15.2 5.2l3.6 3.6" />
+              <path d="M17.2 3.2a2.5 2.5 0 0 1 3.6 3.6L6.5 21H3v-3.5z" />
+            </svg>
           </div>
           <div className="min-h-[2.5rem] flex-1 py-2 text-lg text-token-primary">
             {visibleText}
@@ -94,7 +97,6 @@ export function MagicInputHero() {
               className="animate-in flex items-center gap-1.5 rounded-full bg-teal-50 dark:bg-teal-950/50 px-4 py-2 text-sm font-medium text-teal-700 dark:text-teal-300"
               style={{ animationDelay: `${i * 150}ms` }}
             >
-              <span>{tag.emoji}</span>
               <span>{tag.label}: {tag.category}</span>
             </span>
           ))}
