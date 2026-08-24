@@ -2,28 +2,30 @@ import type { Metadata } from 'next';
 import { Instrument_Sans } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { siteUrl } from '@/lib/site';
 import './globals.css';
 
 const instrumentSans = Instrument_Sans({ subsets: ['latin'] });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thoughtexpense.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'ThoughtExpense - Track Expenses. Just by Typing.',
+    default: 'ThoughtExpense — AI Expense Tracker. Track Expenses by Typing.',
     template: '%s | ThoughtExpense',
   },
   description:
-    'No categories. No dates. Just say "Coffee 15, Rent 5000" and we handle the rest. AI-powered expense tracking. Free to start.',
+    'Log expenses in plain language — type "coffee 120, uber 250" and AI parses, categorizes and dates every item. Budgets, insights, receipt scanning and multi-currency. Free to start, on web and Android.',
   keywords: [
-    'expense tracker',
+    'AI expense tracker',
+    'expense tracker app',
+    'natural language expense tracking',
     'budget app',
-    'natural language expenses',
-    'AI expense tracking',
+    'receipt scanner app',
     'spending tracker',
-    'personal finance',
-    'receipt scanner',
+    'personal finance app',
+    'money tracker',
+    'expense manager android',
   ],
   authors: [{ name: 'ThoughtExpense', url: siteUrl }],
   creator: 'ThoughtExpense',
@@ -33,16 +35,16 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: siteUrl,
     siteName: 'ThoughtExpense',
-    title: 'ThoughtExpense - Track Expenses. Just by Typing.',
+    title: 'ThoughtExpense — AI Expense Tracker. Track Expenses by Typing.',
     description:
-      'No categories. No dates. Just say "Coffee 15, Rent 5000" and we handle the rest. AI-powered expense tracking. Free to start.',
+      'Type "coffee 120, uber 250" — AI logs, categorizes and dates every expense. Budgets, insights and receipt scanning. Free to start.',
     // opengraph-image.tsx generates the OG image automatically
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ThoughtExpense - Track Expenses. Just by Typing.',
+    title: 'ThoughtExpense — AI Expense Tracker. Track Expenses by Typing.',
     description:
-      'No categories. No dates. Just say "Coffee 15, Rent 5000" and we handle the rest. Free to start.',
+      'Type "coffee 120, uber 250" — AI logs, categorizes and dates every expense. Free to start.',
     // Uses opengraph-image.tsx
   },
   robots: {

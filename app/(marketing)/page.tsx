@@ -5,13 +5,13 @@ import { TransformationShowcase } from '@/components/landing/TransformationShowc
 import { SocialTrust } from '@/components/landing/SocialTrust';
 import { FAQAccordion } from '@/components/landing/FAQAccordion';
 import type { Metadata } from 'next';
+import { siteUrl } from '@/lib/site';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thoughtexpense.com';
 
 export const metadata: Metadata = {
-  title: 'Track Expenses. Just by Typing.',
+  title: 'AI Expense Tracker — Track Expenses. Just by Typing.',
   description:
-    'No categories. No dates. Just say "Coffee 15, Rent 5000" and we handle the rest. AI-powered expense tracking. Free to start.',
+    'Log expenses in plain language: type "coffee 120, uber 250" and AI parses, categorizes and dates every item. Budgets, AI insights, receipt scanning, multi-currency. Free forever plan — no card required.',
   openGraph: {
     url: siteUrl,
     type: 'website',
@@ -54,6 +54,12 @@ const jsonLd = [
       '@type': 'Offer',
       price: '0',
       priceCurrency: 'USD',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'ThoughtExpense',
+      url: siteUrl,
+      logo: `${siteUrl}/icon`,
     },
     featureList: [
       'Natural language expense input',

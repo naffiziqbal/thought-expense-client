@@ -22,7 +22,7 @@ export function OGTemplate({ title, description, subtitle }: OGTemplateProps): R
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%)',
+        background: 'linear-gradient(135deg, #0B7A70 0%, #0E9488 55%, #2DD4BF 100%)',
         fontFamily: 'system-ui, sans-serif',
       }}
     >

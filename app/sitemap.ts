@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
+import { siteUrl } from '@/lib/site';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thoughtexpense.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = `${siteUrl}`;
@@ -23,6 +23,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/account-deletion`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.4,
     },
     {
       url: `${baseUrl}/auth/login`,
