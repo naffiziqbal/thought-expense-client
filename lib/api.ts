@@ -15,6 +15,13 @@ import type {
   ApiError,
   BudgetSummary,
   CategoryBudgetProgress,
+  AssistantMessage,
+  AssistantAnswer,
+  SavingsPlan,
+  AssistantSearchResult,
+  SavingsGoal,
+  SpendingIntelligence,
+  WeeklyBriefing,
 } from '@/types';
 
 class ApiClient {
@@ -178,6 +185,21 @@ class ApiClient {
     return response.data;
   }
 
+  /** Create many expenses in ONE request (avoids per-item rate-limit pressure). */
+  async createExpensesBatch(
+    expenses: Array<{
+      description: string;
+      amount: number;
+      currency?: string;
+      category?: string;
+      date?: string;
+      rawInput?: string;
+    }>
+  ): Promise<{ success: boolean; message: string; data: { expenses: Expense[] } }> {
+    const response = await this.client.post('/api/expenses/batch', { expenses });
+    return response.data;
+  }
+
   async getExpenses(filters?: ExpenseFilters): Promise<ExpensesResponse> {
     const response = await this.client.get<ExpensesResponse>('/api/expenses', {
       params: filters,
@@ -314,6 +336,95 @@ class ApiClient {
     const response = await this.client.get<InsightsResponse>('/api/insights', {
       params: filters,
     });
+    return response.data;
+  }
+
+  // AI Advisor (Assistant) endpoints
+  async askAssistant(
+    question: string,
+    history?: AssistantMessage[]
+  ): Promise<{ success: boolean; data: AssistantAnswer }> {
+    const response = await this.client.post('/api/assistant/ask', { question, history });
+    return response.data;
+  }
+
+  async askAssistantWhy(): Promise<{ success: boolean; data: AssistantAnswer }> {
+    const response = await this.client.post('/api/assistant/why');
+    return response.data;
+  }
+
+  async createSavingsPlan(
+    targetAmount: number
+  ): Promise<{ success: boolean; data: { plan: SavingsPlan; remainingFreeQuestions: number | null } }> {
+    const response = await this.client.post('/api/assistant/savings-plan', { targetAmount });
+    return response.data;
+  }
+
+  async searchExpensesSmart(q: string): Promise<{ success: boolean; data: AssistantSearchResult }> {
+    const response = await this.client.get('/api/assistant/search', { params: { q } });
+    return response.data;
+  }
+
+  // Savings goal endpoints
+  async getGoals(): Promise<{ success: boolean; data: { goals: SavingsGoal[] } }> {
+    const response = await this.client.get('/api/goals');
+    return response.data;
+  }
+
+  async createGoal(data: {
+    name: string;
+    targetAmount: number;
+    currency?: string;
+    deadline?: string;
+  }): Promise<{ success: boolean; message?: string; data: { goal: SavingsGoal } }> {
+    const response = await this.client.post('/api/goals', data);
+    return response.data;
+  }
+
+  async updateGoal(
+    id: string,
+    data: {
+      name?: string;
+      targetAmount?: number;
+      deadline?: string;
+      status?: 'active' | 'completed' | 'archived';
+    }
+  ): Promise<{ success: boolean; message?: string; data: { goal: SavingsGoal } }> {
+    const response = await this.client.patch(`/api/goals/${id}`, data);
+    return response.data;
+  }
+
+  async contributeToGoal(
+    id: string,
+    amount: number
+  ): Promise<{ success: boolean; message?: string; data: { goal: SavingsGoal } }> {
+    const response = await this.client.post(`/api/goals/${id}/contribute`, { amount });
+    return response.data;
+  }
+
+  async deleteGoal(id: string): Promise<{ success: boolean; message?: string }> {
+    const response = await this.client.delete(`/api/goals/${id}`);
+    return response.data;
+  }
+
+  // Spending intelligence endpoint
+  async getSpendingIntelligence(): Promise<{ success: boolean; data: SpendingIntelligence }> {
+    const response = await this.client.get('/api/insights/intelligence');
+    return response.data;
+  }
+
+  // Weekly briefing endpoints
+  async getLatestBriefing(): Promise<{ success: boolean; data: { briefing: WeeklyBriefing | null } }> {
+    const response = await this.client.get('/api/insights/briefing/latest');
+    return response.data;
+  }
+
+  async generateBriefing(): Promise<{
+    success: boolean;
+    message?: string;
+    data: { briefing: WeeklyBriefing | null };
+  }> {
+    const response = await this.client.post('/api/insights/briefing/generate');
     return response.data;
   }
 

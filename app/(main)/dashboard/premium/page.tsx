@@ -11,11 +11,21 @@ const CheckIcon = () => (
 );
 
 const benefits = [
+  { title: 'AI financial advisor — unlimited questions', desc: 'Ask anything about your spending, as often as you like' },
+  { title: 'Weekly financial briefing by email', desc: 'A summary of your week in money, every week' },
+  { title: 'Smart alerts: anomalies, trends & waste detection', desc: 'Get warned about spikes, price creep and leaks' },
+  { title: '12-month intelligence window', desc: 'Deeper analysis across a full year of data' },
   { title: 'No ads', desc: 'Clean, distraction-free experience' },
   { title: 'Receipt scanning', desc: 'Scan receipts with camera or upload' },
   { title: 'Full expense history', desc: 'Access all your past transactions' },
   { title: 'Export (CSV & PDF)', desc: 'Download your data anytime' },
   { title: 'Daily & Weekly insights', desc: 'Granular AI spending analysis' },
+];
+
+const pricingTiers = [
+  { name: 'Monthly', price: '$6.99', period: '/month', badge: null },
+  { name: 'Yearly', price: '$60', period: '/year', badge: 'Save ~28%' },
+  { name: 'Lifetime', price: '$99', period: 'one-time', badge: null },
 ];
 
 export default function PremiumPage() {
@@ -69,18 +79,46 @@ export default function PremiumPage() {
           </ul>
         </div>
 
+        {/* Pricing tiers */}
+        {!isPremium && (
+          <div className="rounded-2xl bg-token-card p-5 shadow-sm border border-token">
+            <h2 className="text-lg font-semibold text-token-primary mb-4">Choose your plan</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {pricingTiers.map((tier) => (
+                <div
+                  key={tier.name}
+                  className={`relative rounded-2xl border p-4 text-center ${
+                    tier.badge
+                      ? 'border-2 border-[var(--accent-primary)] bg-teal-50/50 dark:bg-teal-950/20'
+                      : 'border-token bg-token-card'
+                  }`}
+                >
+                  {tier.badge && (
+                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-token-accent px-2.5 py-0.5 text-[11px] font-semibold text-white whitespace-nowrap">
+                      {tier.badge}
+                    </span>
+                  )}
+                  <p className="text-sm font-medium text-token-secondary">{tier.name}</p>
+                  <p className="mt-1 text-2xl font-bold text-token-primary">{tier.price}</p>
+                  <p className="text-xs text-token-muted">{tier.period}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Upgrade CTA - only for Free users */}
         {!isPremium && (
           <div className="rounded-2xl bg-token-card border border-token p-6 text-center">
             <h3 className="font-semibold text-token-primary mb-2">Ready to upgrade?</h3>
             <p className="text-sm text-token-secondary mb-4">
-              Premium will be available through the mobile app. Stay tuned for updates!
+              Purchase happens through the mobile app. Open ThoughtExpense on your phone to upgrade!
             </p>
             <button
               disabled
               className="px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold opacity-75 cursor-not-allowed"
             >
-              Coming via Mobile App
+              Upgrade via Mobile App
             </button>
           </div>
         )}

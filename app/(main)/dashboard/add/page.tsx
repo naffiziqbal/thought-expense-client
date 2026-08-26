@@ -300,18 +300,17 @@ export default function AddExpensePage() {
       setItemsToSave(displayItems);
       setSaveStage('saving');
 
-      for (let i = 0; i < parsed.length; i++) {
-        const exp = parsed[i];
-        await api.createExpense({
+      // One request for the whole batch — per-item POSTs were tripping rate limits
+      await api.createExpensesBatch(
+        parsed.map((exp) => ({
           description: exp.description,
           amount: exp.amount,
           currency: exp.currency || currency,
           category: exp.category,
           date: exp.date || selectedDate,
           rawInput: exp.rawInput,
-        });
-        setItemsToSave((prev) => prev.filter((_, idx) => idx !== 0));
-      }
+        }))
+      );
 
       setSaveStage(null);
       setItemsToSave([]);

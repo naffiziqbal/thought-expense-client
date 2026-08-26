@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
-import type { Insight, CategorySummary } from '@/types';
+import type { Insight, CategorySummary, SpendingIntelligence, WeeklyBriefing } from '@/types';
 import { formatCurrency, formatDate, getCategoryChartColor } from '@/lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
@@ -53,6 +53,9 @@ export default function InsightsPage() {
   const [recurring, setRecurring] = useState<
     { description: string; category: string; averageAmount: number; currency: string; monthsSeen: number }[]
   >([]);
+  const [intelligence, setIntelligence] = useState<SpendingIntelligence | null>(null);
+  const [briefing, setBriefing] = useState<WeeklyBriefing | null>(null);
+  const [isRefreshingBriefing, setIsRefreshingBriefing] = useState(false);
 
   const dateRange = useMemo(() => {
     if (period === 'all') return isPremium ? 'All time' : 'Last 3 months (free plan)';
@@ -98,12 +101,50 @@ export default function InsightsPage() {
     }
   };
 
+  const fetchIntelligence = async () => {
+    try {
+      const [intelligenceRes, briefingRes] = await Promise.all([
+        api.getSpendingIntelligence().catch(() => null),
+        api.getLatestBriefing().catch(() => null),
+      ]);
+      if (intelligenceRes?.success) setIntelligence(intelligenceRes.data);
+      if (briefingRes?.success) setBriefing(briefingRes.data.briefing);
+    } catch (error) {
+      console.error('Failed to fetch spending intelligence:', error);
+    }
+  };
+
   useEffect(() => {
     if (!isAuthenticated || authLoading) return;
     fetchInsights();
     fetchSummary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, authLoading, period, selYear, selMonth]);
+
+  useEffect(() => {
+    if (!isAuthenticated || authLoading) return;
+    fetchIntelligence();
+  }, [isAuthenticated, authLoading]);
+
+  const handleRefreshBriefing = async () => {
+    setIsRefreshingBriefing(true);
+    try {
+      const res = await api.generateBriefing();
+      if (res.success) {
+        setBriefing(res.data.briefing);
+        toast.success(res.message || 'Briefing refreshed');
+      }
+    } catch (error: unknown) {
+      const message =
+        error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+            'Failed to refresh briefing'
+          : 'Failed to refresh briefing';
+      toast.error(message);
+    } finally {
+      setIsRefreshingBriefing(false);
+    }
+  };
 
   const handleGenerateInsights = async () => {
     setIsGenerating(true);
@@ -253,6 +294,104 @@ export default function InsightsPage() {
           </div>
         </div>
 
+        {/* Weekly Briefing */}
+        <div className="rounded-3xl bg-token-card border border-token p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="text-base font-semibold text-token-primary">
+                {briefing?.metadata?.briefing?.title || 'Weekly briefing'}
+              </h3>
+              <p className="mt-0.5 text-xs text-token-muted">
+                Your week in money, summarized by AI
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefreshBriefing}
+              isLoading={isRefreshingBriefing}
+              className="shrink-0 text-token-accent"
+            >
+              Refresh briefing
+            </Button>
+          </div>
+
+          {briefing ? (
+            <div className="mt-4 space-y-4">
+              <p className="text-sm text-token-primary">{briefing.metadata.briefing.summary}</p>
+
+              {/* Week vs previous week */}
+              <div className="flex items-center gap-3 rounded-2xl bg-[var(--background-tag)] px-4 py-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-token-muted">This week</p>
+                  <p className="text-base font-bold text-token-primary truncate">
+                    {formatCurrency(briefing.metadata.weekTotal, briefing.metadata.currency)}
+                  </p>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-token-muted">Last week</p>
+                  <p className="text-base font-bold text-token-secondary truncate">
+                    {formatCurrency(briefing.metadata.previousWeekTotal, briefing.metadata.currency)}
+                  </p>
+                </div>
+                {briefing.metadata.previousWeekTotal > 0 && (
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                      briefing.metadata.weekTotal > briefing.metadata.previousWeekTotal
+                        ? 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300'
+                        : 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300'
+                    }`}
+                  >
+                    {briefing.metadata.weekTotal > briefing.metadata.previousWeekTotal ? '↑' : '↓'}
+                    {Math.abs(
+                      Math.round(
+                        ((briefing.metadata.weekTotal - briefing.metadata.previousWeekTotal) /
+                          briefing.metadata.previousWeekTotal) *
+                          100
+                      )
+                    )}
+                    %
+                  </span>
+                )}
+              </div>
+
+              {briefing.metadata.briefing.highlights.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-token-muted">Highlights</p>
+                  <ul className="space-y-1.5">
+                    {briefing.metadata.briefing.highlights.map((highlight, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-token-primary">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-token-accent" />
+                        {highlight}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {briefing.metadata.briefing.recommendations.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-token-muted">
+                    Recommendations
+                  </p>
+                  <ul className="space-y-1.5">
+                    {briefing.metadata.briefing.recommendations.map((rec, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-token-primary">
+                        <span className="mt-0.5 shrink-0 text-token-accent">✓</span>
+                        {rec}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-token-secondary">
+              No briefing yet. Tap &quot;Refresh briefing&quot; to generate your weekly summary.
+            </p>
+          )}
+        </div>
+
         {/* B. Big Picture Card - Donut Chart */}
         {summary && summary.transactionCount > 0 && (
           <div className="rounded-3xl bg-token-card border border-token p-5 shadow-sm">
@@ -387,6 +526,106 @@ export default function InsightsPage() {
                 {categoriesExpanded ? 'View Less' : 'View All'}
               </button>
             )}
+          </div>
+        )}
+
+        {/* Smart alerts - anomalies from spending intelligence */}
+        {intelligence && intelligence.anomalies.length > 0 && (
+          <div className="rounded-3xl bg-token-card border border-token p-5 shadow-sm">
+            <h3 className="text-base font-semibold text-token-primary">Smart alerts</h3>
+            <p className="mt-0.5 text-xs text-token-muted">Unusual activity spotted in your spending</p>
+            <div className="mt-4 space-y-3">
+              {intelligence.anomalies.map((anomaly, i) => (
+                <div
+                  key={`${anomaly.type}-${i}`}
+                  className="flex items-start gap-3 rounded-2xl border border-orange-400/60 bg-token-card p-4"
+                >
+                  <svg
+                    className="h-5 w-5 shrink-0 text-orange-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                  <div className="min-w-0">
+                    <span className="rounded-full bg-orange-500/20 px-2 py-0.5 text-xs font-semibold text-orange-500">
+                      {anomaly.type === 'category_spike' ? 'CATEGORY SPIKE' : 'LARGE TRANSACTION'}
+                    </span>
+                    <p className="mt-1.5 text-sm font-medium text-token-primary">{anomaly.message}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Trends - rising categories */}
+        {intelligence && intelligence.trends.length > 0 && (
+          <div className="rounded-3xl bg-token-card border border-token p-5 shadow-sm">
+            <h3 className="text-base font-semibold text-token-primary">Trends</h3>
+            <p className="mt-0.5 text-xs text-token-muted">
+              Categories moving over the last {intelligence.windowMonths} months
+            </p>
+            <div className="mt-4 space-y-3">
+              {intelligence.trends.map((trend) => (
+                <div key={trend.category} className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-token-primary">{trend.category}</p>
+                    <p className="text-xs text-token-secondary">{trend.message}</p>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                      trend.changePercent > 0
+                        ? 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300'
+                        : 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300'
+                    }`}
+                  >
+                    {trend.changePercent > 0 ? '↑' : '↓'}{Math.abs(Math.round(trend.changePercent))}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Potential waste */}
+        {intelligence && intelligence.waste.length > 0 && (
+          <div className="rounded-3xl bg-token-card border border-token p-5 shadow-sm">
+            <h3 className="text-base font-semibold text-token-primary">Potential waste</h3>
+            <p className="mt-0.5 text-xs text-token-muted">Places your money might be leaking</p>
+            <div className="mt-4 space-y-3">
+              {intelligence.waste.map((waste, i) => (
+                <div
+                  key={`${waste.type}-${waste.category}-${i}`}
+                  className="rounded-2xl bg-[var(--background-tag)] p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <span className="rounded-full bg-amber-100 dark:bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:text-amber-300">
+                        {waste.type === 'price_creep'
+                          ? 'PRICE CREEP'
+                          : waste.type === 'overlapping_subscriptions'
+                            ? 'OVERLAPPING SUBSCRIPTIONS'
+                            : 'SMALL LEAK'}
+                      </span>
+                      <p className="mt-1.5 text-sm font-medium text-token-primary">{waste.message}</p>
+                      {waste.items && waste.items.length > 0 && (
+                        <p className="mt-1 text-xs text-token-muted truncate">{waste.items.join(' · ')}</p>
+                      )}
+                    </div>
+                    <span className="shrink-0 text-sm font-semibold text-token-primary">
+                      ~{formatCurrency(waste.amount, waste.currency)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

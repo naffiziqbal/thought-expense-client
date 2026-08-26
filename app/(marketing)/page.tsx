@@ -231,6 +231,7 @@ export default function HomePage() {
                 <li>Natural language text input</li>
                 <li>3 months of expense history</li>
                 <li>Monthly spending insights</li>
+                <li>5 AI advisor questions / month</li>
                 <li>Multi-currency support</li>
               </ul>
               <Link href="/auth/signup" className="mt-10 block">
@@ -250,12 +251,25 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-semibold text-token-primary">Premium</h3>
               <p className="mt-1 text-token-secondary">For smart spenders</p>
-              <p className="mt-8 text-3xl font-bold text-token-primary">
-                Coming soon
+              <div className="mt-8 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <p className="text-3xl font-bold text-token-primary">
+                  $6.99<span className="text-base font-medium text-token-secondary">/month</span>
+                </p>
+              </div>
+              <p className="mt-2 text-sm text-token-secondary">
+                $60/year{' '}
+                <span className="rounded-full bg-[var(--accent-primary)]/10 px-2 py-0.5 text-xs font-semibold text-token-accent">
+                  Save ~28%
+                </span>{' '}
+                &middot; $99 lifetime (one-time)
               </p>
-              <p className="mt-1 text-sm text-token-secondary">via the Android app</p>
+              <p className="mt-1 text-sm text-token-secondary">purchase via the Android app</p>
               <ul className="mt-8 space-y-4 text-token-secondary">
                 <li>Everything in Free, plus:</li>
+                <li><strong className="text-token-primary">AI financial advisor</strong> &mdash; unlimited questions</li>
+                <li><strong className="text-token-primary">Weekly briefing</strong> &mdash; by email</li>
+                <li><strong className="text-token-primary">Smart alerts</strong> &mdash; anomalies, trends &amp; waste detection</li>
+                <li><strong className="text-token-primary">12-month</strong> intelligence window</li>
                 <li><strong className="text-token-primary">Receipt scan</strong> &mdash; camera or upload</li>
                 <li><strong className="text-token-primary">Full history</strong> &mdash; lifetime access</li>
                 <li><strong className="text-token-primary">Export</strong> &mdash; CSV &amp; PDF</li>

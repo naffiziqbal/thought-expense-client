@@ -12,7 +12,7 @@ import { Modal } from '@/components/ui/Modal';
 import { CategoryInput } from '@/components/ui/CategoryInput';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
-import type { Expense } from '@/types';
+import type { Expense, AssistantSearchResult } from '@/types';
 import {
   formatCurrency,
   formatDate,
@@ -45,6 +45,11 @@ export default function ExpensesPage() {
     category: '',
     date: '',
   });
+
+  // Smart search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResult, setSearchResult] = useState<AssistantSearchResult | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Filters
   const [filters, setFilters] = useState({
@@ -165,6 +170,7 @@ export default function ExpensesPage() {
         toast.success('Expense updated successfully');
         setIsEditModalOpen(false);
         fetchExpenses();
+        if (searchResult) handleSearch();
         window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
       }
     } catch (error) {
@@ -186,11 +192,38 @@ export default function ExpensesPage() {
         toast.success('Expense deleted successfully');
         setIsDeleteModalOpen(false);
         fetchExpenses();
+        if (searchResult) handleSearch();
         window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
       }
     } catch (error) {
       toast.error('Failed to delete expense');
     }
+  };
+
+  const handleSearch = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) {
+      setSearchResult(null);
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const response = await api.searchExpensesSmart(q);
+      if (response.success) {
+        setSearchResult(response.data);
+      }
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Search failed');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResult(null);
   };
 
   const clearFilters = () => {
@@ -233,6 +266,25 @@ export default function ExpensesPage() {
 
   const activeFiltersCount = [filters.category, filters.startDate, filters.endDate].filter(Boolean).length;
   const transactionCount = pagination.total;
+
+  // Smart search results mapped onto the Expense shape so rows render identically
+  const isSearchActive = searchResult !== null;
+  const displayedExpenses: Expense[] = isSearchActive
+    ? searchResult.expenses.map((r) => ({
+        id: r.id,
+        userId: '',
+        description: r.description,
+        amount: r.amount,
+        currency: r.currency,
+        category: r.category,
+        confidence: 1,
+        rawInput: '',
+        date: r.date,
+        createdAt: r.date,
+        updatedAt: r.date,
+      }))
+    : expenses;
+  const listLoading = isSearchActive ? isSearching : isLoading;
 
   /** Generate page numbers to display: 1 2 3 [4] 5 6 or 1 ... 4 [5] 6 ... 10 */
   const getPageNumbers = () => {
@@ -303,6 +355,45 @@ export default function ExpensesPage() {
             </button>
           </div>
         </div>
+
+        {/* Smart Search */}
+        <form onSubmit={handleSearch} className="shrink-0 mb-3 sm:mb-4">
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-2 h-11 rounded-full border border-token bg-token-card px-3 sm:px-4 focus-within:border-[var(--accent-primary)] focus-within:ring-2 focus-within:ring-[var(--accent-primary)]/20 transition-all">
+              <svg className="h-5 w-5 shrink-0 text-token-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder='Search expenses, e.g. "coffee last month"'
+                className="flex-1 min-w-0 bg-transparent text-sm text-token-primary placeholder:text-token-muted focus:outline-none"
+              />
+              {isSearchActive && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  title="Clear search"
+                  className="shrink-0 rounded-full p-1 text-token-muted hover:text-token-primary hover:bg-[var(--surface-hover)] transition-colors"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            <Button
+              type="submit"
+              size="md"
+              isLoading={isSearching}
+              disabled={!searchQuery.trim()}
+              className="shrink-0 h-11 rounded-full px-5"
+            >
+              Search
+            </Button>
+          </div>
+        </form>
 
         {/* Collapsible Filters Panel */}
         {showFilters && (
@@ -377,24 +468,49 @@ export default function ExpensesPage() {
 
         {/* B. Transaction List Container - Scrollable */}
         <div className="flex-1 min-h-0 flex flex-col rounded-2xl bg-token-card border border-token shadow-sm overflow-hidden">
-          {isLoading ? (
+          {/* Search results summary */}
+          {isSearchActive && !isSearching && (
+            <div className="shrink-0 flex items-center justify-between gap-3 border-b border-token bg-teal-50/50 dark:bg-teal-950/20 px-3 sm:px-4 py-2.5">
+              <p className="text-sm text-token-primary min-w-0 truncate">
+                <span className="font-semibold">
+                  {searchResult.total} expense{searchResult.total !== 1 ? 's' : ''}
+                </span>{' '}
+                &middot; {formatCurrency(searchResult.totalAmount, searchResult.currency)}
+                <span className="text-token-muted"> for &quot;{searchResult.query}&quot;</span>
+              </p>
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="shrink-0 text-sm font-semibold text-token-accent hover:opacity-80"
+              >
+                Clear search
+              </button>
+            </div>
+          )}
+          {listLoading ? (
             <div className="flex-1 flex items-center justify-center py-16">
               <div className="text-center">
                 <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-[var(--accent-primary)] border-r-transparent"></div>
-                <p className="text-token-secondary text-sm">Loading expenses...</p>
+                <p className="text-token-secondary text-sm">
+                  {isSearchActive ? 'Searching...' : 'Loading expenses...'}
+                </p>
               </div>
             </div>
-          ) : expenses.length === 0 ? (
+          ) : displayedExpenses.length === 0 ? (
             <div className="flex-1 flex items-center justify-center py-16">
               <div className="text-center">
-                <div className="mb-4 text-5xl">📝</div>
+                <div className="mb-4 text-5xl">{isSearchActive ? '🔍' : '📝'}</div>
                 <h3 className="mb-2 text-lg font-semibold text-token-primary">No expenses found</h3>
-                <p className="text-token-secondary text-sm">Try adjusting your filters or add new expenses</p>
+                <p className="text-token-secondary text-sm">
+                  {isSearchActive
+                    ? 'Try a different search or clear the search'
+                    : 'Try adjusting your filters or add new expenses'}
+                </p>
               </div>
             </div>
           ) : (
             <div className={`relative flex-1 min-h-0 overflow-y-auto divide-y divide-[var(--border-default)] transition-opacity ${isPageChanging ? 'opacity-60 pointer-events-none' : ''}`}>
-              {expenses.map((expense) => {
+              {displayedExpenses.map((expense) => {
                 const CategoryIcon = getCategoryIcon(expense.category);
                 return (
                 <button
@@ -438,7 +554,7 @@ export default function ExpensesPage() {
         </div>
 
         {/* C. Pagination Footer */}
-        {!isLoading && pagination.total > 0 && (
+        {!isSearchActive && !isLoading && pagination.total > 0 && (
           <div className="shrink-0 pt-3 pb-2 flex items-center justify-center gap-2">
             <button
               onClick={() => {
