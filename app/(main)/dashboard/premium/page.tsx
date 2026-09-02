@@ -15,7 +15,6 @@ const benefits = [
   { title: 'Weekly financial briefing by email', desc: 'A summary of your week in money, every week' },
   { title: 'Smart alerts: anomalies, trends & waste detection', desc: 'Get warned about spikes, price creep and leaks' },
   { title: '12-month intelligence window', desc: 'Deeper analysis across a full year of data' },
-  { title: 'No ads', desc: 'Clean, distraction-free experience' },
   { title: 'Receipt scanning', desc: 'Scan receipts with camera or upload' },
   { title: 'Full expense history', desc: 'Access all your past transactions' },
   { title: 'Export (CSV & PDF)', desc: 'Download your data anytime' },

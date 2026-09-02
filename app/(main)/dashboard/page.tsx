@@ -11,7 +11,6 @@ import { formatCurrency, formatDate, getCategoryBgColor, getCategoryChartColor }
 import { getCategoryIcon } from '@/lib/categoryIcons';
 import Link from 'next/link';
 import type { CategorySummary, Expense, Insight, BudgetSummary } from '@/types';
-import { AdPlaceholder } from '@/components/landing/AdPlaceholder';
 import { maybeNotifyBudgetStatus } from '@/lib/notifications';
 import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
 
@@ -454,7 +453,6 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {!isPremium && !loading && <AdPlaceholder />}
         </div>
 
       </div>

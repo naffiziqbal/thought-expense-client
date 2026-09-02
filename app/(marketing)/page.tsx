@@ -273,7 +273,7 @@ export default function HomePage() {
                 <li><strong className="text-token-primary">Receipt scan</strong> &mdash; camera or upload</li>
                 <li><strong className="text-token-primary">Full history</strong> &mdash; lifetime access</li>
                 <li><strong className="text-token-primary">Export</strong> &mdash; CSV &amp; PDF</li>
-                <li><strong className="text-token-primary">Daily &amp; weekly</strong> insights, ad-free</li>
+                <li><strong className="text-token-primary">Daily &amp; weekly</strong> insights</li>
               </ul>
               <Link href="/auth/signup" className="mt-10 block">
                 <Button className="w-full rounded-full bg-token-accent py-4 text-white hover:opacity-90">
