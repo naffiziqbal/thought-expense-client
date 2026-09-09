@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Instrument_Sans } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from '@/components/ThemeProvider';
@@ -7,6 +7,15 @@ import './globals.css';
 
 const instrumentSans = Instrument_Sans({ subsets: ['latin'] });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F5F8F8' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A0F1C' },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -59,6 +68,11 @@ export const metadata: Metadata = {
     canonical: siteUrl,
   },
   category: 'finance',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'ThoughtExpense',
+  },
 };
 
 export default function RootLayout({
@@ -67,7 +81,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="min-h-dvh" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -75,7 +89,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={instrumentSans.className}>
+      <body className={`${instrumentSans.className} min-h-dvh`}>
         <ThemeProvider>
           {children}
           <Toaster

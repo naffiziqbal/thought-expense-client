@@ -207,14 +207,19 @@ input[type='number'] {
   animation: gradient 8s ease infinite;
 }
 
-/* Safe area support for mobile devices */
-.safe-area-inset-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
+/* Notch / status bar / home indicator. Requires viewport-fit=cover. */
+.safe-area-inset-top {
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* Ensure body doesn't scroll behind bottom nav on mobile */
-@media (max-width: 768px) {
-  html {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }

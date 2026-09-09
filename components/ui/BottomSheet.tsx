@@ -64,7 +64,7 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-5 pb-safe pb-8">
+        <div className="flex-1 overflow-y-auto px-5 pb-[max(2rem,env(safe-area-inset-bottom,0px))]">
           {children}
         </div>
       </div>

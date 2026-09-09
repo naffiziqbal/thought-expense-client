@@ -140,8 +140,8 @@ function ResetPasswordContent() {
 
   if (!token) {
     return (
-      <div className="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-token-surface px-4 py-4">
-        <div className="absolute right-4 top-4 z-20">
+      <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-token-surface px-4 py-4 pt-safe pb-safe">
+        <div className="absolute right-4 top-[max(1rem,env(safe-area-inset-top,0px))] z-20">
           <ThemeToggle />
         </div>
         <div className="relative z-10 w-full max-w-[420px] shrink-0 py-1 text-center">
@@ -171,8 +171,8 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="relative flex h-screen flex-col items-center justify-center overflow-hidden bg-token-surface px-4 py-4">
-      <div className="absolute right-4 top-4 z-20">
+    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-token-surface px-4 py-4 pt-safe pb-safe">
+      <div className="absolute right-4 top-[max(1rem,env(safe-area-inset-top,0px))] z-20">
         <ThemeToggle />
       </div>
       <div

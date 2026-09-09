@@ -526,7 +526,7 @@ export default function AddExpensePage() {
         )}
 
         {/* 4. Floating Action Button */}
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-[768px] px-4 pb-safe z-40">
+        <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 w-full max-w-[768px] px-4 z-40">
           <button
             onClick={handleSave}
             disabled={!hasContent || isSaving}

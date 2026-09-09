@@ -22,8 +22,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Subtle shadow above nav */}
         <div className="absolute -top-6 left-0 right-0 h-6 bg-gradient-to-b from-transparent to-black/5 pointer-events-none" />
         
-        <div className="bg-token-card shadow-2xl border-t border-token">
-          <div className="flex items-center justify-around px-6 pb-safe safe-area-inset-bottom" style={{ height: '72px' }}>
+        <div className="bg-token-card shadow-2xl border-t border-token safe-area-inset-bottom">
+          <div className="flex h-[72px] items-center justify-around px-6">
             {/* Home */}
             <Link
               href="/dashboard"
@@ -193,8 +193,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content - Mobile/Tablet only */}
       <main
         className={cn(
-          'w-full max-w-[768px] px-2.5 sm:px-4 pt-6 pb-24',
-          (pathname === '/dashboard/add' || pathname === '/dashboard/expenses' || pathname === '/dashboard/assistant') && 'h-screen overflow-hidden flex flex-col'
+          'w-full max-w-[768px] px-2.5 sm:px-4 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[calc(6rem+env(safe-area-inset-bottom,0px))]',
+          (pathname === '/dashboard/add' || pathname === '/dashboard/expenses' || pathname === '/dashboard/assistant') && 'h-dvh overflow-hidden flex flex-col'
         )}
       >
         {(pathname === '/dashboard/add' || pathname === '/dashboard/expenses' || pathname === '/dashboard/assistant') ? (

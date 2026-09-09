@@ -10,7 +10,7 @@ export default function MarketingLayout({
   return (
     <div className="min-h-screen bg-token-surface flex flex-col">
       {/* Normal header for landing, privacy, terms */}
-      <nav className="sticky top-0 z-50 border-b border-token bg-token-card/80 backdrop-blur-xl shadow-sm">
+      <nav className="sticky top-0 z-50 border-b border-token bg-token-card/80 backdrop-blur-xl shadow-sm pt-[env(safe-area-inset-top,0px)]">
         <div className="mx-auto max-w-6xl px-3 sm:px-4">
           <div className="flex h-14 sm:h-16 min-w-0 items-center justify-between gap-2">
             <Link href="/" className="flex shrink-0 items-center gap-2 group">
