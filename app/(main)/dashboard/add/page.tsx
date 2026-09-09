@@ -13,6 +13,7 @@ import {
   parseExpenseInputLocally
 } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
+import { usePendingStore } from '@/store/pendingStore';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useIsPremium } from '@/hooks/useIsPremium';
@@ -266,63 +267,49 @@ export default function AddExpensePage() {
       return;
     }
 
-    if (!hasInput && hasItems) {
-      const rawFromItems = receiptItems.map((i) => `${i.description} ${i.amount}`).join('\n');
-      setRawInput(rawFromItems);
+    const toSubmit = hasInput ? rawInput : receiptItems.map((i) => `${i.description} ${i.amount}`).join('\n');
+    const parsed = parseExpenseInputLocally(toSubmit);
+    if (!parsed.length) {
+      toast.error('Could not read amounts from that text');
+      return;
     }
 
-    const toSubmit = hasInput ? rawInput : receiptItems.map((i) => `${i.description} ${i.amount}`).join('\n');
-
     setIsSaving(true);
-    setSaveStage('text');
-
-    const t1 = setTimeout(() => setSaveStage('amounts'), 400);
-    const t2 = setTimeout(() => setSaveStage('categorizing'), 900);
+    const batchId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const localPreview = parsed.map((p) => ({
+      description: p.description,
+      amount: p.amount,
+      currency,
+      category: getCategoryFromKeyword(p.description),
+      date: selectedDate,
+      rawInput: p.rawInput,
+    }));
 
     try {
-      const parseRes = await api.parseExpenses({ rawInput: toSubmit, create: false });
-      clearTimeout(t1);
-      clearTimeout(t2);
-
-      if (!parseRes.success || !parseRes.data?.expenses?.length) {
-        setSaveStage(null);
-        toast.error('Could not parse expenses');
-        return;
-      }
-
-      const parsed = parseRes.data.expenses;
-      const displayItems: ReceiptItem[] = parsed.map((e, i) => ({
-        id: `save-${i}-${e.description}-${e.amount}`,
-        description: e.description,
-        amount: e.amount,
-        category: e.category,
-      }));
-      setItemsToSave(displayItems);
-      setSaveStage('saving');
-
-      // One request for the whole batch — per-item POSTs were tripping rate limits
-      await api.createExpensesBatch(
-        parsed.map((exp) => ({
-          description: exp.description,
-          amount: exp.amount,
-          currency: exp.currency || currency,
-          category: exp.category,
-          date: exp.date || selectedDate,
-          rawInput: exp.rawInput,
+      const res = await api.enqueueParseExpenses(
+        { rawInput: toSubmit, create: true, localPreview, clientBatchId: batchId },
+        batchId
+      );
+      const jobId = res.data.jobId;
+      usePendingStore.getState().enqueue(
+        localPreview.map((p, i) => ({
+          localId: `${batchId}-${i}`,
+          jobId,
+          batchId,
+          description: p.description,
+          amount: p.amount,
+          currency,
+          category: p.category || 'Other',
+          date: selectedDate,
+          rawInput: p.rawInput || toSubmit,
+          createdAt: new Date().toISOString(),
         }))
       );
-
-      setSaveStage(null);
-      setItemsToSave([]);
-      toast.success('Saved!');
+      toast.success('Saved');
       window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
       router.push('/dashboard');
     } catch (error: any) {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      setSaveStage(null);
-      setItemsToSave([]);
-      toast.error(error.response?.data?.message || 'Failed to save');
+      toast.error(error.response?.data?.message || 'Failed to queue expenses');
     } finally {
       setIsSaving(false);
     }

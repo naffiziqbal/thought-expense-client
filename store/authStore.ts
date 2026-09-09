@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User } from '@/types';
 import { api } from '@/lib/api';
+import { usePendingStore } from './pendingStore';
 
 interface AuthState {
   user: User | null;
@@ -44,6 +45,7 @@ export const useAuthStore = create<AuthState>()(
       
       logout: () => {
         api.logout();
+        usePendingStore.getState().clear();
         set({ user: null, isAuthenticated: false, error: null });
       },
 

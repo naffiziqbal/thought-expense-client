@@ -173,6 +173,34 @@ class ApiClient {
     return response.data;
   }
 
+  async enqueueParseExpenses(
+    data: ParseExpenseRequest & {
+      create?: boolean;
+      localPreview?: Array<{
+        description: string;
+        amount: number;
+        currency?: string;
+        category?: string;
+        date?: string;
+        rawInput?: string;
+      }>;
+      clientBatchId?: string;
+    },
+    idempotencyKey?: string
+  ): Promise<{ success: boolean; message: string; data: { jobId: string } }> {
+    const response = await this.client.post('/api/expenses/parse/async', data, {
+      headers: idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined,
+    });
+    return response.data;
+  }
+
+  async getParseJobStatus(
+    jobId: string
+  ): Promise<{ success: boolean; data: { jobId: string; status: string; result?: unknown; error?: string } }> {
+    const response = await this.client.get(`/api/expenses/parse/jobs/${jobId}`);
+    return response.data;
+  }
+
   async createExpense(data: {
     description: string;
     amount: number;

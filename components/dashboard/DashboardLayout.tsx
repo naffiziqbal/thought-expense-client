@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { PendingParseSync } from './PendingParseSync';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -204,6 +205,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           children
         )}
       </main>
+      <PendingParseSync />
       </div>
     </div>
   );

@@ -13,6 +13,8 @@ import Link from 'next/link';
 import type { CategorySummary, Expense, Insight, BudgetSummary } from '@/types';
 import { maybeNotifyBudgetStatus } from '@/lib/notifications';
 import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
+import { addPendingToTotals } from '@/lib/pendingExpenses';
+import { usePendingStore } from '@/store/pendingStore';
 
 function getCurrentMonthRange() {
   const now = new Date();
@@ -78,6 +80,7 @@ export default function DashboardPage() {
   const pathname = usePathname();
   const { isAuthenticated, isLoading } = useProtectedRoute();
   const { user } = useAuthStore();
+  const pending = usePendingStore((s) => s.items);
   const isPremium = useIsPremium();
 
   const [summary, setSummary] = useState<CategorySummary | null>(null);
@@ -209,28 +212,62 @@ export default function DashboardPage() {
     );
   }
 
-  const currency = summary?.currency || user?.currency || 'USD';
-  const budgetPct = budget ? budget.percentage : 0;
-  const topCategory = summary?.topCategories?.[0];
-  const topCategoryAmount = topCategory ? (summary?.byCategory?.[topCategory] ?? 0) : 0;
+  const { startDate, endDate } = getCurrentMonthRange();
+  const merged = addPendingToTotals(summary?.totalSpent ?? 0, summary?.byCategory ?? {}, pending, startDate, endDate);
+  const monthPending = pending.filter((p) => p.date.slice(0, 10) >= startDate && p.date.slice(0, 10) <= endDate);
+  const displaySummary = summary
+    ? { ...summary, totalSpent: merged.totalSpent, byCategory: merged.byCategory, transactionCount: (summary.transactionCount || 0) + monthPending.length }
+    : null;
+  const displayBudget = budget
+    ? {
+        ...budget,
+        total_spent: budget.total_spent + monthPending.reduce((s, p) => s + p.amount, 0),
+        remaining: budget.total_limit - (budget.total_spent + monthPending.reduce((s, p) => s + p.amount, 0)),
+        percentage:
+          budget.total_limit > 0
+            ? Math.round(((budget.total_spent + monthPending.reduce((s, p) => s + p.amount, 0)) / budget.total_limit) * 100)
+            : 0,
+      }
+    : budget;
+  const displayRecent = [
+    ...monthPending.map((p) => ({
+      id: `pending:${p.localId}`,
+      userId: user?.id || '',
+      description: p.description,
+      amount: p.amount,
+      currency: p.currency,
+      category: p.category,
+      confidence: 0.6,
+      rawInput: p.rawInput,
+      date: p.date,
+      createdAt: p.createdAt,
+      updatedAt: p.createdAt,
+    })),
+    ...recentExpenses,
+  ].slice(0, 5);
+
+  const currency = displaySummary?.currency || user?.currency || 'USD';
+  const budgetPct = displayBudget ? displayBudget.percentage : 0;
+  const topCategory = Object.entries(merged.byCategory).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const topCategoryAmount = topCategory ? merged.byCategory[topCategory] : 0;
 
   // Build notifications: budget alerts first (urgent), then AI insights
   type NotificationItem = { id: string; type: 'budget-exceeded' | 'budget-warning' | 'insight'; content: string; meta?: string };
   const notifications: NotificationItem[] = [];
 
-  if (budget && budget.percentage >= 100) {
+  if (displayBudget && displayBudget.percentage >= 100) {
     notifications.push({
-      id: `budget-exceeded-${budget.year}-${budget.month}`,
+      id: `budget-exceeded-${displayBudget.year}-${displayBudget.month}`,
       type: 'budget-exceeded',
       content: 'You have exceeded your monthly budget',
-      meta: `${formatCurrency(budget.total_spent, currency)} of ${formatCurrency(budget.total_limit, currency)} (${budget.percentage}%)`,
+      meta: `${formatCurrency(displayBudget.total_spent, currency)} of ${formatCurrency(displayBudget.total_limit, currency)} (${displayBudget.percentage}%)`,
     });
-  } else if (budget && budget.percentage >= 90) {
+  } else if (displayBudget && displayBudget.percentage >= 90) {
     notifications.push({
-      id: `budget-warning-${budget.year}-${budget.month}`,
+      id: `budget-warning-${displayBudget.year}-${displayBudget.month}`,
       type: 'budget-warning',
       content: 'You are about to exceed your monthly budget',
-      meta: `${formatCurrency(budget.total_spent, currency)} of ${formatCurrency(budget.total_limit, currency)} (${budget.percentage}%)`,
+      meta: `${formatCurrency(displayBudget.total_spent, currency)} of ${formatCurrency(displayBudget.total_limit, currency)} (${displayBudget.percentage}%)`,
     });
   }
 
@@ -326,13 +363,13 @@ export default function DashboardPage() {
           </div>
 
           {/* Budget warning banner */}
-          {budget && budget.percentage >= 90 && (
-            <div className={`rounded-2xl border px-4 py-3 ${budget.percentage >= 100 ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50'}`}>
+          {displayBudget && displayBudget.percentage >= 90 && (
+            <div className={`rounded-2xl border px-4 py-3 ${displayBudget.percentage >= 100 ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50'}`}>
               <p className="text-sm font-semibold text-token-primary">
-                {budget.percentage >= 100 ? 'You have exceeded your monthly budget' : 'You are about to exceed your monthly budget'}
+                {displayBudget.percentage >= 100 ? 'You have exceeded your monthly budget' : 'You are about to exceed your monthly budget'}
               </p>
               <p className="text-xs text-token-secondary mt-1">
-                {formatCurrency(budget.total_spent, currency)} of {formatCurrency(budget.total_limit, currency)} ({budget.percentage}%)
+                {formatCurrency(displayBudget.total_spent, currency)} of {formatCurrency(displayBudget.total_limit, currency)} ({displayBudget.percentage}%)
               </p>
             </div>
           )}
@@ -348,10 +385,10 @@ export default function DashboardPage() {
                   </span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-token-primary tracking-tight truncate">
-                  {loading ? '...' : formatCurrency(summary?.totalSpent ?? 0, currency)}
+                  {loading ? '...' : formatCurrency(displaySummary?.totalSpent ?? 0, currency)}
                 </h2>
                 <p className="text-xs sm:text-sm font-medium text-token-secondary mt-1.5 sm:mt-2">
-                  {summary?.transactionCount ?? 0} transactions
+                  {displaySummary?.transactionCount ?? 0} transactions
                 </p>
               </div>
               <DonutChart percentage={budgetPct} size={96} />
@@ -364,8 +401,8 @@ export default function DashboardPage() {
             <Link href="/dashboard/budget" className="block min-w-0">
               <div className="rounded-2xl bg-token-card border border-token p-2.5 sm:p-5 shadow-sm h-[130px] sm:h-[140px] flex flex-col justify-between hover:border-[var(--accent-primary)]/30 transition-colors">
                 <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-token-muted">Safe to Spend</p>
-                <p className="text-base sm:text-xl font-extrabold text-token-primary truncate" title={budget ? formatCurrency(Math.max(0, budget.remaining), currency) : undefined}>
-                  {budget ? formatCurrency(Math.max(0, budget.remaining), currency) : '—'}
+                <p className="text-base sm:text-xl font-extrabold text-token-primary truncate" title={displayBudget ? formatCurrency(Math.max(0, displayBudget.remaining), currency) : undefined}>
+                  {displayBudget ? formatCurrency(Math.max(0, displayBudget.remaining), currency) : '—'}
                 </p>
                 <div className="space-y-1">
                   <div className="h-2 rounded-full bg-[var(--blueGray-100)] overflow-hidden">
@@ -415,9 +452,9 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            {recentExpenses.length > 0 ? (
+            {displayRecent.length > 0 ? (
               <div className="rounded-2xl bg-token-card border border-token divide-y divide-[var(--border-default)] overflow-hidden shadow-sm px-0">
-                {recentExpenses.map((expense) => {
+                {displayRecent.map((expense) => {
                   const CategoryIcon = getCategoryIcon(expense.category);
                   return (
                     <Link key={expense.id} href="/dashboard/expenses" className="flex items-center gap-2 sm:gap-4 px-2.5 sm:px-4 py-3 hover:bg-[var(--surface-hover)] transition-colors">
@@ -440,7 +477,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Empty State */}
-          {!loading && (summary?.transactionCount ?? 0) === 0 && (
+          {!loading && (displaySummary?.transactionCount ?? 0) === 0 && (
             <div className="rounded-2xl bg-token-card border border-token p-6 sm:p-12 text-center shadow-sm">
               <div className="mb-4 text-6xl">📝</div>
               <h3 className="mb-2 text-xl font-semibold text-token-primary">No expenses yet</h3>
