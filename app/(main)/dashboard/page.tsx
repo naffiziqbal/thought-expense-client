@@ -15,6 +15,8 @@ import { maybeNotifyBudgetStatus } from '@/lib/notifications';
 import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
 import { addPendingToTotals } from '@/lib/pendingExpenses';
 import { usePendingExpenses } from '@/hooks/usePendingExpenses';
+import { useTourTarget } from '@/hooks/useTourTarget';
+import { TOUR_TARGETS } from '@/lib/tourSteps';
 
 function getCurrentMonthRange() {
   const now = new Date();
@@ -81,6 +83,8 @@ export default function DashboardPage() {
   const { isAuthenticated, isLoading } = useProtectedRoute();
   const { user } = useAuthStore();
   const pending = usePendingExpenses();
+  const totalTarget = useTourTarget(TOUR_TARGETS.homeTotal);
+  const budgetTarget = useTourTarget(TOUR_TARGETS.homeBudget);
   const isPremium = useIsPremium();
 
   const [summary, setSummary] = useState<CategorySummary | null>(null);
@@ -375,7 +379,10 @@ export default function DashboardPage() {
           )}
 
           {/* Zone B: Hero (Visual Summary) - White Card */}
-          <div className="rounded-[24px] bg-token-card border border-token p-3 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+          <div
+            ref={totalTarget}
+            className="rounded-[24px] bg-token-card border border-token p-3 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.06)]"
+          >
             <div className="flex items-center justify-between gap-3 sm:gap-6">
               <div className="min-w-0 flex-1 overflow-hidden">
                 <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
@@ -399,7 +406,10 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 gap-2 sm:gap-4">
             {/* Card 1: Safe to Spend */}
             <Link href="/dashboard/budget" className="block min-w-0">
-              <div className="rounded-2xl bg-token-card border border-token p-2.5 sm:p-5 shadow-sm h-[130px] sm:h-[140px] flex flex-col justify-between hover:border-[var(--accent-primary)]/30 transition-colors">
+              <div
+                ref={budgetTarget}
+                className="rounded-2xl bg-token-card border border-token p-2.5 sm:p-5 shadow-sm h-[130px] sm:h-[140px] flex flex-col justify-between hover:border-[var(--accent-primary)]/30 transition-colors"
+              >
                 <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-token-muted">Safe to Spend</p>
                 <p className="text-base sm:text-xl font-extrabold text-token-primary truncate" title={displayBudget ? formatCurrency(Math.max(0, displayBudget.remaining), currency) : undefined}>
                   {displayBudget ? formatCurrency(Math.max(0, displayBudget.remaining), currency) : '—'}

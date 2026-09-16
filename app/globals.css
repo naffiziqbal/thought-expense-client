@@ -202,6 +202,31 @@ input[type='number'] {
   animation: cursor-blink 1s step-end infinite;
 }
 
+/* Guided tour: Penny idles with a gentle bob, and pops when the step changes */
+@keyframes tour-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes tour-pop {
+  0% { transform: scale(0.86); }
+  60% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+.tour-mascot {
+  animation: tour-pop 0.38s ease-out, tour-bob 2.2s ease-in-out 0.38s infinite;
+}
+
+@keyframes tour-bubble-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tour-bubble-enter {
+  animation: tour-bubble-in 0.26s ease-out;
+}
+
 .animate-gradient {
   background-size: 200% auto;
   animation: gradient 8s ease infinite;

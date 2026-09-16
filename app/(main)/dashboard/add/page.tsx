@@ -18,6 +18,8 @@ import { usePendingStore } from '@/store/pendingStore';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useIsPremium } from '@/hooks/useIsPremium';
+import { useTourTarget } from '@/hooks/useTourTarget';
+import { TOUR_TARGETS } from '@/lib/tourSteps';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { createWorker, PSM } from 'tesseract.js';
@@ -61,6 +63,8 @@ export default function AddExpensePage() {
   const isPremium = useIsPremium();
   const router = useRouter();
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputTarget = useTourTarget(TOUR_TARGETS.addInput);
+  const saveTarget = useTourTarget<HTMLButtonElement>(TOUR_TARGETS.addSave);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -376,7 +380,10 @@ export default function AddExpensePage() {
         </div>
 
         {/* 2. The Input Card (Smart Box) - Fixed */}
-        <div className="shrink-0 rounded-2xl bg-token-card border border-token shadow-md overflow-hidden">
+        <div
+          ref={inputTarget}
+          className="shrink-0 rounded-2xl bg-token-card border border-token shadow-md overflow-hidden"
+        >
           {/* Top Half - Text Area */}
           <div className="p-4">
             <textarea
@@ -564,6 +571,7 @@ export default function AddExpensePage() {
         {/* 4. Floating Action Button */}
         <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 w-full max-w-[768px] px-4 z-40">
           <button
+            ref={saveTarget}
             onClick={handleSave}
             disabled={!hasContent || isSaving}
             className="w-full py-4 rounded-2xl bg-token-accent text-white font-semibold text-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg"

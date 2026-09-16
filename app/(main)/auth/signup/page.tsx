@@ -213,9 +213,11 @@ export default function SignupPage() {
 
       if (response.success) {
         setUser(response.data.user);
+        // Flags the account for the guided tour, which starts itself once the
+        // dashboard shell mounts (see components/tour/TourOverlay.tsx).
         markPending(response.data.user.id);
         toast.success("Account created successfully!");
-        router.push("/dashboard/onboarding");
+        router.push("/dashboard");
       }
     } catch (error: unknown) {
       const err = error as {

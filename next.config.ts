@@ -2,6 +2,11 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // A stray lockfile sits at the repo root, so Turbopack would otherwise infer
+  // the root as the workspace and fail to resolve deps like tailwindcss.
+  turbopack: {
+    root: __dirname,
+  },
   images: {
     remotePatterns: [
       {

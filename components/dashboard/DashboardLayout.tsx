@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTourTarget } from '@/hooks/useTourTarget';
 import { cn } from '@/lib/utils';
+import { TOUR_TARGETS } from '@/lib/tourSteps';
+import { TourOverlay } from '../tour/TourOverlay';
 import { OfflineBanner } from './OfflineBanner';
-import { OnboardingGate } from './OnboardingGate';
 import { OutboxSync } from './OutboxSync';
 import { PendingParseSync } from './PendingParseSync';
 
@@ -14,6 +16,8 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
+  const addTarget = useTourTarget(TOUR_TARGETS.navAdd);
+  const insightsTarget = useTourTarget<HTMLAnchorElement>(TOUR_TARGETS.navInsights);
 
   return (
     <div className="min-h-screen bg-token-surface flex flex-col items-center">
@@ -104,7 +108,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               href="/dashboard/add"
               className="flex items-center justify-center -mt-8 transition-all duration-200 active:scale-95"
             >
-              <div className="relative">
+              <div ref={addTarget} className="relative">
                 {/* Glow effect */}
                 <div className="absolute inset-0 rounded-full bg-teal-500 blur-xl opacity-30"></div>
                 
@@ -143,6 +147,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Insights */}
             <Link
+              ref={insightsTarget}
               href="/dashboard/insights"
               className={cn(
                 'flex items-center justify-center transition-all duration-200 active:scale-95',
@@ -209,7 +214,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
       </main>
       <OfflineBanner />
-      <OnboardingGate />
+      {/* Sits above the nav so the tour can dim the buttons it points at. */}
+      <TourOverlay />
       <OutboxSync />
       <PendingParseSync />
       </div>

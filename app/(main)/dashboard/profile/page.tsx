@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
+import { useOnboardingStore } from '@/store/onboardingStore';
 import { useIsPremium } from '@/hooks/useIsPremium';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Modal } from '@/components/ui/Modal';
@@ -66,6 +67,14 @@ const LogOutIcon = () => (
   </svg>
 );
 
+const LifebuoyIcon = () => (
+  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="12" r="3.5" />
+    <path strokeLinecap="round" d="M5.6 5.6l3.9 3.9M18.4 5.6l-3.9 3.9M5.6 18.4l3.9-3.9M18.4 18.4l-3.9-3.9" />
+  </svg>
+);
+
 const ChevronIcon = () => (
   <svg className="h-5 w-5 text-token-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -78,13 +87,15 @@ interface MenuItemProps {
   iconColor: string;
   title: string;
   subtitle: string;
-  href: string;
+  href?: string;
   isLast?: boolean;
   comingSoon?: boolean;
   onComingSoonClick?: (title: string) => void;
+  /** Rows that act in place rather than navigate (e.g. replaying the tour). */
+  onClick?: () => void;
 }
 
-function MenuItem({ icon, iconBg, iconColor, title, subtitle, href, isLast, comingSoon, onComingSoonClick }: MenuItemProps) {
+function MenuItem({ icon, iconBg, iconColor, title, subtitle, href, isLast, comingSoon, onComingSoonClick, onClick }: MenuItemProps) {
   const content = (
     <>
       <div className={`shrink-0 h-10 w-10 rounded-xl flex items-center justify-center ${iconBg} ${iconColor}`}>
@@ -102,11 +113,11 @@ function MenuItem({ icon, iconBg, iconColor, title, subtitle, href, isLast, comi
     !isLast ? 'border-b border-token' : ''
   }`;
 
-  if (comingSoon) {
+  if (comingSoon || onClick) {
     return (
       <button
         type="button"
-        onClick={() => onComingSoonClick?.(title)}
+        onClick={() => (comingSoon ? onComingSoonClick?.(title) : onClick?.())}
         className={rowClass}
       >
         {content}
@@ -115,7 +126,7 @@ function MenuItem({ icon, iconBg, iconColor, title, subtitle, href, isLast, comi
   }
 
   return (
-    <Link href={href} className={rowClass}>
+    <Link href={href ?? '#'} className={rowClass}>
       {content}
     </Link>
   );
@@ -127,6 +138,7 @@ export default function ProfilePage() {
   const isPremium = useIsPremium();
   const router = useRouter();
   const [comingSoonModal, setComingSoonModal] = useState<string | null>(null);
+  const startTour = useOnboardingStore((s) => s.start);
 
   const handleLogout = () => {
     logout();
@@ -165,7 +177,16 @@ export default function ProfilePage() {
     },
   ];
 
-  const appItems = [
+  const appItems: Array<Omit<MenuItemProps, 'isLast' | 'onComingSoonClick'>> = [
+    {
+      icon: <LifebuoyIcon />,
+      iconBg: 'bg-teal-50',
+      iconColor: 'text-teal-600',
+      title: 'Replay the tour',
+      subtitle: 'Let Penny walk you through it again',
+      // The overlay navigates to each step's page itself.
+      onClick: startTour,
+    },
     {
       icon: <BellIcon />,
       iconBg: 'bg-pink-50',
