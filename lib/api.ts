@@ -24,6 +24,18 @@ import type {
   WeeklyBriefing,
 } from '@/types';
 
+/** Login failures, anonymous polls, and stale parse-job checks must not wipe the session. */
+function shouldClearSessionOn401(error: AxiosError): boolean {
+  if (error.response?.status !== 401) return false;
+  const url = error.config?.url || '';
+  if (url.includes('/api/auth/login') || url.includes('/api/auth/signup')) return false;
+  if (url.includes('/parse/jobs/')) return false;
+  const header = error.config?.headers?.Authorization;
+  const auth = typeof header === 'string' ? header : Array.isArray(header) ? header[0] : '';
+  if (!auth) return false;
+  return true;
+}
+
 class ApiClient {
   private client: AxiosInstance;
 
@@ -51,18 +63,10 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       (error: AxiosError<ApiError>) => {
-        if (error.response?.status === 401) {
-          // Don't redirect if it's a login or signup request failing
-          const isAuthEndpoint = error.config?.url?.includes('/api/auth/login') || 
-                                 error.config?.url?.includes('/api/auth/signup');
-        
-          if (!isAuthEndpoint) {
-            // Clear token on unauthorized
-            this.clearToken();
-            // Redirect to login if on client side
-            if (typeof window !== 'undefined') {
-              window.location.href = '/auth/login';
-            }
+        if (shouldClearSessionOn401(error)) {
+          this.clearToken();
+          if (typeof window !== 'undefined') {
+            window.location.href = '/auth/login';
           }
         }
         return Promise.reject(error);
