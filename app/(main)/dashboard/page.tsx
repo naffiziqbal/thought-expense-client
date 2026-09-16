@@ -14,7 +14,7 @@ import type { CategorySummary, Expense, Insight, BudgetSummary } from '@/types';
 import { maybeNotifyBudgetStatus } from '@/lib/notifications';
 import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
 import { addPendingToTotals } from '@/lib/pendingExpenses';
-import { usePendingStore } from '@/store/pendingStore';
+import { usePendingExpenses } from '@/hooks/usePendingExpenses';
 
 function getCurrentMonthRange() {
   const now = new Date();
@@ -80,7 +80,7 @@ export default function DashboardPage() {
   const pathname = usePathname();
   const { isAuthenticated, isLoading } = useProtectedRoute();
   const { user } = useAuthStore();
-  const pending = usePendingStore((s) => s.items);
+  const pending = usePendingExpenses();
   const isPremium = useIsPremium();
 
   const [summary, setSummary] = useState<CategorySummary | null>(null);

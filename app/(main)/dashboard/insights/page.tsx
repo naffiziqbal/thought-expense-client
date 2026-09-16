@@ -665,6 +665,12 @@ export default function InsightsPage() {
                 </div>
               ))}
             </div>
+            <Link
+              href="/dashboard/recurring"
+              className="mt-4 flex h-11 w-full items-center justify-center rounded-lg border-2 border-token text-sm font-medium text-token-primary hover:bg-[var(--surface-hover)]"
+            >
+              Log these automatically
+            </Link>
           </div>
         )}
 

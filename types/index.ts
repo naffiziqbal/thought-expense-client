@@ -265,6 +265,31 @@ export interface RecurringExpenseItem {
   lastDate: string;
 }
 
+export type RecurringFrequency = 'weekly' | 'monthly';
+
+/** A user-confirmed rule the server auto-logs on schedule. */
+export interface RecurringRule {
+  id: string;
+  userId: string;
+  description: string;
+  amount: number;
+  currency: string;
+  category: string;
+  frequency: RecurringFrequency;
+  dayOfMonth: number | null;
+  dayOfWeek: number | null;
+  nextRunAt: string;
+  lastRunAt: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotificationPreferences {
+  pushEnabled: boolean;
+  budgetAlertsEnabled: boolean;
+}
+
 export interface SpendingIntelligence {
   currency: string;
   windowMonths: number;

@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/landing/ThemeToggle";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
+import { useOnboardingStore } from "@/store/onboardingStore";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/BottomSheet";
@@ -156,6 +157,7 @@ const ArrowRightIcon = ({ className }: { className?: string }) => (
 export default function SignupPage() {
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
+  const markPending = useOnboardingStore((state) => state.markPending);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -211,8 +213,9 @@ export default function SignupPage() {
 
       if (response.success) {
         setUser(response.data.user);
+        markPending(response.data.user.id);
         toast.success("Account created successfully!");
-        router.push("/dashboard/add");
+        router.push("/dashboard/onboarding");
       }
     } catch (error: unknown) {
       const err = error as {

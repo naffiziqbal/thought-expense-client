@@ -48,6 +48,18 @@ const DeviceSettingsIcon = () => (
   </svg>
 );
 
+const BellIcon = () => (
+  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 5.165 6 7.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
+  </svg>
+);
+
+const RepeatIcon = () => (
+  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h5M20 20v-5h-5M20 9A8 8 0 006.34 6.34M4 15a8 8 0 0013.66 2.66" />
+  </svg>
+);
+
 const LogOutIcon = () => (
   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -154,6 +166,24 @@ export default function ProfilePage() {
   ];
 
   const appItems = [
+    {
+      icon: <BellIcon />,
+      iconBg: 'bg-pink-50',
+      iconColor: 'text-pink-600',
+      title: 'Notifications',
+      subtitle: 'Budget alerts & briefings',
+      href: '/dashboard/notifications',
+      comingSoon: false,
+    },
+    {
+      icon: <RepeatIcon />,
+      iconBg: 'bg-sky-50',
+      iconColor: 'text-sky-600',
+      title: 'Recurring',
+      subtitle: 'Auto-log subscriptions & bills',
+      href: '/dashboard/recurring',
+      comingSoon: false,
+    },
     {
       icon: <WalletIcon />,
       iconBg: 'bg-purple-50',

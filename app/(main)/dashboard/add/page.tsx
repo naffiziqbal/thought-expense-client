@@ -13,6 +13,7 @@ import {
   parseExpenseInputLocally
 } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
+import { useOutboxStore } from '@/store/outboxStore';
 import { usePendingStore } from '@/store/pendingStore';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -285,6 +286,35 @@ export default function AddExpensePage() {
       rawInput: p.rawInput,
     }));
 
+    const queueOffline = (reason: 'offline' | 'network-error') => {
+      useOutboxStore.getState().enqueue({
+        id: batchId,
+        rawInput: toSubmit,
+        date: selectedDate,
+        items: localPreview.map((p) => ({
+          description: p.description,
+          amount: p.amount,
+          currency,
+          category: p.category || 'Other',
+          date: selectedDate,
+          rawInput: p.rawInput || toSubmit,
+        })),
+      });
+      toast.success(
+        reason === 'offline'
+          ? 'Saved offline — will sync when you reconnect'
+          : 'Saved — will sync shortly'
+      );
+      window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
+      router.push('/dashboard');
+    };
+
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      queueOffline('offline');
+      setIsSaving(false);
+      return;
+    }
+
     try {
       const res = await api.enqueueParseExpenses(
         { rawInput: toSubmit, create: true, localPreview, clientBatchId: batchId },
@@ -309,7 +339,13 @@ export default function AddExpensePage() {
       window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
       router.push('/dashboard');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to queue expenses');
+      // The request never reached the server, so the same idempotency key is
+      // safe to replay from the outbox.
+      if (!error.response || error.code === 'ECONNABORTED') {
+        queueOffline('network-error');
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to queue expenses');
+      }
     } finally {
       setIsSaving(false);
     }

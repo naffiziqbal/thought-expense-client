@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User } from '@/types';
 import { api } from '@/lib/api';
+import { useOutboxStore } from './outboxStore';
 import { usePendingStore } from './pendingStore';
 
 interface AuthState {
@@ -46,6 +47,8 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         api.logout();
         usePendingStore.getState().clear();
+        // Unsent offline saves belong to the account that made them.
+        useOutboxStore.getState().clear();
         set({ user: null, isAuthenticated: false, error: null });
       },
 

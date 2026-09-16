@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { OfflineBanner } from './OfflineBanner';
+import { OnboardingGate } from './OnboardingGate';
+import { OutboxSync } from './OutboxSync';
 import { PendingParseSync } from './PendingParseSync';
 
 interface DashboardLayoutProps {
@@ -205,6 +208,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           children
         )}
       </main>
+      <OfflineBanner />
+      <OnboardingGate />
+      <OutboxSync />
       <PendingParseSync />
       </div>
     </div>
