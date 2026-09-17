@@ -133,11 +133,14 @@ class ApiClient {
     return response.data;
   }
 
-  async changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
-    const response = await this.client.post<{ success: boolean; message: string }>('/api/auth/change-password', {
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string; data?: { token: string } }> {
+    const response = await this.client.post<{ success: boolean; message: string; data?: { token: string } }>('/api/auth/change-password', {
       currentPassword,
       newPassword,
     });
+    if (response.data.success && response.data.data?.token) {
+      this.setToken(response.data.data.token);
+    }
     return response.data;
   }
 
