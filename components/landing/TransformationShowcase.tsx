@@ -10,7 +10,7 @@ const RESULT_ROWS = [
 
 export function TransformationShowcase() {
   return (
-    <div className="grid items-center gap-8 md:grid-cols-[1fr,auto,1fr]">
+    <div className="grid items-center gap-8 md:grid-cols-[1fr_auto_1fr]">
       {/* Left: brain dump */}
       <div className="rounded-3xl border border-token bg-[var(--background-tag)] p-7 text-left shadow-sm">
         <p className="text-base leading-loose text-token-secondary">

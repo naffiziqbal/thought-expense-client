@@ -14,8 +14,7 @@ export function TransformWithPenny() {
         <PennySpeech
           message={pennyMessages.transform}
           size={64}
-          layout="horizontal"
-          className="md:flex-row-reverse"
+          mascotSide="right"
           delayMs={200}
         />
       </div>

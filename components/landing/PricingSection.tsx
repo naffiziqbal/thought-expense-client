@@ -19,7 +19,7 @@ export function PricingSection() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-[0.9fr,1.1fr]">
+        <div className="mt-12 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-2xl border border-token bg-token-card p-8">
             <h3 className="text-xl font-semibold text-token-primary">Free</h3>
             <p className="mt-1 text-token-secondary">Everything you need to start tracking</p>

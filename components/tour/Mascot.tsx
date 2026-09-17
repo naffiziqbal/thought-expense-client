@@ -10,10 +10,13 @@ export function Mascot({
   size = 74,
   poseKey = 0,
   className = 'tour-mascot',
+  mirror = false,
 }: {
   size?: number;
   poseKey?: number;
   className?: string;
+  /** Flip horizontally — wave faces left (bubble on the left) */
+  mirror?: boolean;
 }) {
   const bodyGradientId = useId();
 
@@ -24,7 +27,12 @@ export function Mascot({
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      <svg width={size} height={size} viewBox="0 0 100 100">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
+        style={mirror ? { transform: 'scaleX(-1)' } : undefined}
+      >
         <defs>
           <linearGradient id={bodyGradientId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#2DD4BF" />

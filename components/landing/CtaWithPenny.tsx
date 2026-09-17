@@ -12,9 +12,9 @@ export function CtaWithPenny() {
         <div>
           <PennySpeech
             message={pennyMessages.cta}
-            size={72}
-            layout="vertical"
-            className="mb-8 items-start lg:items-start"
+            size={64}
+            mascotSide="left"
+            className="mb-8"
             delayMs={0}
           />
           <h2 className="text-3xl font-bold tracking-tight text-token-primary md:text-4xl">

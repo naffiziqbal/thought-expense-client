@@ -89,7 +89,27 @@ const DEMOS: { text: string; rows: Row[] }[] = [
   },
 ];
 
-export function MagicInputHero() {
+function parseAmount(amount: string) {
+  return Math.abs(parseFloat(amount.replace(/,/g, ''))) || 0;
+}
+
+type ParseState = {
+  visible: boolean;
+  rowCount: number;
+  total: number;
+};
+
+type MagicInputHeroProps = {
+  className?: string;
+  variant?: 'default' | 'embedded';
+  onParseStateChange?: (state: ParseState) => void;
+};
+
+export function MagicInputHero({
+  className = 'mx-auto w-full max-w-2xl',
+  variant = 'default',
+  onParseStateChange,
+}: MagicInputHeroProps) {
   const [demoIndex, setDemoIndex] = useState(0);
   const [visibleText, setVisibleText] = useState('');
   const [rowsVisible, setRowsVisible] = useState(false);
@@ -97,6 +117,17 @@ export function MagicInputHero() {
   const charIndexRef = useRef(0);
 
   const demo = DEMOS[demoIndex];
+  const isEmbedded = variant === 'embedded';
+
+  useEffect(() => {
+    if (!rowsVisible) {
+      onParseStateChange?.({ visible: false, rowCount: 0, total: 0 });
+      return;
+    }
+
+    const total = demo.rows.reduce((sum, row) => sum + parseAmount(row.amount), 0);
+    onParseStateChange?.({ visible: true, rowCount: demo.rows.length, total });
+  }, [rowsVisible, demo.rows, onParseStateChange]);
 
   useEffect(() => {
     charIndexRef.current = 0;
@@ -123,31 +154,73 @@ export function MagicInputHero() {
     };
   }, [demoIndex, demo.text]);
 
+  const cardClass = isEmbedded
+    ? 'text-left'
+    : 'overflow-hidden rounded-3xl border border-token bg-token-card text-left shadow-lg';
+
   return (
-    <div className="mx-auto w-full max-w-2xl">
-      <div className="overflow-hidden rounded-3xl border border-token bg-token-card text-left shadow-lg">
-        {/* Input line */}
-        <div className="min-h-[68px] px-7 py-5 text-lg text-token-primary">
-          {visibleText}
-          <span className="animate-cursor-blink text-token-accent" aria-hidden>|</span>
-        </div>
-        {/* Parsed rows */}
+    <div className={className}>
+      <div className={cardClass}>
         <div
-          className={`border-t border-token px-7 transition-all duration-300 ${
-            rowsVisible ? 'max-h-64 py-4 opacity-100' : 'max-h-0 overflow-hidden py-0 opacity-0'
-          }`}
+          className={`relative ${
+            isEmbedded
+              ? 'min-h-[76px] bg-[var(--background-primary)]/40 px-5 py-5'
+              : 'min-h-[68px] px-7 py-5'
+          } text-lg text-token-primary`}
         >
-          <div className="space-y-3">
-            {demo.rows.map((row) => (
-              <div key={row.label} className="flex items-center gap-3">
+          {isEmbedded ? (
+            <span className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-token-muted">
+              Type naturally
+            </span>
+          ) : null}
+          <p className="leading-snug">
+            {visibleText || (isEmbedded ? (
+              <span className="text-token-muted/60">coffee 120, uber 250…</span>
+            ) : null)}
+            <span className="animate-cursor-blink text-token-accent" aria-hidden>|</span>
+          </p>
+        </div>
+
+        <div
+          className={`border-t border-token transition-all duration-300 ${
+            isEmbedded ? 'bg-token-card px-5' : 'px-7'
+          } ${rowsVisible ? 'max-h-72 py-4 opacity-100' : 'max-h-0 overflow-hidden py-0 opacity-0'}`}
+        >
+          {isEmbedded && rowsVisible ? (
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-token-accent">
+              Parsed & categorized
+            </p>
+          ) : null}
+          <div className="space-y-2.5">
+            {demo.rows.map((row, i) => (
+              <div
+                key={row.label}
+                className={`flex items-center gap-3 rounded-xl px-1 py-0.5 ${
+                  rowsVisible ? 'hero-row-in' : ''
+                }`}
+                style={rowsVisible ? { animationDelay: `${i * 80}ms` } : undefined}
+              >
                 <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${row.bubble}`}>
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <svg
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.8}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
                     {ICON_PATHS[row.icon]}
                   </svg>
                 </span>
                 <span className="flex-1 truncate text-[15px] font-semibold text-token-primary">{row.label}</span>
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${row.chip}`}>{row.category}</span>
-                <span className="w-20 shrink-0 text-right text-[15px] font-bold text-token-primary">{row.amount}</span>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${row.chip}`}>
+                  {row.category}
+                </span>
+                <span className="w-20 shrink-0 text-right text-[15px] font-bold tabular-nums text-token-primary">
+                  {row.amount}
+                </span>
               </div>
             ))}
           </div>

@@ -13,7 +13,7 @@ export function PennyIntro() {
         style={{ animationDelay: '180ms' }}
       >
         <p className="text-sm leading-relaxed text-token-secondary">{pennyMessages.heroIntro}</p>
-        <span className="penny-bubble-tail penny-bubble-tail-left" aria-hidden />
+        <span className="penny-bubble-tail-left" aria-hidden />
       </div>
     </div>
   );

@@ -120,6 +120,18 @@ body {
     linear-gradient(to bottom, rgba(231, 237, 238, 0.6) 1px, transparent 1px);
 }
 
+[data-theme="dark"] .bg-grid-mesh {
+  background-image: linear-gradient(to right, rgba(55, 68, 92, 0.45) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(55, 68, 92, 0.45) 1px, transparent 1px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .bg-grid-mesh {
+    background-image: linear-gradient(to right, rgba(55, 68, 92, 0.45) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(55, 68, 92, 0.45) 1px, transparent 1px);
+  }
+}
+
 /* Remove default number input spinners globally */
 input[type='number']::-webkit-outer-spin-button,
 input[type='number']::-webkit-inner-spin-button {
@@ -256,33 +268,76 @@ input[type='number'] {
   animation: penny-bubble-in 0.55s ease-out both;
 }
 
-.penny-bubble-tail {
+/* Tail on the left edge — mascot sits to the left */
+.penny-bubble-tail-left {
   position: absolute;
-  bottom: 0.85rem;
+  top: 50%;
   left: -0.35rem;
   width: 0.65rem;
   height: 0.65rem;
-  transform: rotate(45deg);
+  transform: translateY(-50%) rotate(45deg);
   border-left: 1px solid var(--border-default, rgba(0, 0, 0, 0.08));
   border-bottom: 1px solid var(--border-default, rgba(0, 0, 0, 0.08));
   background: var(--background-card, #fff);
 }
 
-.penny-bubble-tail-left {
-  left: auto;
+/* Tail on the right edge — mascot sits to the right */
+.penny-bubble-tail-right {
+  position: absolute;
+  top: 50%;
   right: -0.35rem;
-  border-left: none;
-  border-bottom: none;
+  width: 0.65rem;
+  height: 0.65rem;
+  transform: translateY(-50%) rotate(45deg);
   border-right: 1px solid var(--border-default, rgba(0, 0, 0, 0.08));
   border-top: 1px solid var(--border-default, rgba(0, 0, 0, 0.08));
+  background: var(--background-card, #fff);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .penny-mascot,
   .penny-mascot-delayed,
-  .penny-bubble-enter {
+  .penny-bubble-enter,
+  .hero-stage-frame,
+  .hero-row-in {
     animation: none;
   }
+}
+
+/* Hero product stage */
+@keyframes hero-stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotateX(5deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+  }
+}
+
+@keyframes hero-row-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.hero-stage-shell {
+  perspective: 1400px;
+}
+
+.hero-stage-frame {
+  animation: hero-stage-in 0.75s ease-out both;
+  transform-origin: center bottom;
+}
+
+.hero-row-in {
+  animation: hero-row-in 0.38s ease-out both;
 }
 
 .animate-gradient {
