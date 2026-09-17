@@ -227,6 +227,64 @@ input[type='number'] {
   animation: tour-bubble-in 0.26s ease-out;
 }
 
+/* Landing: Penny idles and speech bubbles ease in — moderate, not distracting */
+@keyframes penny-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes penny-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.penny-mascot {
+  animation: penny-bob 2.6s ease-in-out infinite;
+}
+
+.penny-mascot-delayed {
+  animation-delay: 0.35s;
+}
+
+.penny-bubble-enter {
+  animation: penny-bubble-in 0.55s ease-out both;
+}
+
+.penny-bubble-tail {
+  position: absolute;
+  bottom: 0.85rem;
+  left: -0.35rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  transform: rotate(45deg);
+  border-left: 1px solid var(--border-default, rgba(0, 0, 0, 0.08));
+  border-bottom: 1px solid var(--border-default, rgba(0, 0, 0, 0.08));
+  background: var(--background-card, #fff);
+}
+
+.penny-bubble-tail-left {
+  left: auto;
+  right: -0.35rem;
+  border-left: none;
+  border-bottom: none;
+  border-right: 1px solid var(--border-default, rgba(0, 0, 0, 0.08));
+  border-top: 1px solid var(--border-default, rgba(0, 0, 0, 0.08));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .penny-mascot,
+  .penny-mascot-delayed,
+  .penny-bubble-enter {
+    animation: none;
+  }
+}
+
 .animate-gradient {
   background-size: 200% auto;
   animation: gradient 8s ease infinite;

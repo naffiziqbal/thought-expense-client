@@ -27,6 +27,14 @@ export type ProductCapability = {
   platforms: string;
 };
 
+export const pennyMessages = {
+  heroIntro: "Hi! I'm Penny — type what you spent and I'll sort the categories.",
+  demoHint: 'Try: coffee 120, uber 250',
+  transform: 'Messy notes are my specialty.',
+  offline: 'No signal? I queue saves until you are back online.',
+  cta: "Sign up free — I'll walk you through the app.",
+};
+
 export const landingHero = {
   eyebrow: 'Natural language expense tracking',
   headline: 'Say what you spent.\nWe sort the rest.',

@@ -1,12 +1,22 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { landingCta, platforms } from '@/lib/landingContent';
+import { PennySpeech } from '@/components/landing/PennySpeech';
+import { landingCta, pennyMessages, platforms } from '@/lib/landingContent';
 
-export function LandingCta() {
+export function CtaWithPenny() {
   return (
     <section className="border-b border-token bg-token-card px-4 py-20 md:py-24">
       <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
         <div>
+          <PennySpeech
+            message={pennyMessages.cta}
+            size={72}
+            layout="vertical"
+            className="mb-8 items-start lg:items-start"
+            delayMs={0}
+          />
           <h2 className="text-3xl font-bold tracking-tight text-token-primary md:text-4xl">
             {landingCta.title}
           </h2>

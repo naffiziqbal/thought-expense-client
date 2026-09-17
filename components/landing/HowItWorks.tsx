@@ -1,5 +1,5 @@
+import { TransformWithPenny } from '@/components/landing/TransformWithPenny';
 import { howItWorks } from '@/lib/landingContent';
-import { TransformationShowcase } from '@/components/landing/TransformationShowcase';
 
 export function HowItWorks() {
   return (
@@ -27,12 +27,7 @@ export function HowItWorks() {
           ))}
         </ol>
 
-        <div className="mt-16 rounded-3xl border border-token bg-token-surface p-6 md:p-10">
-          <p className="mb-8 text-center text-sm font-medium text-token-muted">
-            Example: one messy note becomes categorized totals
-          </p>
-          <TransformationShowcase />
-        </div>
+        <TransformWithPenny />
       </div>
     </section>
   );

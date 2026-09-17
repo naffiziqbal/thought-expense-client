@@ -1,7 +1,7 @@
 import { FAQAccordion } from '@/components/landing/FAQAccordion';
 import { FeatureGrid } from '@/components/landing/FeatureGrid';
 import { HowItWorks } from '@/components/landing/HowItWorks';
-import { LandingCta } from '@/components/landing/LandingCta';
+import { CtaWithPenny } from '@/components/landing/CtaWithPenny';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { PricingSection } from '@/components/landing/PricingSection';
@@ -91,7 +91,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <LandingCta />
+      <CtaWithPenny />
       <LandingFooter />
     </>
   );

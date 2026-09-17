@@ -1,20 +1,32 @@
 'use client';
 
+import { useId } from 'react';
+
 /**
  * Penny — the guide for the in-app tour. Drawn in SVG rather than shipped as
  * an asset so she inherits the brand teal and stays crisp at any size.
  */
-export function Mascot({ size = 74, poseKey = 0 }: { size?: number; poseKey?: number }) {
+export function Mascot({
+  size = 74,
+  poseKey = 0,
+  className = 'tour-mascot',
+}: {
+  size?: number;
+  poseKey?: number;
+  className?: string;
+}) {
+  const bodyGradientId = useId();
+
   return (
     <div
       key={poseKey}
-      className="tour-mascot shrink-0"
+      className={`${className} shrink-0`}
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
       <svg width={size} height={size} viewBox="0 0 100 100">
         <defs>
-          <linearGradient id="pennyBody" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={bodyGradientId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#2DD4BF" />
             <stop offset="1" stopColor="#0E9488" />
           </linearGradient>
@@ -27,7 +39,7 @@ export function Mascot({ size = 74, poseKey = 0 }: { size?: number; poseKey?: nu
         <path d="M74 46 Q88 40 90 24" stroke="#0E9488" strokeWidth={7} strokeLinecap="round" fill="none" />
         <circle cx="90" cy="22" r="5" fill="#2DD4BF" />
 
-        <circle cx="50" cy="50" r="34" fill="url(#pennyBody)" />
+        <circle cx="50" cy="50" r="34" fill={`url(#${bodyGradientId})`} />
         {/* Coin rim — she's a coin, subtly */}
         <circle cx="50" cy="50" r="27" fill="none" stroke="#FFFFFF" strokeOpacity={0.3} strokeWidth={2.5} />
 
