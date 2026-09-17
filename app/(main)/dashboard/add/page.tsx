@@ -321,7 +321,7 @@ export default function AddExpensePage() {
 
     try {
       const res = await api.enqueueParseExpenses(
-        { rawInput: toSubmit, create: true, localPreview, clientBatchId: batchId },
+        { rawInput: toSubmit, create: true, date: selectedDate, localPreview, clientBatchId: batchId },
         batchId
       );
       const jobId = res.data.jobId;
