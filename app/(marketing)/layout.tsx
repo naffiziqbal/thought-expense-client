@@ -27,6 +27,9 @@ export default function MarketingLayout({
               <Link href="/#how-it-works" className="text-sm font-medium text-token-secondary hover:text-token-accent transition-colors">
                 How it works
               </Link>
+              <Link href="/#features" className="text-sm font-medium text-token-secondary hover:text-token-accent transition-colors">
+                Features
+              </Link>
               <Link href="/#pricing" className="text-sm font-medium text-token-secondary hover:text-token-accent transition-colors">
                 Pricing
               </Link>
