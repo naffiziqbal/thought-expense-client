@@ -24,9 +24,9 @@ const icons: Record<string, ReactNode> = {
 
 function FeatureIcon({ title }: { title: string }) {
   return (
-    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-token-accent">
+    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-token-accent sm:h-12 sm:w-12">
       <svg
-        className="h-6 w-6"
+        className="h-5 w-5 sm:h-6 sm:w-6"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -54,23 +54,25 @@ export function FeatureGrid() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
           {features.map((feature) => (
             <article
               key={feature.title}
-              className={`relative rounded-2xl border border-token bg-token-card p-6 ${
-                feature.wide ? 'sm:col-span-2 lg:col-span-3 lg:flex lg:items-start lg:gap-8' : ''
+              className={`relative rounded-2xl border border-token bg-token-card p-4 sm:p-6 ${
+                feature.wide ? 'col-span-2 lg:col-span-3 lg:flex lg:items-start lg:gap-8' : ''
               }`}
             >
               {feature.badge ? (
-                <span className="absolute right-4 top-4 rounded-full bg-[var(--accent-primary)]/10 px-2.5 py-0.5 text-xs font-semibold text-token-accent">
+                <span className="absolute right-2 top-2 rounded-full bg-[var(--accent-primary)]/10 px-2 py-0.5 text-[10px] font-semibold leading-tight text-token-accent sm:right-4 sm:top-4 sm:px-2.5 sm:text-xs">
                   {feature.badge}
                 </span>
               ) : null}
               <FeatureIcon title={feature.title} />
-              <div className={feature.wide ? 'lg:mt-0 mt-4' : 'mt-4'}>
-                <h3 className="text-lg font-semibold text-token-primary">{feature.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-token-secondary">{feature.description}</p>
+              <div className={feature.wide ? 'lg:mt-0 mt-3 sm:mt-4' : 'mt-3 sm:mt-4'}>
+                <h3 className="text-base font-semibold text-token-primary sm:text-lg">{feature.title}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-token-secondary sm:mt-2 sm:text-sm">
+                  {feature.description}
+                </p>
               </div>
             </article>
           ))}
