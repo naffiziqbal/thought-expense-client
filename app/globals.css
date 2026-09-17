@@ -299,9 +299,38 @@ input[type='number'] {
   .penny-mascot-delayed,
   .penny-bubble-enter,
   .hero-stage-frame,
-  .hero-row-in {
+  .hero-row-in,
+  .footer-row-in,
+  .footer-example-chip:active {
     animation: none;
   }
+}
+
+@keyframes footer-row-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.footer-row-in {
+  animation: footer-row-in 0.35s ease-out both;
+}
+
+.footer-example-chip:active {
+  animation: tour-pop 0.28s ease-out;
+}
+
+.footer-platform-pill:hover {
+  transform: translateY(-1px);
+}
+
+.footer-nav-link:hover {
+  transform: translateX(2px);
 }
 
 /* Hero product stage */
