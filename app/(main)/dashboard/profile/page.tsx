@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
+import { premiumPlansSubtitle } from '@/lib/subscription';
 import { useAuthStore } from '@/store/authStore';
 import { useOnboardingStore } from '@/store/onboardingStore';
 import { useIsPremium } from '@/hooks/useIsPremium';
@@ -171,7 +172,7 @@ export default function ProfilePage() {
       iconBg: 'bg-orange-50',
       iconColor: 'text-orange-600',
       title: 'Premium Plans',
-      subtitle: isPremium ? 'You have Premium' : 'Upgrade to unlock all features',
+      subtitle: premiumPlansSubtitle(user),
       href: '/dashboard/premium',
       comingSoon: false,
     },
@@ -289,6 +290,11 @@ export default function ProfilePage() {
             <h1 className="text-lg sm:text-xl font-bold text-token-primary">
               {user?.name || 'User'}
             </h1>
+            {isPremium && user?.subscription?.summaryLine ? (
+              <p className="mt-2 text-sm text-token-secondary text-center max-w-xs">
+                {user.subscription.summaryLine}
+              </p>
+            ) : null}
             <p className="mt-1 text-xs text-token-muted font-mono">
               ID: {user?.id.slice(0, 8).toUpperCase()}
             </p>
