@@ -17,6 +17,11 @@ export function budgetSpendTier(percent: number): BudgetSpendTier {
   return 'danger';
 }
 
+export const CATEGORY_BUDGET_INPUT_PLACEHOLDER = 'Food 500, Rent 2000, Transport 300';
+
+export const CATEGORY_BUDGET_INPUT_HINT =
+  'List category limits in plain English. Separate with commas or line breaks — then tap Parse.';
+
 export function budgetContextForMonth(month: number, year: number) {
   const now = new Date();
   const isCurrentMonth = month === now.getMonth() + 1 && year === now.getFullYear();

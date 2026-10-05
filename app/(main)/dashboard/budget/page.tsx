@@ -10,6 +10,8 @@ import {
   budgetContextForMonth,
   budgetPaceLabel,
   budgetSpendTier,
+  CATEGORY_BUDGET_INPUT_HINT,
+  CATEGORY_BUDGET_INPUT_PLACEHOLDER,
   getCategoryEmoji,
   monthLabel,
 } from '@/lib/budgetDashboard';
@@ -301,22 +303,23 @@ export default function BudgetPage() {
 
         <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-token-card p-4">
           <p className="text-xs font-medium text-token-accent">Category budgets</p>
-          <p className="mt-0.5 text-xs text-token-muted">Natural language · e.g. Food 500, Rent 2000</p>
-          <div className="mt-3 flex items-center gap-2">
-            <div className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border border-token bg-[var(--background-tag)] px-3 focus-within:border-[var(--accent-primary)]">
-              <svg className="h-4 w-4 shrink-0 text-token-accent" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <p className="mt-1 text-xs leading-relaxed text-token-muted">{CATEGORY_BUDGET_INPUT_HINT}</p>
+          <div className="mt-3 rounded-xl border border-token bg-[var(--background-tag)] px-3 py-3 focus-within:border-[var(--accent-primary)]">
+            <div className="flex items-start gap-2">
+              <svg className="mt-0.5 h-4 w-4 shrink-0 text-token-accent" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5z" clipRule="evenodd" />
               </svg>
-              <input
-                type="text"
+              <textarea
                 value={categoryText}
                 onChange={(e) => setCategoryText(e.target.value)}
-                placeholder="Type limits…"
-                className="min-w-0 flex-1 bg-transparent text-sm text-token-primary placeholder:text-token-muted focus:outline-none"
-                onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
+                placeholder={CATEGORY_BUDGET_INPUT_PLACEHOLDER}
+                rows={3}
+                className="min-h-[5.5rem] w-full resize-none bg-transparent text-sm leading-relaxed text-token-primary placeholder:text-token-muted focus:outline-none"
               />
             </div>
-            <Button type="button" size="sm" onClick={handleGenerate} isLoading={parsing} disabled={!categoryText.trim()} className="shrink-0">
+          </div>
+          <div className="mt-2 flex justify-end">
+            <Button type="button" size="sm" onClick={handleGenerate} isLoading={parsing} disabled={!categoryText.trim()}>
               Parse
             </Button>
           </div>
