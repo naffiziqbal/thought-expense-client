@@ -367,7 +367,7 @@ export default function ExpensesPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder='Search expenses, e.g. "coffee last month"'
+                placeholder="Search descriptions, categories…"
                 className="flex-1 min-w-0 bg-transparent text-sm text-token-primary placeholder:text-token-muted focus:outline-none"
               />
               {isSearchActive && (
