@@ -1,3 +1,5 @@
+import { PLAY_STORE_URL } from '@/lib/appLinks';
+
 export type FooterParsedRow = {
   label: string;
   amount: number;
@@ -96,6 +98,7 @@ export const footerTrustItems: FooterTrustItem[] = [
 
 export const footerNav = {
   product: [
+    { label: 'Download Android app', href: PLAY_STORE_URL },
     { label: 'How it works', href: '/#how-it-works' },
     { label: 'Features', href: '/#features' },
     { label: 'Pricing', href: '/#pricing' },

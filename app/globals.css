@@ -39,6 +39,9 @@
   
   --accent-primary: var(--teal-600);
   --accent-hover: var(--teal-500);
+  --accent-soft: #E3F4F1;
+  --on-accent: #FFFFFF;
+  --chart-track: var(--blueGray-200);
   
   --status-success: var(--green-600);
   --status-warning: var(--orange-600);
@@ -60,8 +63,11 @@
     --text-tag: var(--blueGray-100);
     --surface-hover: var(--blueGray-600);
     --background-primary: var(--blueGray-900);
-    --background-surface: var(--blueGray-800);
+    --background-surface: var(--blueGray-900);
     --background-card: var(--blueGray-700);
+    --accent-soft: rgba(45, 212, 191, 0.14);
+    --on-accent: var(--blueGray-900);
+    --chart-track: var(--blueGray-600);
     --text-primary: var(--blueGray-50);
     --text-secondary: var(--blueGray-300);
     --text-muted: var(--blueGray-400);
@@ -78,7 +84,7 @@
   --text-tag: var(--blueGray-100);
   --surface-hover: var(--blueGray-600);
   --background-primary: var(--blueGray-900);
-  --background-surface: var(--blueGray-800);
+  --background-surface: var(--blueGray-900);
   --background-card: var(--blueGray-700);
   --text-primary: var(--blueGray-50);
   --text-secondary: var(--blueGray-300);
@@ -86,6 +92,9 @@
   --border-default: var(--blueGray-600);
   --accent-primary: var(--teal-400);
   --accent-hover: var(--teal-500);
+  --accent-soft: rgba(45, 212, 191, 0.14);
+  --on-accent: var(--blueGray-900);
+  --chart-track: var(--blueGray-600);
   --background: var(--blueGray-900);
   --foreground: var(--blueGray-50);
 }
@@ -104,6 +113,26 @@ body {
 .text-token-muted { color: var(--text-muted); }
 .text-token-accent { color: var(--accent-primary); }
 .border-token { border-color: var(--border-default); }
+.bg-token-accent-soft { background-color: var(--accent-soft); }
+.text-on-accent { color: var(--on-accent); }
+
+/* Home dashboard cards — flat elevated surfaces in dark (matches mobile) */
+.dashboard-card {
+  border-radius: 24px;
+  background-color: var(--background-card);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+[data-theme="dark"] .dashboard-card {
+  border-color: transparent;
+  box-shadow: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .dashboard-card {
+    border-color: transparent;
+    box-shadow: none;
+  }
+}
 .bg-token-success { background-color: var(--status-success); }
 .bg-token-warning { background-color: var(--status-warning); }
 .bg-token-error { background-color: var(--status-error); }

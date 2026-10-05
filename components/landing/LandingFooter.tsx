@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FooterPlayground } from '@/components/landing/FooterPlayground';
 import { FooterTrustRow } from '@/components/landing/FooterTrustRow';
 import { ThemeToggle } from '@/components/landing/ThemeToggle';
+import { PLAY_STORE_URL } from '@/lib/appLinks';
 import { footerNav } from '@/lib/footerPlayground';
 import { platforms } from '@/lib/landingContent';
 
@@ -12,16 +13,30 @@ function FooterLinkGroup({ title, links }: { title: string; links: { label: stri
     <div>
       <p className="text-xs font-bold uppercase tracking-widest text-token-muted">{title}</p>
       <ul className="mt-3 space-y-2">
-        {links.map((link) => (
-          <li key={link.href}>
-            <Link
-              href={link.href}
-              className="footer-nav-link text-sm text-token-secondary transition-colors hover:text-token-accent"
-            >
-              {link.label}
-            </Link>
-          </li>
-        ))}
+        {links.map((link) => {
+          const external = link.href.startsWith('http');
+          return (
+            <li key={link.href}>
+              {external ? (
+                <a
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-nav-link text-sm text-token-secondary transition-colors hover:text-token-accent"
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  href={link.href}
+                  className="footer-nav-link text-sm text-token-secondary transition-colors hover:text-token-accent"
+                >
+                  {link.label}
+                </Link>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
@@ -57,26 +72,43 @@ export function LandingFooter() {
             </p>
 
             <div className="mt-5 flex flex-wrap gap-2">
-              {platforms.map((platform) => (
-                <span
-                  key={platform.name}
-                  className={`footer-platform-pill inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-transform ${
-                    platform.available
-                      ? 'border-[var(--accent-primary)]/25 bg-[var(--accent-primary)]/8 text-token-accent'
-                      : 'border-token text-token-muted'
-                  }`}
-                  title={platform.detail}
-                >
-                  <span
-                    className={`h-1.5 w-1.5 rounded-full ${
-                      platform.available ? 'bg-emerald-500' : 'bg-token-muted'
-                    }`}
-                    aria-hidden
-                  />
-                  {platform.name}
-                  {!platform.available ? ' · soon' : ''}
-                </span>
-              ))}
+              {platforms.map((platform) => {
+                const pillClass = `footer-platform-pill inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-transform ${
+                  platform.available
+                    ? 'border-[var(--accent-primary)]/25 bg-[var(--accent-primary)]/8 text-token-accent'
+                    : 'border-token text-token-muted'
+                }`;
+                const inner = (
+                  <>
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        platform.available ? 'bg-emerald-500' : 'bg-token-muted'
+                      }`}
+                      aria-hidden
+                    />
+                    {platform.name}
+                    {!platform.available ? ' · soon' : ''}
+                  </>
+                );
+                if (platform.name === 'Android' && platform.available) {
+                  return (
+                    <a
+                      key={platform.name}
+                      href={PLAY_STORE_URL}
+                      className={`${pillClass} hover:scale-[1.02]`}
+                      title={platform.detail}
+                      rel="noopener noreferrer"
+                    >
+                      {inner}
+                    </a>
+                  );
+                }
+                return (
+                  <span key={platform.name} className={pillClass} title={platform.detail}>
+                    {inner}
+                  </span>
+                );
+              })}
             </div>
 
             <div className="mt-8 hidden gap-10 sm:grid sm:grid-cols-3 lg:hidden">

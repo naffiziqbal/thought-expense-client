@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { HeroStage } from '@/components/landing/HeroStage';
+import { PlayStoreDownloadLink } from '@/components/marketing/PlayStoreDownloadLink';
 import { landingHero } from '@/lib/landingContent';
 
 const TRUST_PILLS = ['Free forever', 'No card required', 'Web + Android'];
@@ -39,7 +40,7 @@ export function LandingHero() {
               {landingHero.subhead}
             </p>
 
-            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
+            <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap lg:justify-start">
               <Link href="/auth/signup">
                 <Button
                   size="lg"
@@ -48,11 +49,12 @@ export function LandingHero() {
                   {landingHero.cta}
                 </Button>
               </Link>
+              <PlayStoreDownloadLink />
               <Link
                 href="/#how-it-works"
-                className="text-sm font-semibold text-token-secondary transition-colors hover:text-token-accent"
+                className="text-sm font-semibold text-token-muted transition-colors hover:text-token-accent"
               >
-                See how it works →
+                How it works
               </Link>
             </div>
 

@@ -29,7 +29,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Subtle shadow above nav */}
         <div className="absolute -top-6 left-0 right-0 h-6 bg-gradient-to-b from-transparent to-black/5 pointer-events-none" />
         
-        <div className="bg-token-card shadow-2xl border-t border-token safe-area-inset-bottom">
+        <div className="bg-token-surface border-t border-token safe-area-inset-bottom">
           <div className="flex h-[72px] items-center justify-around px-6">
             {/* Home */}
             <Link
@@ -110,11 +110,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             >
               <div ref={addTarget} className="relative">
                 {/* Glow effect */}
-                <div className="absolute inset-0 rounded-full bg-teal-500 blur-xl opacity-30"></div>
+                <div className="absolute inset-0 rounded-full bg-token-accent blur-xl opacity-30"></div>
                 
                 {/* Main button */}
-                <div className="relative w-16 h-16 rounded-full bg-teal-600 hover:bg-teal-500 flex items-center justify-center shadow-lg transition-all duration-200">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                <div className="relative w-16 h-16 rounded-full bg-token-accent hover:opacity-90 flex items-center justify-center shadow-lg transition-all duration-200">
+                  <svg className="w-8 h-8 text-on-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
                 </div>

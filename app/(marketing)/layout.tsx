@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/landing/ThemeToggle';
+import { PlayStoreDownloadLink } from '@/components/marketing/PlayStoreDownloadLink';
 
 export default function MarketingLayout({
   children,
@@ -38,7 +39,7 @@ export default function MarketingLayout({
               </Link>
             </div>
             <div className="flex shrink-0 items-center gap-1 sm:gap-3">
-              <ThemeToggle />
+              <PlayStoreDownloadLink size="sm" className="hidden md:inline-flex" />
               <Link href="/auth/login" className="hidden sm:inline text-sm font-semibold text-token-primary hover:text-token-accent transition-colors px-2">
                 Sign in
               </Link>

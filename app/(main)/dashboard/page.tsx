@@ -4,13 +4,12 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
-import { useIsPremium } from '@/hooks/useIsPremium';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
 import { formatCurrency, formatDate, getCategoryBgColor, getCategoryChartColor } from '@/lib/utils';
 import { getCategoryIcon } from '@/lib/categoryIcons';
 import Link from 'next/link';
-import type { CategorySummary, Expense, Insight, BudgetSummary } from '@/types';
+import type { CategorySummary, Expense, Insight, BudgetSummary, SavingsGoal } from '@/types';
 import { maybeNotifyBudgetStatus } from '@/lib/notifications';
 import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
 import { addPendingToTotals } from '@/lib/pendingExpenses';
@@ -28,7 +27,7 @@ function getCurrentMonthRange() {
   };
 }
 
-/** SVG Donut chart: grey track, teal fill for percentage used */
+/** SVG Donut chart — matches mobile home hero */
 function DonutChart({ percentage, size = 96 }: { percentage: number; size?: number }) {
   const r = (size - 12) / 2;
   const cx = size / 2;
@@ -39,18 +38,16 @@ function DonutChart({ percentage, size = 96 }: { percentage: number; size?: numb
   const strokeDashoffset = circumference - (fillPct / 100) * circumference;
 
   return (
-    <svg width={size} height={size} className="shrink-0">
-      {/* Grey track (background) */}
+    <svg width={size} height={size} className="shrink-0" aria-hidden>
       <circle
         cx={cx}
         cy={cy}
         r={r}
         fill="none"
-        stroke="var(--blueGray-200)"
+        stroke="var(--chart-track)"
         strokeWidth={stroke}
         strokeLinecap="round"
       />
-      {/* Teal fill (spent) */}
       <circle
         cx={cx}
         cy={cy}
@@ -64,17 +61,24 @@ function DonutChart({ percentage, size = 96 }: { percentage: number; size?: numb
         transform={`rotate(-90 ${cx} ${cy})`}
         className="transition-all duration-500"
       />
-      {/* Center: percentage */}
-      <text
-        x={cx}
-        y={cy}
-        textAnchor="middle"
-        dominantBaseline="central"
-        className="text-base font-bold fill-[var(--text-primary)]"
-      >
+      <text x={cx} y={cy - 5} textAnchor="middle" className="text-base font-bold fill-[var(--text-primary)]">
         {Math.round(fillPct)}%
       </text>
+      <text x={cx} y={cy + 12} textAnchor="middle" className="text-[10px] font-semibold fill-[var(--text-muted)]">
+        of budget
+      </text>
     </svg>
+  );
+}
+
+function BudgetProgressBar({ percentage }: { percentage: number }) {
+  const clamped = Math.min(100, Math.max(0, percentage));
+  const barColor =
+    percentage >= 100 ? 'bg-token-error' : percentage >= 90 ? 'bg-token-warning' : 'bg-token-accent';
+  return (
+    <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--chart-track)]">
+      <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${clamped}%` }} />
+    </div>
   );
 }
 
@@ -85,12 +89,11 @@ export default function DashboardPage() {
   const pending = usePendingExpenses();
   const totalTarget = useTourTarget(TOUR_TARGETS.homeTotal);
   const budgetTarget = useTourTarget(TOUR_TARGETS.homeBudget);
-  const isPremium = useIsPremium();
-
   const [summary, setSummary] = useState<CategorySummary | null>(null);
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
   const [insights, setInsights] = useState<Insight[]>([]);
   const [budget, setBudget] = useState<BudgetSummary | null>(null);
+  const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [loading, setLoading] = useState(true);
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -112,17 +115,19 @@ export default function DashboardPage() {
     const { startDate, endDate } = getCurrentMonthRange();
     setLoading(true);
     try {
-      const [summaryRes, expensesRes, insightsRes, budgetRes] = await Promise.all([
+      const [summaryRes, expensesRes, insightsRes, budgetRes, goalsRes] = await Promise.all([
         api.getCategorySummary({ startDate, endDate }),
         api.getExpenses({ limit: 5, startDate, endDate }),
         api.getInsights({ limit: 10 }),
         api.getCurrentBudget(),
+        api.getGoals().catch(() => null),
       ]);
 
       if (summaryRes.success) setSummary(summaryRes.data);
       if (expensesRes.success) setRecentExpenses(expensesRes.data.expenses);
       if (insightsRes.success) setInsights(insightsRes.data.insights);
       if (budgetRes.success) setBudget(budgetRes.data);
+      if (goalsRes?.success) setGoals(goalsRes.data.goals.filter((g) => g.status === 'active'));
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
@@ -285,10 +290,7 @@ export default function DashboardPage() {
   });
 
   const notificationCount = notifications.filter((n) => !seenIds.includes(n.id)).length;
-
-  // Progress bar color: Teal (safe), Yellow (warning), Red (danger)
-  const progressColor =
-    budgetPct < 75 ? 'bg-[var(--accent-primary)]' : budgetPct < 95 ? 'bg-[var(--status-warning)]' : 'bg-[var(--status-error)]';
+  const activeGoals = goals.slice(0, 2);
 
   return (
     <DashboardLayout>
@@ -297,19 +299,19 @@ export default function DashboardPage() {
           {/* Zone A: Personal Header */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-token-muted uppercase tracking-wide">Welcome back,</p>
+              <p className="text-xs font-medium text-token-muted uppercase tracking-wider">Welcome back,</p>
               <h1 className="text-2xl font-bold text-token-accent">{user?.name || 'User'}</h1>
             </div>
             <div className="relative" ref={popoverRef}>
               <button
                 onClick={handleNotificationClick}
-                className="w-10 h-10 rounded-full bg-token-card border border-token flex items-center justify-center text-token-secondary shadow-sm hover:border-[var(--accent-primary)] hover:text-token-accent transition-all"
+                className="relative w-10 h-10 rounded-full bg-token-card border border-token dark:border-transparent flex items-center justify-center text-token-secondary shadow-sm hover:border-[var(--accent-primary)] hover:text-token-accent transition-all"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 {notificationCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-token-error text-white text-[10px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-token-error text-white text-[10px] font-bold flex items-center justify-center">
                     {notificationCount > 9 ? '9+' : notificationCount}
                   </span>
                 )}
@@ -366,37 +368,22 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Budget warning banner */}
-          {displayBudget && displayBudget.percentage >= 90 && (
-            <div className={`rounded-2xl border px-4 py-3 ${displayBudget.percentage >= 100 ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50'}`}>
-              <p className="text-sm font-semibold text-token-primary">
-                {displayBudget.percentage >= 100 ? 'You have exceeded your monthly budget' : 'You are about to exceed your monthly budget'}
-              </p>
-              <p className="text-xs text-token-secondary mt-1">
-                {formatCurrency(displayBudget.total_spent, currency)} of {formatCurrency(displayBudget.total_limit, currency)} ({displayBudget.percentage}%)
-              </p>
-            </div>
-          )}
-
-          {/* Zone B: Hero (Visual Summary) - White Card */}
-          <div
-            ref={totalTarget}
-            className="rounded-[24px] bg-token-card border border-token p-3 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.06)]"
-          >
+          {/* Zone B: Hero card */}
+          <div ref={totalTarget} className="dashboard-card p-4 sm:p-6">
             <div className="flex items-center justify-between gap-3 sm:gap-6">
               <div className="min-w-0 flex-1 overflow-hidden">
-                <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
-                  <span className="text-xs font-bold uppercase tracking-wider text-token-muted">Total Spent</span>
-                  <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold bg-red-100 text-red-700">
-                    +0%
-                  </span>
-                </div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-token-primary tracking-tight truncate">
-                  {loading ? '...' : formatCurrency(displaySummary?.totalSpent ?? 0, currency)}
+                <span className="text-xs font-bold uppercase tracking-wider text-token-muted">Total Spent</span>
+                <h2 className="text-[36px] font-bold text-token-primary tracking-tight truncate leading-tight mt-1">
+                  {loading ? '…' : formatCurrency(displaySummary?.totalSpent ?? 0, currency)}
                 </h2>
-                <p className="text-xs sm:text-sm font-medium text-token-secondary mt-1.5 sm:mt-2">
+                <p className="text-sm text-token-secondary mt-2">
                   {displaySummary?.transactionCount ?? 0} transactions
                 </p>
+                {displayBudget ? (
+                  <span className="mt-2 inline-flex rounded-full bg-token-accent-soft px-2 py-0.5 text-xs font-semibold text-token-accent">
+                    {formatCurrency(Math.max(0, displayBudget.remaining), currency)} safe to spend
+                  </span>
+                ) : null}
               </div>
               <DonutChart percentage={budgetPct} size={96} />
             </div>
@@ -408,26 +395,21 @@ export default function DashboardPage() {
             <Link href="/dashboard/budget" className="block min-w-0">
               <div
                 ref={budgetTarget}
-                className="rounded-2xl bg-token-card border border-token p-2.5 sm:p-5 shadow-sm h-[130px] sm:h-[140px] flex flex-col justify-between hover:border-[var(--accent-primary)]/30 transition-colors"
+                className="dashboard-card p-3 sm:p-5 min-h-[136px] flex flex-col justify-between hover:border-[var(--accent-primary)]/30 transition-colors"
               >
                 <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-token-muted">Safe to Spend</p>
                 <p className="text-base sm:text-xl font-extrabold text-token-primary truncate" title={displayBudget ? formatCurrency(Math.max(0, displayBudget.remaining), currency) : undefined}>
                   {displayBudget ? formatCurrency(Math.max(0, displayBudget.remaining), currency) : '—'}
                 </p>
                 <div className="space-y-1">
-                  <div className="h-2 rounded-full bg-[var(--blueGray-100)] overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${progressColor} transition-all`}
-                      style={{ width: `${Math.min(budgetPct, 100)}%` }}
-                    />
-                  </div>
+                  <BudgetProgressBar percentage={budgetPct} />
                   <p className="text-[10px] font-semibold text-token-accent">View budget</p>
                 </div>
               </div>
             </Link>
 
             {/* Card 2: Top Category */}
-            <div className="rounded-2xl bg-token-card border border-token p-2.5 sm:p-5 shadow-sm h-[130px] sm:h-[140px] flex flex-col justify-between min-w-0">
+            <div className="dashboard-card p-3 sm:p-5 min-h-[136px] flex flex-col justify-between min-w-0">
               <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-token-muted">Top Category</p>
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <div
@@ -453,7 +435,48 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Zone D: Transaction Stream */}
+          {/* AI advisor entry */}
+          <Link href="/dashboard/assistant" className="dashboard-card flex items-center gap-3 p-4 hover:opacity-95 transition-opacity">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-token-accent-soft">
+              <svg className="h-5 w-5 text-token-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-token-primary">Ask your AI advisor</p>
+              <p className="truncate text-sm text-token-secondary">Why did I spend so much? How can I save more?</p>
+            </div>
+            <svg className="h-[18px] w-[18px] shrink-0 text-token-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+
+          {/* Savings goals snapshot */}
+          {activeGoals.length > 0 ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-token-primary">Savings Goals</h3>
+                <Link href="/dashboard/goals" className="text-sm font-semibold text-token-accent hover:opacity-80">
+                  View All
+                </Link>
+              </div>
+              <div className="dashboard-card space-y-4 p-4">
+                {activeGoals.map((goal) => (
+                  <Link key={goal.id} href="/dashboard/goals" className="block space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="min-w-0 flex-1 truncate font-medium text-token-primary">{goal.name}</p>
+                      <p className="shrink-0 text-sm text-token-secondary">
+                        {formatCurrency(goal.savedAmount, goal.currency)} / {formatCurrency(goal.targetAmount, goal.currency)}
+                      </p>
+                    </div>
+                    <BudgetProgressBar percentage={goal.progress * 100} />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Zone D: Recent transactions */}
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-token-primary">Recent Transactions</h3>
@@ -463,7 +486,7 @@ export default function DashboardPage() {
             </div>
 
             {displayRecent.length > 0 ? (
-              <div className="rounded-2xl bg-token-card border border-token divide-y divide-[var(--border-default)] overflow-hidden shadow-sm px-0">
+              <div className="dashboard-card divide-y divide-[var(--border-default)] overflow-hidden px-0 !rounded-2xl">
                 {displayRecent.map((expense) => {
                   const CategoryIcon = getCategoryIcon(expense.category);
                   return (
@@ -488,7 +511,7 @@ export default function DashboardPage() {
 
           {/* Empty State */}
           {!loading && (displaySummary?.transactionCount ?? 0) === 0 && (
-            <div className="rounded-2xl bg-token-card border border-token p-6 sm:p-12 text-center shadow-sm">
+            <div className="dashboard-card p-6 sm:p-12 text-center">
               <div className="mb-4 text-6xl">📝</div>
               <h3 className="mb-2 text-xl font-semibold text-token-primary">No expenses yet</h3>
               <p className="mb-6 text-token-secondary">Start tracking your expenses by adding your first entry</p>
