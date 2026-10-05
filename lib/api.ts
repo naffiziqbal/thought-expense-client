@@ -480,7 +480,7 @@ class ApiClient {
     data: {
       name?: string;
       targetAmount?: number;
-      deadline?: string;
+      deadline?: string | null;
       status?: 'active' | 'completed' | 'archived';
     }
   ): Promise<{ success: boolean; message?: string; data: { goal: SavingsGoal } }> {

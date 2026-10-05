@@ -5,55 +5,24 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { Button } from '@/components/ui/Button';
 import { BottomSheet } from '@/components/ui/BottomSheet';
-import { Modal } from '@/components/ui/Modal';
 import { api } from '@/lib/api';
+import {
+  budgetContextForMonth,
+  budgetPaceLabel,
+  budgetSpendTier,
+  getCategoryEmoji,
+  monthLabel,
+} from '@/lib/budgetDashboard';
 import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
 import toast from 'react-hot-toast';
 import type { BudgetSummary, CategoryBudgetProgress, Expense } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 
-// Category name → emoji for breakdown cards
-const CATEGORY_EMOJI: Record<string, string> = {
-  food: '🍽️',
-  groceries: '🥬',
-  grocery: '🥬',
-  rent: '🏠',
-  transport: '🚗',
-  transportation: '🚗',
-  gas: '⛽',
-  fuel: '⛽',
-  health: '❤️',
-  medical: '🏥',
-  healthcare: '🏥',
-  entertainment: '🎬',
-  utilities: '💡',
-  shopping: '🛍️',
-  education: '📚',
-  dining: '🍴',
-  fitness: '💪',
-  gym: '💪',
-  subscriptions: '📱',
-  travel: '✈️',
-  other: '📦',
-};
-
-function getCategoryEmoji(category: string): string {
-  const key = category.trim().toLowerCase();
-  return CATEGORY_EMOJI[key] ?? '📦';
-}
-
-// Progress bar color per design tokens: Safe <75% (accent), Warning 75-95% (orange), Danger >95% (red)
-function getProgressColor(percentage: number): string {
-  if (percentage < 75) return 'bg-token-accent';
-  if (percentage < 95) return 'bg-token-warning';
+function progressBarClass(tier: ReturnType<typeof budgetSpendTier>): string {
+  if (tier === 'safe') return 'bg-token-accent';
+  if (tier === 'warn') return 'bg-token-warning';
   return 'bg-token-error';
-}
-
-function getProgressBgColor(percentage: number): string {
-  if (percentage < 75) return 'bg-teal-50';
-  if (percentage < 95) return 'bg-orange-50';
-  return 'bg-red-50';
 }
 
 export default function BudgetPage() {
@@ -68,6 +37,7 @@ export default function BudgetPage() {
   const [budget, setBudget] = useState<BudgetSummary | null>(null);
   const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudgetProgress[]>([]);
   const [history, setHistory] = useState<BudgetSummary[]>([]);
+  const [showPastMonths, setShowPastMonths] = useState(false);
 
   const [categoryText, setCategoryText] = useState('');
   const [parsedCategories, setParsedCategories] = useState<{ category: string; limit: number }[]>([]);
@@ -107,11 +77,9 @@ export default function BudgetPage() {
     loadBudgets();
   }, [isAuthenticated, isLoading, month, year]);
 
-  // Prefill edit form when opening
   useEffect(() => {
-    if (editLimitOpen && budget) {
-      setEditAmount(String(budget.total_limit));
-    }
+    if (editLimitOpen && budget) setEditAmount(String(budget.total_limit));
+    if (editLimitOpen && !budget) setEditAmount('');
   }, [editLimitOpen, budget]);
 
   const handleSaveLimit = async () => {
@@ -131,8 +99,9 @@ export default function BudgetPage() {
       } else {
         toast.error(res.message || 'Failed to save');
       }
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to save');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e.response?.data?.message || 'Failed to save');
     } finally {
       setIsSaving(false);
     }
@@ -149,12 +118,13 @@ export default function BudgetPage() {
       if (res.success && res.data?.items?.length) {
         setParsedCategories(res.data.items);
         const total = res.data.items.reduce((s, i) => s + i.limit, 0);
-        toast.success(`Parsed ${res.data.items.length} categories (Total: ${formatCurrency(total, currency)})`);
+        toast.success(`Parsed ${res.data.items.length} categories (${formatCurrency(total, currency)})`);
       } else {
         toast.error('Could not parse any categories');
       }
-    } catch (e: any) {
-      toast.error(e?.response?.data?.message || 'Failed to parse');
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to parse');
     } finally {
       setParsing(false);
     }
@@ -179,8 +149,23 @@ export default function BudgetPage() {
       } else {
         toast.error(res.message || 'Failed to save');
       }
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to save');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e.response?.data?.message || 'Failed to save');
+    }
+  };
+
+  const handleSetAsMonthlyLimit = async () => {
+    const total = parsedCategories.reduce((s, i) => s + Number(i.limit), 0);
+    if (total <= 0) return;
+    try {
+      await api.setBudget({ month, year, total_limit: total });
+      toast.success('Monthly limit set from categories');
+      await loadBudgets();
+      window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed');
     }
   };
 
@@ -201,9 +186,7 @@ export default function BudgetPage() {
         category: cat,
         limit: 50,
       });
-      if (res.success) {
-        setCategoryExpenses(res.data.expenses);
-      }
+      if (res.success) setCategoryExpenses(res.data.expenses);
     } catch (e) {
       console.error(e);
     } finally {
@@ -211,323 +194,265 @@ export default function BudgetPage() {
     }
   };
 
-  // Build month/year options for picker (last 24 months)
   const monthYearOptions = Array.from({ length: 24 }, (_, i) => {
     const d = new Date();
     d.setMonth(d.getMonth() - i);
     return { month: d.getMonth() + 1, year: d.getFullYear() };
   });
 
-  const dateLabel = new Date(year, month - 1, 1).toLocaleString('en-US', {
-    month: 'long',
-    year: 'numeric',
-  });
-
   if (isLoading || !isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
-          <p className="text-token-secondary">Loading...</p>
-        </div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
       </div>
     );
   }
 
+  const budgetPct = budget?.percentage ?? 0;
+  const tier = budgetSpendTier(budgetPct);
+  const { isCurrentMonth, expectedPct, daysLeft } = budgetContextForMonth(month, year);
+  const paceLabel = budgetPaceLabel(budgetPct, expectedPct);
+  const safePerDay = budget && daysLeft > 0 ? Math.max(0, budget.remaining) / daysLeft : 0;
+
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-token-surface pb-8">
-        {/* Zone A: Header */}
-        <div className="pt-6 pb-4">
-          <h1 className="text-2xl font-bold text-token-primary tracking-tight">Monthly Budget</h1>
+      <div className="mx-auto max-w-lg space-y-3 pb-8 pt-1">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-base font-semibold leading-tight text-token-primary">Budget</h1>
+            <button
+              type="button"
+              onClick={() => setDatePickerOpen(true)}
+              className="mt-0.5 flex items-center gap-1 text-xs text-token-muted hover:text-token-accent"
+            >
+              {monthLabel(year, month)}
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
           <button
-            onClick={() => setDatePickerOpen(true)}
-            className="mt-2 flex items-center gap-1.5 text-base font-semibold text-token-secondary hover:text-[var(--accent-primary)] transition-colors"
+            type="button"
+            onClick={() => setEditLimitOpen(true)}
+            aria-label="Edit monthly limit"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-token bg-token-card text-token-secondary shadow-sm hover:border-[var(--accent-primary)] hover:text-token-accent"
           >
-            {dateLabel}
-            <svg className="h-4 w-4 text-token-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
             </svg>
           </button>
         </div>
 
-        {/* Zone B: Scoreboard (Hero Card) */}
-        <div className="rounded-3xl bg-token-card p-4 sm:p-6 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-token-muted mb-1">Safe to Spend</p>
-              <p
-                className={`text-4xl md:text-5xl font-extrabold tracking-tight text-token-primary ${
-                  loadingBudgets ? 'opacity-50' : ''
-                }`}
-              >
-                {loadingBudgets
-                  ? '...'
-                  : budget
-                  ? formatCurrency(Math.max(0, budget.remaining), currency)
-                  : '—'}
-              </p>
-            </div>
-            <button
-              onClick={() => setEditLimitOpen(true)}
-              className="rounded-lg p-2 text-token-muted hover:bg-[var(--surface-hover)] hover:text-token-secondary transition-colors"
-              title="Edit budget"
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {budget && (
+        <div className={`rounded-2xl border p-4 ${tier === 'safe' ? 'border-[var(--accent-primary)]/35 bg-[var(--accent-primary)]/5' : 'border-token bg-token-card'}`}>
+          {budget ? (
             <>
-              <div className="mt-4 h-3 rounded-full bg-[var(--blueGray-100)] overflow-hidden">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-medium text-token-muted">Left this month</p>
+                {isCurrentMonth ? (
+                  <span className="rounded-full bg-token-card px-2.5 py-0.5 text-[10px] font-semibold text-token-accent">{paceLabel}</span>
+                ) : null}
+              </div>
+              <p className={`mt-1 text-3xl font-semibold tabular-nums text-token-primary ${loadingBudgets ? 'opacity-50' : ''}`}>
+                {loadingBudgets ? '…' : formatCurrency(Math.max(0, budget.remaining), currency)}
+              </p>
+              <p className="text-xs text-token-secondary">
+                of {formatCurrency(budget.total_limit, currency)}
+                {isCurrentMonth && daysLeft > 0 ? ` · ${daysLeft} days left` : ''}
+              </p>
+              <div className="relative mt-3 h-2 overflow-visible rounded-full bg-[var(--chart-track)]">
                 <div
-                  className={`h-full rounded-full transition-all ${getProgressColor(budget.percentage)}`}
-                  style={{ width: `${Math.min(budget.percentage, 120)}%` }}
+                  className={`h-2 rounded-full transition-all ${progressBarClass(tier)}`}
+                  style={{ width: `${Math.min(budgetPct, 100)}%` }}
                 />
+                {isCurrentMonth ? (
+                  <div
+                    className="absolute top-[-4px] h-4 w-0.5 bg-token-primary"
+                    style={{ left: `${Math.min(98, Math.max(0, expectedPct))}%` }}
+                  />
+                ) : null}
               </div>
-              <div className="mt-2 flex justify-between text-xs font-medium text-token-secondary">
-                <span>{formatCurrency(budget.total_spent, currency)} spent</span>
-                <span>{formatCurrency(budget.total_limit, currency)} limit</span>
-              </div>
-            </>
-          )}
-
-          {!budget && !loadingBudgets && (
-            <p className="mt-4 text-sm text-token-secondary">
-              Set a total limit using the pencil icon, or generate from category budgets below.
-            </p>
-          )}
-        </div>
-
-        {/* Zone C: Magic Wand (AI Setup) */}
-        <div className="mt-6 rounded-3xl bg-token-card p-3 sm:p-4 shadow-sm">
-          <div className="flex gap-2 sm:gap-3 items-center">
-            <div className="flex-1 flex items-center gap-2 h-11 rounded-full border border-token bg-[var(--background-tag)] px-3 sm:px-4 focus-within:border-[var(--accent-primary)] focus-within:bg-teal-50/30 dark:focus-within:bg-teal-950/30 focus-within:ring-2 focus-within:ring-[var(--accent-primary)]/20 transition-all">
-              <svg className="h-5 w-5 shrink-0 text-token-accent" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.916 1.916l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.916 1.916l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.916-1.916l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.916-1.916l.258-1.036A.75.75 0 0118 1.5zM3 13.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.916 1.916l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.916 1.916l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.916-1.916l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.916-1.916l.258-1.036A.75.75 0 013 13.5z" clipRule="evenodd" />
-            </svg>
-              <input
-                type="text"
-                value={categoryText}
-                onChange={(e) => setCategoryText(e.target.value)}
-                placeholder="e.g. Food 500, Rent 2000, Gas 100..."
-                className="flex-1 min-w-0 bg-transparent text-sm text-token-primary placeholder:text-token-muted focus:outline-none"
-                onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
-              />
-            </div>
-            <Button
-              type="button"
-              size="md"
-              onClick={handleGenerate}
-              isLoading={parsing}
-              disabled={!categoryText.trim()}
-              className="shrink-0 h-11 rounded-full bg-token-accent hover:bg-[var(--accent-hover)] text-white px-5"
-            >
-              Generate
-            </Button>
-          </div>
-
-          {parsedCategories.length > 0 && (
-            <div className="mt-3 pt-3 sm:pt-4 border-t border-token space-y-2 sm:space-y-3">
-              <p className="text-xs font-medium text-token-secondary">Review & save</p>
-              <div className="flex items-center justify-between gap-2 rounded-xl bg-teal-50 px-3 py-2">
-                <span className="text-xs text-[var(--blueGray-800)]">
-                  Total from categories: {formatCurrency(parsedCategories.reduce((s, i) => s + i.limit, 0), currency)}
+              <div className="mt-2 flex justify-between text-[11px] text-token-muted">
+                <span>
+                  Spent {formatCurrency(budget.total_spent, currency)} ({budgetPct}%)
                 </span>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const total = parsedCategories.reduce((s, i) => s + Number(i.limit), 0);
-                    if (total <= 0) return;
-                    try {
-                      await api.setBudget({ month, year, total_limit: total });
-                      toast.success('Monthly limit set from categories');
-                      await loadBudgets();
-                    } catch (e: any) {
-                      toast.error(e?.response?.data?.message || 'Failed');
-                    }
-                  }}
-                  className="text-xs font-semibold text-token-accent hover:text-[var(--accent-hover)]"
-                >
-                  Set as monthly limit
-                </button>
+                {isCurrentMonth ? <span>Expected {expectedPct}%</span> : null}
               </div>
-              <div className="space-y-2">
-                {parsedCategories.map((item, idx) => (
-                  <div key={`${item.category}-${idx}`} className="flex items-center gap-2">
-                    <input
-                      value={item.category}
-                      onChange={(e) =>
-                        setParsedCategories((prev) =>
-                          prev.map((p, i) => (i === idx ? { ...p, category: e.target.value } : p))
-                        )
-                      }
-                      className="flex-1 rounded-lg border border-token px-3 py-2 text-sm text-token-primary"
-                    />
-                    <input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      value={item.limit}
-                      onChange={(e) =>
-                        setParsedCategories((prev) =>
-                          prev.map((p, i) => (i === idx ? { ...p, limit: Number(e.target.value) } : p))
-                        )
-                      }
-                      className="w-24 rounded-lg border border-token px-3 py-2 text-sm text-right text-token-primary"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setParsedCategories((prev) => prev.filter((_, i) => i !== idx))}
-                      className="text-token-muted hover:text-token-error p-1"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <Button type="button" size="sm" onClick={handleSaveCategoryBudgets} className="w-full">
-                Save category budgets
+              {isCurrentMonth && daysLeft > 0 ? (
+                <div className="mt-3 rounded-xl bg-[var(--background-primary)] px-3 py-2.5">
+                  <p className="text-[11px] text-token-muted">Safe per day</p>
+                  <p className="text-base font-medium text-token-primary">{formatCurrency(safePerDay, currency)}</p>
+                </div>
+              ) : null}
+            </>
+          ) : loadingBudgets ? (
+            <p className="py-6 text-center text-sm text-token-muted">Loading budget…</p>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-token-primary">No monthly limit yet</p>
+              <p className="text-xs leading-relaxed text-token-secondary">
+                Set a total with the edit button, or describe category limits below.
+              </p>
+              <Button type="button" size="sm" onClick={() => setEditLimitOpen(true)}>
+                Set monthly limit
               </Button>
             </div>
           )}
         </div>
 
-        {/* Zone D: Breakdown (Category List) */}
-        {categoryBudgets.length > 0 && (
-          <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
-            <h2 className="text-base font-semibold text-token-primary">Breakdown</h2>
-            <div className="space-y-3">
-              {categoryBudgets.map((b) => {
-                const pct = b.limit > 0 ? Math.min(100, Math.round((b.spent / b.limit) * 100)) : 0;
-                const barColor = getProgressColor(pct);
-                const isExpanded = expandedCategory === b.category;
+        <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-token-card p-4">
+          <p className="text-xs font-medium text-token-accent">Category budgets</p>
+          <p className="mt-0.5 text-xs text-token-muted">Natural language · e.g. Food 500, Rent 2000</p>
+          <div className="mt-3 flex items-center gap-2">
+            <div className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border border-token bg-[var(--background-tag)] px-3 focus-within:border-[var(--accent-primary)]">
+              <svg className="h-4 w-4 shrink-0 text-token-accent" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5z" clipRule="evenodd" />
+              </svg>
+              <input
+                type="text"
+                value={categoryText}
+                onChange={(e) => setCategoryText(e.target.value)}
+                placeholder="Type limits…"
+                className="min-w-0 flex-1 bg-transparent text-sm text-token-primary placeholder:text-token-muted focus:outline-none"
+                onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
+              />
+            </div>
+            <Button type="button" size="sm" onClick={handleGenerate} isLoading={parsing} disabled={!categoryText.trim()} className="shrink-0">
+              Parse
+            </Button>
+          </div>
 
+          {parsedCategories.length > 0 ? (
+            <div className="mt-3 space-y-2 border-t border-token pt-3">
+              <div className="flex items-center justify-between gap-2 rounded-lg bg-token-accent-soft px-3 py-2">
+                <span className="text-xs text-token-primary">
+                  Total {formatCurrency(parsedCategories.reduce((s, i) => s + i.limit, 0), currency)}
+                </span>
+                <button type="button" onClick={handleSetAsMonthlyLimit} className="text-xs font-semibold text-token-accent">
+                  Use as monthly limit
+                </button>
+              </div>
+              {parsedCategories.map((item, idx) => (
+                <div key={`${item.category}-${idx}`} className="flex items-center gap-2">
+                  <input
+                    value={item.category}
+                    onChange={(e) => setParsedCategories((prev) => prev.map((p, i) => (i === idx ? { ...p, category: e.target.value } : p)))}
+                    className="min-w-0 flex-1 rounded-lg border border-token px-3 py-2 text-sm text-token-primary"
+                  />
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={item.limit}
+                    onChange={(e) => setParsedCategories((prev) => prev.map((p, i) => (i === idx ? { ...p, limit: Number(e.target.value) || 0 } : p)))}
+                    className="w-24 rounded-lg border border-token px-3 py-2 text-right text-sm text-token-primary"
+                  />
+                  <button type="button" onClick={() => setParsedCategories((prev) => prev.filter((_, i) => i !== idx))} className="p-1 text-token-muted hover:text-token-error">
+                    ✕
+                  </button>
+                </div>
+              ))}
+              <Button type="button" size="sm" className="w-full" onClick={handleSaveCategoryBudgets}>
+                Save category budgets
+              </Button>
+            </div>
+          ) : null}
+        </div>
+
+        {categoryBudgets.length > 0 ? (
+          <div>
+            <p className="mb-2 ml-1 text-xs text-token-muted">By category</p>
+            <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+              {categoryBudgets.map((b, i) => {
+                const pct = b.limit > 0 ? Math.min(100, Math.round((b.spent / b.limit) * 100)) : 0;
+                const catTier = budgetSpendTier(pct);
+                const isExpanded = expandedCategory === b.category;
                 return (
-                  <div
-                    key={`${b.year}-${b.month}-${b.category}`}
-                    className={`rounded-3xl bg-token-card p-3 sm:p-4 shadow-sm ${getProgressBgColor(pct)} border border-transparent`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleCategoryClick(b.category)}
-                      className="w-full text-left flex items-center gap-3"
-                    >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-token-card/80 text-xl shadow-sm">
+                  <div key={`${b.year}-${b.month}-${b.category}`} className={i < categoryBudgets.length - 1 ? 'border-b border-token' : ''}>
+                    <button type="button" onClick={() => handleCategoryClick(b.category)} className="flex w-full items-start gap-3 p-3 text-left">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--chart-track)] text-lg">
                         {getCategoryEmoji(b.category)}
                       </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-base font-semibold text-token-primary">{b.category}</p>
-                        <p className="text-xs font-medium text-token-secondary">
-                          {formatCurrency(b.spent, currency)} / {formatCurrency(b.limit, currency)}
-                        </p>
-                      </div>
-                      <svg
-                        className={`h-5 w-5 text-token-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center justify-between gap-2">
+                          <span className="truncate text-sm font-medium text-token-primary">{b.category}</span>
+                          <span className="shrink-0 text-sm font-semibold tabular-nums text-token-primary">{pct}%</span>
+                        </span>
+                        <span className="mt-0.5 block text-xs text-token-muted">
+                          {formatCurrency(b.spent, currency)} of {formatCurrency(b.limit, currency)}
+                        </span>
+                        <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-[var(--chart-track)]">
+                          <span className={`block h-full rounded-full ${progressBarClass(catTier)}`} style={{ width: `${pct}%` }} />
+                        </span>
+                      </span>
+                      <svg className={`mt-1 h-4 w-4 shrink-0 text-token-muted ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
-                    <div className="mt-2 h-1.5 rounded-full bg-token-card/60 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${barColor}`}
-                        style={{ width: `${Math.min(pct, 100)}%` }}
-                      />
-                    </div>
-
-                    {isExpanded && (
-                      <div className="mt-4 pt-4 border-t border-token">
+                    {isExpanded ? (
+                      <div className="space-y-2 border-t border-token px-3 py-3">
                         {loadingExpenses ? (
-                          <div className="py-4 text-center text-sm text-token-secondary">Loading...</div>
+                          <p className="text-sm text-token-muted">Loading…</p>
                         ) : categoryExpenses.length === 0 ? (
-                          <p className="text-sm text-token-secondary">No transactions this month</p>
+                          <p className="text-sm text-token-muted">No transactions this month</p>
                         ) : (
-                          <ul className="space-y-2">
-                            {categoryExpenses.map((e) => (
-                              <li
-                                key={e.id}
-                                className="flex justify-between text-sm"
-                              >
-                                <span className="text-token-secondary truncate pr-2">{e.description}</span>
-                                <span className="font-medium text-token-primary shrink-0">
-                                  {formatCurrency(e.amount, e.currency)}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
+                          categoryExpenses.map((e) => (
+                            <div key={e.id} className="flex justify-between gap-2 text-sm">
+                              <span className="truncate text-token-secondary">{e.description}</span>
+                              <span className="shrink-0 font-medium text-token-primary">{formatCurrency(e.amount, e.currency)}</span>
+                            </div>
+                          ))
                         )}
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 );
               })}
             </div>
           </div>
-        )}
+        ) : null}
 
-        {/* Past budgets - compact */}
-        {history.length > 0 && (
-          <div className="mt-8 rounded-3xl bg-token-card p-4 sm:p-6 shadow-sm">
-            <h2 className="text-base font-semibold text-token-primary mb-3">Past months</h2>
-            <div className="space-y-2">
-              {history.slice(0, 6).map((b) => {
-                const label = new Date(b.year, b.month - 1, 1).toLocaleString('en-US', {
-                  month: 'short',
-                  year: 'numeric',
-                });
-                const isSelected = b.month === month && b.year === year;
-                return (
-                  <button
-                    key={b.id || `${b.year}-${b.month}`}
-                    type="button"
-                    onClick={() => {
-                      setMonth(b.month);
-                      setYear(b.year);
-                      setDatePickerOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between rounded-xl px-4 py-2.5 text-left transition-colors ${
-                      isSelected ? 'bg-teal-50 dark:bg-teal-950/50' : 'hover:bg-[var(--surface-hover)]'
-                    }`}
-                  >
-                    <span className="text-sm font-medium text-token-primary">
-                      {label} {isSelected && '(viewing)'}
-                    </span>
-                    <span
-                      className={`text-xs font-semibold ${
-                        b.total_spent <= b.total_limit ? 'text-token-accent' : 'text-token-error'
+        {history.length > 0 ? (
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowPastMonths((v) => !v)}
+              className="flex w-full items-center justify-between px-1 text-xs font-medium text-token-muted"
+            >
+              Past months ({history.length})
+              <svg className={`h-4 w-4 ${showPastMonths ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {showPastMonths ? (
+              <div className="mt-2 overflow-hidden rounded-2xl border border-token bg-token-card">
+                {history.slice(0, 6).map((b, i) => {
+                  const isSelected = b.month === month && b.year === year;
+                  return (
+                    <button
+                      key={b.id || `${b.year}-${b.month}`}
+                      type="button"
+                      onClick={() => {
+                        setMonth(b.month);
+                        setYear(b.year);
+                      }}
+                      className={`flex w-full items-center justify-between px-4 py-3 text-left ${i < Math.min(history.length, 6) - 1 ? 'border-b border-token' : ''} ${
+                        isSelected ? 'bg-token-accent-soft' : 'hover:bg-[var(--surface-hover)]'
                       }`}
                     >
-                      {b.percentage}%
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                      <span className="text-sm font-medium text-token-primary">{monthLabel(b.year, b.month, false)}</span>
+                      <span className={`text-xs font-semibold ${b.total_spent <= b.total_limit ? 'text-token-accent' : 'text-token-error'}`}>
+                        {b.percentage}%
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
-        )}
+        ) : null}
 
-        {/* Date Picker Bottom Sheet */}
-        <BottomSheet
-          isOpen={datePickerOpen}
-          onClose={() => setDatePickerOpen(false)}
-          title="Select month"
-        >
-          <div className="space-y-1 max-h-64 overflow-y-auto">
+        <BottomSheet isOpen={datePickerOpen} onClose={() => setDatePickerOpen(false)} title="Select month">
+          <div className="max-h-64 space-y-1 overflow-y-auto">
             {monthYearOptions.map(({ month: m, year: y }) => {
-              const label = new Date(y, m - 1, 1).toLocaleString('en-US', {
-                month: 'long',
-                year: 'numeric',
-              });
               const isSelected = m === month && y === year;
               return (
                 <button
@@ -538,49 +463,35 @@ export default function BudgetPage() {
                     setYear(y);
                     setDatePickerOpen(false);
                   }}
-                  className={`w-full text-left py-3 px-4 rounded-xl text-base font-medium ${
-                    isSelected ? 'bg-teal-50 dark:bg-teal-950/50 text-[var(--accent-primary)]' : 'text-token-primary hover:bg-[var(--surface-hover)]'
-                  }`}
+                  className={`w-full rounded-xl px-4 py-3 text-left text-sm font-medium ${isSelected ? 'bg-token-accent-soft text-token-accent' : 'text-token-primary hover:bg-[var(--surface-hover)]'}`}
                 >
-                  {label}
+                  {monthLabel(y, m)}
                 </button>
               );
             })}
           </div>
         </BottomSheet>
 
-        {/* Edit Limit Modal */}
-        <Modal
-          isOpen={editLimitOpen}
-          onClose={() => setEditLimitOpen(false)}
-          title="Edit total budget"
-          footer={
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setEditLimitOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSaveLimit} isLoading={isSaving}>
-                Save
-              </Button>
+        <BottomSheet isOpen={editLimitOpen} onClose={() => setEditLimitOpen(false)} title="Monthly limit">
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-token-secondary">
+                Total for {monthLabel(year, month)} ({currency})
+              </label>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={editAmount}
+                onChange={(e) => setEditAmount(e.target.value)}
+                placeholder="Amount"
+                className="w-full rounded-lg border border-token px-4 py-2.5 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              />
             </div>
-          }
-        >
-          <div>
-            <label className="block text-sm font-medium text-token-secondary mb-2">Total monthly limit</label>
-            <input
-              type="number"
-              min={0}
-              step="0.01"
-              value={editAmount}
-              onChange={(e) => setEditAmount(e.target.value)}
-              placeholder="Enter amount"
-              className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
-            />
-            <p className="mt-2 text-xs text-token-muted">
-              {dateLabel} · Your currency: {currency}
-            </p>
+            <Button type="button" className="w-full" onClick={handleSaveLimit} isLoading={isSaving}>
+              Save limit
+            </Button>
           </div>
-        </Modal>
+        </BottomSheet>
       </div>
     </DashboardLayout>
   );

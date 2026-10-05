@@ -5,18 +5,18 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/Button';
+import { DateField } from '@/components/ui/DateField';
 import { Modal } from '@/components/ui/Modal';
 import { api } from '@/lib/api';
+import {
+  GOAL_STARTER_IDEAS,
+  deadlineLabel,
+  quickContributeAmounts,
+  summarizeGoals,
+} from '@/lib/goalsDashboard';
 import toast from 'react-hot-toast';
 import type { SavingsGoal } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
-
-// Progress bar color: teal while saving, celebrate at completion
-function getGoalProgressColor(progressPct: number): string {
-  if (progressPct >= 100) return 'bg-token-accent';
-  if (progressPct >= 75) return 'bg-teal-500';
-  return 'bg-token-accent';
-}
 
 export default function GoalsPage() {
   const { isAuthenticated, isLoading } = useProtectedRoute();
@@ -24,27 +24,27 @@ export default function GoalsPage() {
 
   const [loadingGoals, setLoadingGoals] = useState(true);
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
+  const [showCompleted, setShowCompleted] = useState(false);
 
-  // Create goal
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState({ name: '', targetAmount: '', deadline: '' });
   const [isCreating, setIsCreating] = useState(false);
 
-  // Contribute
   const [contributeGoal, setContributeGoal] = useState<SavingsGoal | null>(null);
   const [contributeAmount, setContributeAmount] = useState('');
   const [isContributing, setIsContributing] = useState(false);
 
-  // Edit
   const [editGoal, setEditGoal] = useState<SavingsGoal | null>(null);
   const [editForm, setEditForm] = useState({ name: '', targetAmount: '', deadline: '' });
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
-  // Delete
   const [deleteGoal, setDeleteGoal] = useState<SavingsGoal | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [menuGoalId, setMenuGoalId] = useState<string | null>(null);
+
   const currency = user?.currency || 'USD';
+  const todayMin = new Date().toISOString().slice(0, 10);
 
   const loadGoals = async () => {
     try {
@@ -61,6 +61,15 @@ export default function GoalsPage() {
     if (!isAuthenticated || isLoading) return;
     loadGoals();
   }, [isAuthenticated, isLoading]);
+
+  const openCreate = (prefill?: { name: string; targetAmount: number }) => {
+    setCreateForm({
+      name: prefill?.name ?? '',
+      targetAmount: prefill ? String(prefill.targetAmount) : '',
+      deadline: '',
+    });
+    setCreateOpen(true);
+  };
 
   const handleCreate = async () => {
     const target = parseFloat(createForm.targetAmount);
@@ -95,9 +104,9 @@ export default function GoalsPage() {
     }
   };
 
-  const handleContribute = async () => {
+  const handleContribute = async (amountOverride?: number) => {
     if (!contributeGoal) return;
-    const amount = parseFloat(contributeAmount);
+    const amount = amountOverride ?? parseFloat(contributeAmount);
     if (isNaN(amount) || amount === 0) {
       toast.error('Please enter a valid amount');
       return;
@@ -108,9 +117,9 @@ export default function GoalsPage() {
       if (res.success) {
         const updated = res.data?.goal;
         if (updated?.status === 'completed' && contributeGoal.status !== 'completed') {
-          toast.success(`🎉 Goal "${contributeGoal.name}" completed!`);
+          toast.success(`Goal "${contributeGoal.name}" completed!`);
         } else {
-          toast.success(amount > 0 ? 'Money added to goal' : 'Money removed from goal');
+          toast.success(amount > 0 ? 'Added to goal' : 'Updated goal balance');
         }
         setContributeGoal(null);
         setContributeAmount('');
@@ -127,6 +136,7 @@ export default function GoalsPage() {
   };
 
   const openEdit = (goal: SavingsGoal) => {
+    setMenuGoalId(null);
     setEditGoal(goal);
     setEditForm({
       name: goal.name,
@@ -151,7 +161,7 @@ export default function GoalsPage() {
       const res = await api.updateGoal(editGoal.id, {
         name: editForm.name.trim(),
         targetAmount: target,
-        ...(editForm.deadline && { deadline: editForm.deadline }),
+        deadline: editForm.deadline || null,
       });
       if (res.success) {
         toast.success('Goal updated');
@@ -191,170 +201,238 @@ export default function GoalsPage() {
   if (isLoading || !isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
-          <p className="text-token-secondary">Loading...</p>
-        </div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
       </div>
     );
   }
 
-  const activeGoals = goals.filter((g) => g.status === 'active');
-  const completedGoals = goals.filter((g) => g.status === 'completed');
+  const summary = summarizeGoals(goals);
+  const contributeQuick =
+    contributeGoal && !isContributing
+      ? quickContributeAmounts(contributeGoal.remaining, contributeGoal.currency)
+      : [];
 
   const renderGoalCard = (goal: SavingsGoal) => {
     const pct = Math.min(100, Math.round(goal.progress * 100));
     const isCompleted = goal.status === 'completed';
+    const due = deadlineLabel(goal.deadline);
+    const menuOpen = menuGoalId === goal.id;
 
     return (
       <div
         key={goal.id}
-        className={`rounded-3xl bg-token-card p-4 sm:p-5 shadow-sm border ${
-          isCompleted ? 'border-[var(--accent-primary)]/40' : 'border-transparent'
+        className={`relative rounded-2xl border bg-token-card p-4 shadow-sm ${
+          isCompleted ? 'border-[var(--accent-primary)]/35' : 'border-token'
         }`}
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--background-tag)] text-xl">
-              {isCompleted ? '🎉' : '🎯'}
-            </span>
-            <div className="min-w-0">
-              <p className="text-base font-semibold text-token-primary truncate">{goal.name}</p>
-              <p className="text-xs font-medium text-token-secondary">
-                {formatCurrency(goal.savedAmount, goal.currency)} / {formatCurrency(goal.targetAmount, goal.currency)}
-                {goal.deadline && <> &middot; by {formatDate(goal.deadline)}</>}
-              </p>
-            </div>
+        <div className="flex items-center gap-3">
+          <div
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+              isCompleted ? 'bg-[var(--accent-primary)]/15' : 'bg-[var(--chart-track)]'
+            }`}
+          >
+            {isCompleted ? (
+              <span className="text-lg" aria-hidden>
+                🎉
+              </span>
+            ) : (
+              <svg className="h-5 w-5 text-token-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 12v-2m9-4a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
           </div>
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-token-primary">{goal.name}</p>
+            <p className="mt-0.5 text-xs text-token-muted">
+              {formatCurrency(goal.savedAmount, goal.currency)} of {formatCurrency(goal.targetAmount, goal.currency)}
+            </p>
+            {goal.deadline ? (
+              <p className="mt-1 text-[11px] text-token-secondary">
+                Target {formatDate(goal.deadline)}
+                {due ? <span className={due.includes('overdue') ? ' text-token-error' : ''}> · {due}</span> : null}
+              </p>
+            ) : null}
+          </div>
+          <div className="relative flex shrink-0 flex-col items-end justify-center gap-0.5">
+            <p className="text-sm font-semibold tabular-nums text-token-primary">{pct}%</p>
             <button
-              onClick={() => openEdit(goal)}
-              className="rounded-lg p-2 text-token-muted hover:bg-[var(--surface-hover)] hover:text-token-secondary transition-colors"
-              title="Edit goal"
+              type="button"
+              onClick={() => setMenuGoalId(menuOpen ? null : goal.id)}
+              className="rounded-lg p-1 text-token-muted hover:bg-[var(--surface-hover)]"
+              aria-label="Goal options"
             >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                />
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="5" r="1.5" />
+                <circle cx="12" cy="12" r="1.5" />
+                <circle cx="12" cy="19" r="1.5" />
               </svg>
             </button>
-            <button
-              onClick={() => setDeleteGoal(goal)}
-              className="rounded-lg p-2 text-token-muted hover:bg-red-50 hover:text-token-error transition-colors"
-              title="Delete goal"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-            </button>
+            {menuOpen ? (
+              <>
+                <button type="button" className="fixed inset-0 z-10" aria-label="Close menu" onClick={() => setMenuGoalId(null)} />
+                <div className="absolute right-0 top-8 z-20 min-w-[9rem] overflow-hidden rounded-xl border border-token bg-token-card py-1 shadow-lg">
+                  <button
+                    type="button"
+                    className="block w-full px-3 py-2 text-left text-sm text-token-primary hover:bg-[var(--surface-hover)]"
+                    onClick={() => openEdit(goal)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    className="block w-full px-3 py-2 text-left text-sm text-token-error hover:bg-[var(--surface-hover)]"
+                    onClick={() => {
+                      setMenuGoalId(null);
+                      setDeleteGoal(goal);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
 
-        {/* Progress */}
-        <div className="mt-4 h-3 rounded-full bg-[var(--blueGray-100)] overflow-hidden">
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--chart-track)]">
           <div
-            className={`h-full rounded-full transition-all ${getGoalProgressColor(pct)}`}
+            className={`h-full rounded-full transition-all ${isCompleted ? 'bg-token-accent' : 'bg-token-accent'}`}
             style={{ width: `${pct}%` }}
           />
         </div>
-        <div className="mt-2 flex items-center justify-between text-xs font-medium text-token-secondary">
-          <span>{pct}% saved</span>
-          <span>
-            {isCompleted
-              ? 'Goal reached!'
-              : `${formatCurrency(goal.remaining, goal.currency)} to go`}
-          </span>
-        </div>
 
-        {isCompleted ? (
-          <div className="mt-4 rounded-2xl bg-teal-50 dark:bg-teal-950/30 px-4 py-3 text-center">
-            <p className="text-sm font-semibold text-token-accent">
-              🎉 Congratulations! You reached this goal.
+        <div className="mt-3 flex items-center justify-between gap-2">
+          {isCompleted ? (
+            <p className="text-xs font-medium text-token-accent">Goal reached</p>
+          ) : (
+            <p className="text-xs text-token-muted">
+              {formatCurrency(goal.remaining, goal.currency)} to go
             </p>
-          </div>
-        ) : (
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => {
-              setContributeGoal(goal);
-              setContributeAmount('');
-            }}
-            className="mt-4 w-full rounded-full"
-          >
-            Add money
-          </Button>
-        )}
+          )}
+          {!isCompleted ? (
+            <button
+              type="button"
+              onClick={() => {
+                setContributeGoal(goal);
+                setContributeAmount('');
+              }}
+              className="rounded-full bg-token-accent-soft px-3 py-1 text-xs font-semibold text-token-accent"
+            >
+              Add funds
+            </button>
+          ) : null}
+        </div>
       </div>
     );
   };
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-token-surface pb-8">
-        {/* Zone A: Header */}
-        <div className="pt-6 pb-4 flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-token-primary tracking-tight">Savings Goals</h1>
-            <p className="mt-1 text-sm text-token-secondary">
-              Set targets and watch your savings grow
-            </p>
+      <div className="mx-auto max-w-lg space-y-3 pb-8 pt-1">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-base font-semibold leading-tight text-token-primary">Goals</h1>
+            <p className="text-xs leading-tight text-token-muted">Track what you&apos;re saving for</p>
           </div>
-          <Button
+          <button
             type="button"
-            size="sm"
-            onClick={() => setCreateOpen(true)}
-            className="shrink-0 rounded-full"
+            onClick={() => openCreate()}
+            aria-label="New goal"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-token bg-token-card text-token-secondary shadow-sm transition-colors hover:border-[var(--accent-primary)] hover:text-token-accent"
           >
-            + New goal
-          </Button>
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
         </div>
 
         {loadingGoals ? (
-          <div className="py-16 text-center">
-            <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
-            <p className="text-token-secondary text-sm">Loading goals...</p>
+          <div className="rounded-2xl border border-token bg-token-card py-12 text-center">
+            <div className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
+            <p className="text-sm text-token-muted">Loading goals…</p>
           </div>
         ) : goals.length === 0 ? (
-          <div className="rounded-3xl bg-token-card border border-token p-6 sm:p-12 text-center shadow-sm">
-            <div className="mb-4 text-6xl">🎯</div>
-            <h3 className="mb-2 text-xl font-semibold text-token-primary">No goals yet</h3>
-            <p className="mb-6 text-token-secondary">
-              Create your first savings goal and start putting money aside
-            </p>
-            <Button onClick={() => setCreateOpen(true)}>Create your first goal</Button>
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-dashed border-token bg-token-card px-4 py-8 text-center">
+              <p className="text-sm font-medium text-token-primary">No goals yet</p>
+              <p className="mt-1 text-xs leading-relaxed text-token-secondary">
+                Set a target and log when you set money aside — separate from everyday spending.
+              </p>
+              <Button type="button" className="mt-4" onClick={() => openCreate()}>
+                Create a goal
+              </Button>
+            </div>
+            <div>
+              <p className="mb-2 ml-1 text-xs text-token-muted">Popular starters</p>
+              <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+                {GOAL_STARTER_IDEAS.map((idea, i) => (
+                  <button
+                    key={idea.name}
+                    type="button"
+                    onClick={() => openCreate(idea)}
+                    className={`flex w-full items-center justify-between px-4 py-3 text-left hover:bg-[var(--surface-hover)] ${
+                      i < GOAL_STARTER_IDEAS.length - 1 ? 'border-b border-token' : ''
+                    }`}
+                  >
+                    <span className="text-sm font-medium text-token-primary">{idea.name}</span>
+                    <span className="text-xs text-token-muted">{formatCurrency(idea.targetAmount, currency)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
-          <div className="space-y-6">
-            {activeGoals.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-base font-semibold text-token-primary">Active</h2>
-                <div className="space-y-3">{activeGoals.map(renderGoalCard)}</div>
+          <>
+            {summary.active.length > 0 ? (
+              <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 p-4">
+                <p className="text-xs font-medium text-token-accent">Active goals</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums text-token-primary">
+                  {formatCurrency(summary.totalSaved, currency)}
+                </p>
+                <p className="text-xs text-token-secondary">
+                  of {formatCurrency(summary.totalTarget, currency)} target
+                  {summary.completed.length > 0 ? ` · ${summary.completed.length} completed` : ''}
+                </p>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--chart-track)]">
+                  <div
+                    className="h-full rounded-full bg-token-accent transition-all"
+                    style={{ width: `${Math.round(summary.overallProgress * 100)}%` }}
+                  />
+                </div>
               </div>
-            )}
+            ) : null}
 
-            {completedGoals.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-base font-semibold text-token-primary">Completed</h2>
-                <div className="space-y-3">{completedGoals.map(renderGoalCard)}</div>
+            {summary.active.length > 0 ? (
+              <div className="space-y-3">{summary.active.map(renderGoalCard)}</div>
+            ) : null}
+
+            {summary.completed.length > 0 ? (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowCompleted((v) => !v)}
+                  className="mb-2 flex w-full items-center justify-between px-1 text-xs font-medium text-token-muted"
+                >
+                  Completed ({summary.completed.length})
+                  <svg
+                    className={`h-4 w-4 transition-transform ${showCompleted ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showCompleted ? <div className="space-y-3">{summary.completed.map(renderGoalCard)}</div> : null}
               </div>
-            )}
-          </div>
+            ) : null}
+          </>
         )}
 
-        {/* Create Goal Modal */}
         <Modal
           isOpen={createOpen}
           onClose={() => setCreateOpen(false)}
-          title="New savings goal"
+          title="New goal"
           footer={
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setCreateOpen(false)} className="flex-1">
@@ -368,77 +446,88 @@ export default function GoalsPage() {
         >
           <div className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm font-medium text-token-secondary">Name</label>
+              <label className="mb-2 block text-sm font-medium text-token-secondary">What are you saving for?</label>
               <input
                 type="text"
                 value={createForm.name}
                 onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
                 placeholder="e.g. Emergency fund"
-                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
+                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-token-secondary">Target amount</label>
+              <label className="mb-2 block text-sm font-medium text-token-secondary">Target ({currency})</label>
               <input
-                type="number"
-                min={0}
-                step="0.01"
+                type="text"
+                inputMode="decimal"
                 value={createForm.targetAmount}
                 onChange={(e) => setCreateForm({ ...createForm, targetAmount: e.target.value })}
-                placeholder="Enter amount"
-                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
-              />
-              <p className="mt-1 text-xs text-token-muted">Your currency: {currency}</p>
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-token-secondary">Deadline (optional)</label>
-              <input
-                type="date"
-                value={createForm.deadline}
-                onChange={(e) => setCreateForm({ ...createForm, deadline: e.target.value })}
-                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
+                placeholder="Amount"
+                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
+            <DateField
+              label="Deadline (optional)"
+              value={createForm.deadline}
+              onChange={(deadline) => setCreateForm({ ...createForm, deadline })}
+              min={todayMin}
+              clearable
+            />
           </div>
         </Modal>
 
-        {/* Contribute Modal */}
         <Modal
           isOpen={!!contributeGoal}
           onClose={() => setContributeGoal(null)}
-          title={contributeGoal ? `Add money to "${contributeGoal.name}"` : 'Add money'}
+          title={contributeGoal ? `Add to ${contributeGoal.name}` : 'Add funds'}
           footer={
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setContributeGoal(null)} className="flex-1">
                 Cancel
               </Button>
-              <Button onClick={handleContribute} isLoading={isContributing} className="flex-1">
-                Save
+              <Button onClick={() => handleContribute()} isLoading={isContributing} className="flex-1">
+                Add
               </Button>
             </div>
           }
         >
-          <div>
-            <label className="mb-2 block text-sm font-medium text-token-secondary">Amount</label>
-            <input
-              type="number"
-              step="0.01"
-              value={contributeAmount}
-              onChange={(e) => setContributeAmount(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleContribute()}
-              placeholder="Enter amount"
-              className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
-            />
-            {contributeGoal && (
-              <p className="mt-2 text-xs text-token-muted">
-                {formatCurrency(contributeGoal.remaining, contributeGoal.currency)} left to reach this goal.
-                Use a negative amount to remove money.
+          {contributeGoal ? (
+            <div className="space-y-4">
+              <p className="text-sm text-token-secondary">
+                {formatCurrency(contributeGoal.remaining, contributeGoal.currency)} left to hit your target.
               </p>
-            )}
-          </div>
+              {contributeQuick.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {contributeQuick.map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      disabled={isContributing}
+                      onClick={() => handleContribute(amt)}
+                      className="rounded-full border border-token bg-[var(--background-tag)] px-3 py-1.5 text-xs font-medium text-token-primary hover:border-[var(--accent-primary)]/50"
+                    >
+                      +{formatCurrency(amt, contributeGoal.currency)}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-token-secondary">Custom amount</label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={contributeAmount}
+                  onChange={(e) => setContributeAmount(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleContribute()}
+                  placeholder="Enter amount"
+                  className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                />
+                <p className="mt-2 text-xs text-token-muted">Use a negative value to undo a contribution.</p>
+              </div>
+            </div>
+          ) : null}
         </Modal>
 
-        {/* Edit Goal Modal */}
         <Modal
           isOpen={!!editGoal}
           onClose={() => setEditGoal(null)}
@@ -461,33 +550,28 @@ export default function GoalsPage() {
                 type="text"
                 value={editForm.name}
                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
+                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-token-secondary">Target amount</label>
+              <label className="mb-2 block text-sm font-medium text-token-secondary">Target</label>
               <input
-                type="number"
-                min={0}
-                step="0.01"
+                type="text"
+                inputMode="decimal"
                 value={editForm.targetAmount}
                 onChange={(e) => setEditForm({ ...editForm, targetAmount: e.target.value })}
-                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
+                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-token-secondary">Deadline (optional)</label>
-              <input
-                type="date"
-                value={editForm.deadline}
-                onChange={(e) => setEditForm({ ...editForm, deadline: e.target.value })}
-                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
-              />
-            </div>
+            <DateField
+              label="Deadline (optional)"
+              value={editForm.deadline}
+              onChange={(deadline) => setEditForm({ ...editForm, deadline })}
+              clearable
+            />
           </div>
         </Modal>
 
-        {/* Delete Confirmation Modal */}
         <Modal
           isOpen={!!deleteGoal}
           onClose={() => setDeleteGoal(null)}
@@ -503,18 +587,15 @@ export default function GoalsPage() {
             </div>
           }
         >
-          <p className="text-token-primary">
-            Are you sure you want to delete this goal? This action cannot be undone.
-          </p>
-          {deleteGoal && (
-            <div className="mt-4 rounded-lg bg-[var(--background-tag)] p-4">
+          <p className="text-sm text-token-secondary">This removes the goal and its saved progress. Expenses are not deleted.</p>
+          {deleteGoal ? (
+            <div className="mt-4 rounded-xl bg-[var(--background-tag)] p-3">
               <p className="font-medium text-token-primary">{deleteGoal.name}</p>
-              <p className="text-sm text-token-secondary">
-                {formatCurrency(deleteGoal.savedAmount, deleteGoal.currency)} of{' '}
-                {formatCurrency(deleteGoal.targetAmount, deleteGoal.currency)} saved
+              <p className="text-xs text-token-muted">
+                {formatCurrency(deleteGoal.savedAmount, deleteGoal.currency)} saved
               </p>
             </div>
-          )}
+          ) : null}
         </Modal>
       </div>
     </DashboardLayout>

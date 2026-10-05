@@ -8,6 +8,7 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { api } from '@/lib/api';
+import { ADVISOR_PROMPT_GROUPS, type AdvisorPrompt } from '@/lib/advisorPrompts';
 import toast from 'react-hot-toast';
 import type { AssistantMessage, SavingsPlan } from '@/types';
 import { formatCurrency } from '@/lib/utils';
@@ -20,26 +21,53 @@ interface ChatItem {
   plan?: SavingsPlan;
 }
 
-const STARTER_PROMPTS: { label: string; action: 'ask' | 'why' | 'plan' }[] = [
-  { label: 'Why did I spend so much this month?', action: 'why' },
-  { label: 'How can I save 20,000 next month?', action: 'ask' },
-  { label: 'Where does most of my money go?', action: 'ask' },
-  { label: 'What subscriptions am I paying for?', action: 'ask' },
-  { label: 'Build savings plan…', action: 'plan' },
-];
-
 let chatIdCounter = 0;
 function nextId(): string {
   chatIdCounter += 1;
   return `msg-${chatIdCounter}`;
 }
 
-/** A user message that is just a number is treated as a savings-plan target */
 function parseBareNumber(text: string): number | null {
   const cleaned = text.trim().replace(/,/g, '');
   if (!/^\d+(\.\d+)?$/.test(cleaned)) return null;
   const value = parseFloat(cleaned);
   return isNaN(value) || value <= 0 ? null : value;
+}
+
+function SavingsPlanCard({ plan }: { plan: SavingsPlan }) {
+  return (
+    <div className="mt-3 space-y-2 rounded-xl border border-token bg-token-card p-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-token-muted">
+          Savings plan · {formatCurrency(plan.targetAmount, plan.currency)}
+        </p>
+        {!plan.feasible ? (
+          <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-300">
+            Stretch
+          </span>
+        ) : null}
+      </div>
+      <ul className="space-y-2">
+        {plan.steps.map((step, i) => (
+          <li key={`${step.category}-${i}`} className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-token-primary">{step.category}</p>
+              <p className="text-xs text-token-secondary">{step.action}</p>
+            </div>
+            <span className="shrink-0 text-sm font-semibold text-token-accent">
+              +{formatCurrency(step.estimatedMonthlySaving, plan.currency)}/mo
+            </span>
+          </li>
+        ))}
+      </ul>
+      <div className="flex items-center justify-between border-t border-token pt-2">
+        <span className="text-sm font-medium text-token-primary">Estimated total</span>
+        <span className="text-sm font-bold text-token-accent">
+          {formatCurrency(plan.estimatedTotalSaving, plan.currency)}/mo
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export default function AssistantPage() {
@@ -54,6 +82,7 @@ export default function AssistantPage() {
   const [limitMessage, setLimitMessage] = useState<string | null>(null);
   const [planModalOpen, setPlanModalOpen] = useState(false);
   const [planAmount, setPlanAmount] = useState('');
+  const [quickSaveAmount, setQuickSaveAmount] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -83,7 +112,7 @@ export default function AssistantPage() {
     const userMessage: ChatItem = {
       id: nextId(),
       role: 'user',
-      content: userLabel || `Build a savings plan for ${targetAmount}`,
+      content: userLabel || `Build a savings plan for ${formatCurrency(targetAmount, user?.currency || 'USD')}`,
     };
     setMessages((prev) => [...prev, userMessage]);
     setIsThinking(true);
@@ -92,10 +121,7 @@ export default function AssistantPage() {
       if (res.success) {
         const { plan, remainingFreeQuestions } = res.data;
         applyRemaining(remainingFreeQuestions);
-        setMessages((prev) => [
-          ...prev,
-          { id: nextId(), role: 'assistant', content: plan.summary, plan },
-        ]);
+        setMessages((prev) => [...prev, { id: nextId(), role: 'assistant', content: plan.summary, plan }]);
       }
     } catch (err) {
       handleApiError(err, 'Failed to build savings plan');
@@ -106,8 +132,7 @@ export default function AssistantPage() {
 
   const runWhy = async (label: string) => {
     if (isThinking) return;
-    const userMessage: ChatItem = { id: nextId(), role: 'user', content: label };
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev, { id: nextId(), role: 'user', content: label }]);
     setIsThinking(true);
     try {
       const res = await api.askAssistantWhy();
@@ -129,7 +154,6 @@ export default function AssistantPage() {
     const trimmed = question.trim();
     if (!trimmed || isThinking) return;
 
-    // A bare number is a savings-plan target
     const bareNumber = parseBareNumber(trimmed);
     if (bareNumber !== null) {
       await runSavingsPlan(bareNumber, trimmed);
@@ -137,8 +161,7 @@ export default function AssistantPage() {
     }
 
     const history = buildHistory(messages);
-    const userMessage: ChatItem = { id: nextId(), role: 'user', content: trimmed };
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev, { id: nextId(), role: 'user', content: trimmed }]);
     setIsThinking(true);
     try {
       const res = await api.askAssistant(trimmed, history.length > 0 ? history : undefined);
@@ -156,6 +179,12 @@ export default function AssistantPage() {
     }
   };
 
+  const handlePrompt = (prompt: AdvisorPrompt) => {
+    if (prompt.action === 'plan') setPlanModalOpen(true);
+    else if (prompt.action === 'why') runWhy(prompt.question);
+    else sendQuestion(prompt.question);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const value = input;
@@ -163,18 +192,8 @@ export default function AssistantPage() {
     sendQuestion(value);
   };
 
-  const handleStarter = (prompt: { label: string; action: 'ask' | 'why' | 'plan' }) => {
-    if (prompt.action === 'plan') {
-      setPlanModalOpen(true);
-    } else if (prompt.action === 'why') {
-      runWhy(prompt.label);
-    } else {
-      sendQuestion(prompt.label);
-    }
-  };
-
   const handlePlanSubmit = () => {
-    const value = parseFloat(planAmount);
+    const value = parseFloat(planAmount.replace(/,/g, ''));
     if (isNaN(value) || value <= 0) {
       toast.error('Please enter a valid target amount');
       return;
@@ -184,13 +203,30 @@ export default function AssistantPage() {
     runSavingsPlan(value);
   };
 
+  const handleQuickSave = () => {
+    const value = parseFloat(quickSaveAmount.replace(/,/g, ''));
+    if (isNaN(value) || value <= 0) {
+      toast.error('Enter an amount to save');
+      return;
+    }
+    setQuickSaveAmount('');
+    runSavingsPlan(value);
+  };
+
+  const resetChat = () => {
+    setMessages([]);
+    setLimitMessage(null);
+    setInput('');
+  };
+
+  const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant');
+  const followUps =
+    messages.length > 0 && !isThinking && lastAssistant?.followUps?.length ? lastAssistant.followUps : [];
+
   if (authLoading || !isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-token-surface">
-        <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
-          <p className="text-token-secondary">Loading...</p>
-        </div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
       </div>
     );
   }
@@ -199,199 +235,193 @@ export default function AssistantPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-full bg-token-surface overflow-hidden">
-        {/* Header */}
-        <div className="shrink-0 pt-2 pb-3 sm:pt-0 sm:pb-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-token-primary">AI Advisor</h1>
-          <p className="text-sm text-token-secondary mt-0.5">
-            Ask anything about your spending
-            {hasRemainingInfo && remaining !== null && (
-              <span className="ml-1 text-token-muted">
-                &middot; {remaining} free question{remaining !== 1 ? 's' : ''} left this month
-              </span>
-            )}
-          </p>
-        </div>
+      <div className="mx-auto flex h-full min-h-0 w-full max-w-lg flex-1 flex-col pb-1">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-token bg-token-card shadow-sm">
+          <div className="flex shrink-0 items-center gap-2 border-b border-token px-3 py-2">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-primary)]/15 text-token-accent">
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                />
+              </svg>
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold leading-tight text-token-primary">Penny</p>
+              <p className="text-[11px] leading-tight text-token-muted">Your spending data</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {hasRemainingInfo && remaining !== null && !user?.isPremium ? (
+                <span className="rounded-full border border-token bg-[var(--background-tag)] px-2 py-0.5 text-[10px] font-medium text-token-secondary">
+                  {remaining} free
+                </span>
+              ) : null}
+              {messages.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={resetChat}
+                  className="text-xs font-medium text-token-accent hover:underline"
+                >
+                  New chat
+                </button>
+              ) : null}
+            </div>
+          </div>
 
-        {/* Chat area */}
-        <div className="flex-1 min-h-0 flex flex-col rounded-2xl bg-token-card border border-token shadow-sm overflow-hidden">
-          <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 space-y-4">
+          <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
             {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center px-4">
-                <div className="mb-3 text-5xl">💬</div>
-                <h3 className="mb-1 text-lg font-semibold text-token-primary">
-                  Your personal finance advisor
-                </h3>
-                <p className="mb-6 text-sm text-token-secondary">
-                  Ask about your spending, or tap a suggestion to get started
+              <div className="space-y-4 pb-2">
+                <p className="text-sm leading-relaxed text-token-secondary">
+                  Ask why spending changed, where money goes, or get a savings plan with numbers from your account —
+                  not generic tips.
                 </p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {STARTER_PROMPTS.map((prompt) => (
-                    <button
-                      key={prompt.label}
-                      type="button"
-                      onClick={() => handleStarter(prompt)}
-                      disabled={isThinking}
-                      className="rounded-full border border-token bg-[var(--background-tag)] px-4 py-2 text-sm font-medium text-token-primary hover:border-[var(--accent-primary)]/50 hover:text-token-accent transition-colors disabled:opacity-50"
-                    >
-                      {prompt.label}
-                    </button>
-                  ))}
+
+                <div className="rounded-xl border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 p-3">
+                  <p className="text-xs font-medium text-token-accent">Quick savings plan</p>
+                  <p className="mt-1 text-xs text-token-secondary">Target to save next month ({currency})</p>
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={quickSaveAmount}
+                      onChange={(e) => setQuickSaveAmount(e.target.value)}
+                      placeholder="e.g. 5000"
+                      className="min-w-0 flex-1 rounded-lg border border-token bg-token-card px-3 py-2 text-sm text-token-primary"
+                    />
+                    <Button type="button" size="sm" onClick={handleQuickSave} disabled={isThinking}>
+                      Build
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <>
-                {messages.map((message, idx) => {
-                  const isLast = idx === messages.length - 1;
-                  return (
-                    <div key={message.id}>
-                      <div
-                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div
-                          className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
-                            message.role === 'user'
-                              ? 'bg-token-accent text-white rounded-br-md'
-                              : 'bg-[var(--background-tag)] text-token-primary rounded-bl-md'
+
+                {ADVISOR_PROMPT_GROUPS.map((group) => (
+                  <div key={group.id}>
+                    <p className="mb-2 ml-1 text-xs text-token-muted">{group.label}</p>
+                    <div className="overflow-hidden rounded-xl border border-token">
+                      {group.prompts.map((prompt, i) => (
+                        <button
+                          key={prompt.id}
+                          type="button"
+                          disabled={isThinking}
+                          onClick={() => handlePrompt(prompt)}
+                          className={`flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-[var(--surface-hover)] disabled:opacity-50 ${
+                            i < group.prompts.length - 1 ? 'border-b border-token' : ''
                           }`}
                         >
-                          <p className="whitespace-pre-wrap">{message.content}</p>
-
-                          {/* Savings plan card */}
-                          {message.plan && (
-                            <div className="mt-3 rounded-xl bg-token-card border border-token p-3 space-y-2">
-                              <div className="flex items-center justify-between gap-2">
-                                <p className="text-xs font-bold uppercase tracking-wider text-token-muted">
-                                  Savings plan &middot; target{' '}
-                                  {formatCurrency(message.plan.targetAmount, message.plan.currency)}
-                                </p>
-                                {!message.plan.feasible && (
-                                  <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-800 dark:text-amber-300">
-                                    Stretch goal
-                                  </span>
-                                )}
-                              </div>
-                              <ul className="space-y-2">
-                                {message.plan.steps.map((step, stepIdx) => (
-                                  <li
-                                    key={`${step.category}-${stepIdx}`}
-                                    className="flex items-start justify-between gap-3"
-                                  >
-                                    <div className="min-w-0">
-                                      <p className="text-sm font-medium text-token-primary">{step.category}</p>
-                                      <p className="text-xs text-token-secondary">{step.action}</p>
-                                    </div>
-                                    <span className="shrink-0 text-sm font-semibold text-token-accent">
-                                      +{formatCurrency(step.estimatedMonthlySaving, message.plan!.currency)}/mo
-                                    </span>
-                                  </li>
-                                ))}
-                              </ul>
-                              <div className="pt-2 border-t border-token flex items-center justify-between">
-                                <span className="text-sm font-semibold text-token-primary">Estimated total</span>
-                                <span className="text-sm font-bold text-token-accent">
-                                  {formatCurrency(message.plan.estimatedTotalSaving, message.plan.currency)}/mo
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Follow-up chips - only on the latest assistant message */}
-                      {message.role === 'assistant' &&
-                        isLast &&
-                        !isThinking &&
-                        message.followUps &&
-                        message.followUps.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {message.followUps.map((followUp) => (
-                              <button
-                                key={followUp}
-                                type="button"
-                                onClick={() => sendQuestion(followUp)}
-                                className="rounded-full border border-token bg-token-card px-3 py-1.5 text-xs font-medium text-token-secondary hover:border-[var(--accent-primary)]/50 hover:text-token-accent transition-colors"
-                              >
-                                {followUp}
-                              </button>
-                            ))}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-token-primary">{prompt.title}</p>
+                            <p className="text-xs text-token-muted">{prompt.subtitle}</p>
                           </div>
-                        )}
-                    </div>
-                  );
-                })}
-
-                {isThinking && (
-                  <div className="flex justify-start">
-                    <div className="rounded-2xl rounded-bl-md bg-[var(--background-tag)] px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-token-muted animate-bounce [animation-delay:0ms]" />
-                        <span className="h-2 w-2 rounded-full bg-token-muted animate-bounce [animation-delay:150ms]" />
-                        <span className="h-2 w-2 rounded-full bg-token-muted animate-bounce [animation-delay:300ms]" />
-                      </div>
+                          <svg className="h-4 w-4 shrink-0 text-token-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      ))}
                     </div>
                   </div>
-                )}
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map((message) => (
+                  <div key={message.id}>
+                    {message.role === 'user' ? (
+                      <div className="flex justify-end">
+                        <div className="max-w-[88%] rounded-2xl rounded-br-md bg-token-accent px-3.5 py-2.5 text-sm text-white">
+                          {message.content}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="max-w-[95%]">
+                        <p className="mb-1 text-[11px] font-medium text-token-accent">Penny</p>
+                        <div className="rounded-2xl rounded-bl-md border border-token bg-[var(--background-tag)] px-3.5 py-2.5 text-sm leading-relaxed text-token-primary whitespace-pre-wrap">
+                          {message.content}
+                          {message.plan ? <SavingsPlanCard plan={message.plan} /> : null}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {isThinking ? (
+                  <div>
+                    <p className="mb-1 text-[11px] font-medium text-token-muted">Penny</p>
+                    <div className="inline-flex rounded-2xl rounded-bl-md border border-token bg-[var(--background-tag)] px-4 py-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-token-muted [animation-delay:0ms]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-token-muted [animation-delay:150ms]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-token-muted [animation-delay:300ms]" />
+                      </div>
+                    </div>
+                    <p className="mt-1 text-xs text-token-muted">Checking your spending…</p>
+                  </div>
+                ) : null}
                 <div ref={messagesEndRef} />
-              </>
+              </div>
             )}
           </div>
 
-          {/* Free limit reached banner */}
-          {limitMessage && (
-            <div className="shrink-0 border-t border-token bg-amber-50 dark:bg-amber-950/30 px-4 py-3 flex items-center justify-between gap-3">
-              <p className="text-sm text-amber-800 dark:text-amber-300">{limitMessage}</p>
-              <Link
-                href="/dashboard/premium"
-                className="shrink-0 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-500 transition-colors"
-              >
+          {limitMessage ? (
+            <div className="flex shrink-0 items-center justify-between gap-3 border-t border-token bg-amber-500/10 px-4 py-3">
+              <p className="text-sm text-amber-800 dark:text-amber-200">{limitMessage}</p>
+              <Link href="/dashboard/premium" className="shrink-0 rounded-lg bg-token-accent px-3 py-1.5 text-sm font-medium text-white">
                 Upgrade
               </Link>
             </div>
-          )}
+          ) : null}
 
-          {/* Input row */}
-          <form onSubmit={handleSubmit} className="shrink-0 border-t border-token p-3 sm:p-4">
-            <div className="flex items-center gap-2">
-              {messages.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setPlanModalOpen(true)}
-                  disabled={isThinking}
-                  title="Build savings plan"
-                  className="shrink-0 h-11 w-11 rounded-full border border-token bg-[var(--background-tag)] flex items-center justify-center text-token-secondary hover:border-[var(--accent-primary)]/50 hover:text-token-accent transition-colors disabled:opacity-50"
-                >
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </button>
-              )}
-              <input
-                type="text"
+          {followUps.length > 0 ? (
+            <div className="shrink-0 border-t border-token px-3 py-2">
+              <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-token-muted">Follow up</p>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {followUps.map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => sendQuestion(f)}
+                    className="shrink-0 rounded-full border border-token bg-token-card px-3 py-1.5 text-xs font-medium text-token-secondary hover:border-[var(--accent-primary)]/50 hover:text-token-accent"
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          <form onSubmit={handleSubmit} className="shrink-0 border-t border-token p-3">
+            <div className="flex items-end gap-2">
+              <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about your spending..."
-                className="flex-1 min-w-0 h-11 rounded-full border border-token bg-[var(--background-tag)] px-4 text-sm text-token-primary placeholder:text-token-muted focus:outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/20 transition-all"
+                rows={1}
+                placeholder="Ask about your spending…"
+                className="max-h-28 min-h-[44px] flex-1 resize-none rounded-xl border border-token bg-[var(--background-tag)] px-3 py-2.5 text-sm text-token-primary placeholder:text-token-muted focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
               />
-              <Button
+              <button
                 type="submit"
-                size="md"
-                isLoading={isThinking}
-                disabled={!input.trim()}
-                className="shrink-0 h-11 rounded-full px-5"
+                disabled={isThinking || !input.trim()}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-token-accent text-white disabled:opacity-40"
+                aria-label="Send"
               >
-                Send
-              </Button>
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                </svg>
+              </button>
             </div>
           </form>
         </div>
       </div>
 
-      {/* Savings plan target modal */}
       <Modal
         isOpen={planModalOpen}
         onClose={() => setPlanModalOpen(false)}
-        title="Build savings plan"
+        title="Savings plan"
         footer={
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => setPlanModalOpen(false)} className="flex-1">
@@ -403,22 +433,19 @@ export default function AssistantPage() {
           </div>
         }
       >
-        <div>
-          <label className="mb-2 block text-sm font-medium text-token-secondary">
-            How much do you want to save next month?
-          </label>
-          <input
-            type="number"
-            min={0}
-            step="0.01"
-            value={planAmount}
-            onChange={(e) => setPlanAmount(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handlePlanSubmit()}
-            placeholder="Enter target amount"
-            className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
-          />
-          <p className="mt-2 text-xs text-token-muted">Your currency: {currency}</p>
-        </div>
+        <label className="mb-2 block text-sm font-medium text-token-secondary">
+          How much do you want to save next month?
+        </label>
+        <input
+          type="text"
+          inputMode="decimal"
+          value={planAmount}
+          onChange={(e) => setPlanAmount(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handlePlanSubmit()}
+          placeholder="Enter target amount"
+          className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary"
+        />
+        <p className="mt-2 text-xs text-token-muted">Currency: {currency}</p>
       </Modal>
     </DashboardLayout>
   );

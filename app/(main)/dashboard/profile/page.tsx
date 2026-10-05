@@ -1,134 +1,65 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
+import { useIsPremium } from '@/hooks/useIsPremium';
 import { premiumPlansSubtitle } from '@/lib/subscription';
 import { useAuthStore } from '@/store/authStore';
 import { useOnboardingStore } from '@/store/onboardingStore';
-import { useIsPremium } from '@/hooks/useIsPremium';
+import { useThemeStore, type ThemeMode } from '@/store/themeStore';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { getImageUrl } from '@/lib/utils';
+import { api } from '@/lib/api';
+import { formatCurrency, getImageUrl } from '@/lib/utils';
+import type { NotificationPreferences } from '@/types';
 
-const UserIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-  </svg>
-);
-
-const CrownIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2l2.5 8.5H22l-5.5 4 2.5 8-7-5.5L5 22l2.5-8L2 10.5h7.5L12 2z" />
-  </svg>
-);
-
-const WalletIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-  </svg>
-);
-
-const GlobeIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0h.5a2.5 2.5 0 002.5-2.5V3.935M12 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
-const ShieldIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-  </svg>
-);
-
-const DeviceSettingsIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-  </svg>
-);
-
-const BellIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 5.165 6 7.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
-  </svg>
-);
-
-const RepeatIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h5M20 20v-5h-5M20 9A8 8 0 006.34 6.34M4 15a8 8 0 0013.66 2.66" />
-  </svg>
-);
-
-const LogOutIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-  </svg>
-);
-
-const LifebuoyIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-    <circle cx="12" cy="12" r="9" />
-    <circle cx="12" cy="12" r="3.5" />
-    <path strokeLinecap="round" d="M5.6 5.6l3.9 3.9M18.4 5.6l-3.9 3.9M5.6 18.4l3.9-3.9M18.4 18.4l-3.9-3.9" />
-  </svg>
-);
-
-const ChevronIcon = () => (
-  <svg className="h-5 w-5 text-token-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
-);
-
-interface MenuItemProps {
-  icon: React.ReactNode;
-  iconBg: string;
-  iconColor: string;
-  title: string;
-  subtitle: string;
-  href?: string;
-  isLast?: boolean;
-  comingSoon?: boolean;
-  onComingSoonClick?: (title: string) => void;
-  /** Rows that act in place rather than navigate (e.g. replaying the tour). */
-  onClick?: () => void;
+function themeLabel(mode: ThemeMode): string {
+  if (mode === 'system') return 'System';
+  if (mode === 'dark') return 'Dark';
+  return 'Light';
 }
 
-function MenuItem({ icon, iconBg, iconColor, title, subtitle, href, isLast, comingSoon, onComingSoonClick, onClick }: MenuItemProps) {
-  const content = (
-    <>
-      <div className={`shrink-0 h-10 w-10 rounded-xl flex items-center justify-center ${iconBg} ${iconColor}`}>
-        {icon}
-      </div>
-      <div className="flex-1 min-w-0">
-        <h3 className="text-base font-semibold text-token-primary">{title}</h3>
-        <p className="text-sm text-token-secondary truncate">{subtitle}</p>
-      </div>
-      <ChevronIcon />
-    </>
-  );
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <p className="mb-2 ml-1 text-xs text-token-muted">{children}</p>;
+}
 
-  const rowClass = `flex h-[64px] sm:h-[72px] w-full items-center gap-3 sm:gap-4 px-3 sm:px-4 text-left transition-colors hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)] ${
-    !isLast ? 'border-b border-token' : ''
-  }`;
-
-  if (comingSoon || onClick) {
-    return (
-      <button
-        type="button"
-        onClick={() => (comingSoon ? onComingSoonClick?.(title) : onClick?.())}
-        className={rowClass}
-      >
-        {content}
-      </button>
-    );
-  }
-
+function RowChevron() {
   return (
-    <Link href={href ?? '#'} className={rowClass}>
-      {content}
+    <svg className="h-4 w-4 shrink-0 text-token-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+function NavRow({
+  href,
+  icon,
+  title,
+  value,
+  last,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  value?: string;
+  last?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`flex min-h-[52px] items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface-hover)] ${
+        !last ? 'border-b border-token' : ''
+      }`}
+    >
+      <span className="shrink-0 text-token-muted">{icon}</span>
+      <span className="flex-1 text-sm font-medium text-token-primary">{title}</span>
+      {value ? <span className="text-sm text-token-muted">{value}</span> : null}
+      <RowChevron />
     </Link>
   );
 }
@@ -138,230 +69,382 @@ export default function ProfilePage() {
   const { user, logout } = useAuthStore();
   const isPremium = useIsPremium();
   const router = useRouter();
-  const [comingSoonModal, setComingSoonModal] = useState<string | null>(null);
   const startTour = useOnboardingStore((s) => s.start);
+  const themeMode = useThemeStore((s) => s.mode);
 
-  const handleLogout = () => {
-    logout();
-    router.push('/');
+  const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
+  const [prefsLoading, setPrefsLoading] = useState(true);
+  const [prefsSaving, setPrefsSaving] = useState(false);
+  const [recurringActive, setRecurringActive] = useState(0);
+  const [budgetHint, setBudgetHint] = useState('Set up');
+  const [goalsHint, setGoalsHint] = useState('Create');
+  const [logoutConfirm, setLogoutConfirm] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'csv' | 'pdf'>('csv');
+  const [exportFrom, setExportFrom] = useState('');
+  const [exportTo, setExportTo] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated || isLoading) return;
+    const currency = user?.currency || 'USD';
+    Promise.all([
+      api.getNotificationPreferences().catch(() => null),
+      api.getRecurringRules().catch(() => null),
+      api.getCurrentBudget().catch(() => null),
+      api.getGoals().catch(() => null),
+    ]).then(([prefsRes, recurringRes, budgetRes, goalsRes]) => {
+      if (prefsRes?.success) setPrefs(prefsRes.data);
+      if (recurringRes?.success) {
+        setRecurringActive(recurringRes.data.rules.filter((r) => r.isActive).length);
+      }
+      if (budgetRes?.success && budgetRes.data) {
+        setBudgetHint(`${formatCurrency(Math.max(0, budgetRes.data.remaining), currency)} left`);
+      } else {
+        setBudgetHint('Set up');
+      }
+      if (goalsRes?.success) {
+        const active = goalsRes.data.goals.filter((g) => g.status === 'active').length;
+        setGoalsHint(active > 0 ? `${active} active` : 'Create');
+      }
+      setPrefsLoading(false);
+    });
+  }, [isAuthenticated, isLoading, user?.currency]);
+
+  const savePrefs = useCallback(
+    async (patch: Partial<NotificationPreferences>) => {
+      if (!prefs) return;
+      const previous = prefs;
+      setPrefs({ ...prefs, ...patch });
+      setPrefsSaving(true);
+      try {
+        const res = await api.updateNotificationPreferences(patch);
+        if (res.success) setPrefs(res.data);
+      } catch {
+        setPrefs(previous);
+        toast.error('Could not save preference');
+      } finally {
+        setPrefsSaving(false);
+      }
+    },
+    [prefs]
+  );
+
+  const copyId = async () => {
+    if (!user?.id) return;
+    await navigator.clipboard.writeText(user.id);
+    toast.success('User ID copied');
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const blob = await api.exportExpenses(exportFormat, exportFrom || undefined, exportTo || undefined);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `expenses-${new Date().toISOString().slice(0, 10)}.${exportFormat === 'csv' ? 'csv' : 'pdf'}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setExportModalOpen(false);
+      toast.success('Export downloaded');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e.response?.data?.message || 'Export failed');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   if (isLoading || !isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-token-surface">
-        <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
-          <p className="text-token-secondary">Loading...</p>
-        </div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
       </div>
     );
   }
 
-  const generalItems = [
-    {
-      icon: <UserIcon />,
-      iconBg: 'bg-blue-50',
-      iconColor: 'text-blue-600',
-      title: 'Edit Profile',
-      subtitle: 'Update name & avatar',
-      href: '/dashboard/profile/edit',
-      comingSoon: false,
-    },
-    {
-      icon: <CrownIcon />,
-      iconBg: 'bg-orange-50',
-      iconColor: 'text-orange-600',
-      title: 'Premium Plans',
-      subtitle: premiumPlansSubtitle(user),
-      href: '/dashboard/premium',
-      comingSoon: false,
-    },
-  ];
+  const shortId = user?.id.slice(0, 8).toUpperCase() ?? '—';
+  const avatarUrl = getImageUrl(user?.profilePicture || user?.profilePictureUrl);
 
-  const appItems: Array<Omit<MenuItemProps, 'isLast' | 'onComingSoonClick'>> = [
-    {
-      icon: <LifebuoyIcon />,
-      iconBg: 'bg-teal-50',
-      iconColor: 'text-teal-600',
-      title: 'Replay the tour',
-      subtitle: 'Let Penny walk you through it again',
-      // The overlay navigates to each step's page itself.
-      onClick: startTour,
-    },
-    {
-      icon: <BellIcon />,
-      iconBg: 'bg-pink-50',
-      iconColor: 'text-pink-600',
-      title: 'Notifications',
-      subtitle: 'Budget alerts & briefings',
-      href: '/dashboard/notifications',
-      comingSoon: false,
-    },
-    {
-      icon: <RepeatIcon />,
-      iconBg: 'bg-sky-50',
-      iconColor: 'text-sky-600',
-      title: 'Recurring',
-      subtitle: 'Auto-log subscriptions & bills',
-      href: '/dashboard/recurring',
-      comingSoon: false,
-    },
-    {
-      icon: <WalletIcon />,
-      iconBg: 'bg-purple-50',
-      iconColor: 'text-purple-600',
-      title: 'Accounts',
-      subtitle: 'Manage bank & cash',
-      href: '/dashboard/accounts',
-      comingSoon: true,
-    },
-    {
-      icon: <DeviceSettingsIcon />,
-      iconBg: 'bg-slate-100',
-      iconColor: 'text-slate-600',
-      title: 'Device Settings',
-      subtitle: 'Dark mode & appearance',
-      href: '/dashboard/settings/device',
-      comingSoon: false,
-    },
-    {
-      icon: <GlobeIcon />,
-      iconBg: 'bg-indigo-50',
-      iconColor: 'text-indigo-600',
-      title: 'Currencies',
-      subtitle: `${user?.currency || 'USD'} and more`,
-      href: '/dashboard/currencies',
-      comingSoon: false,
-    },
-  ];
-
-  const securityItems = [
-    {
-      icon: <ShieldIcon />,
-      iconBg: 'bg-emerald-50',
-      iconColor: 'text-emerald-600',
-      title: 'Security',
-      subtitle: 'Change password & PIN',
-      href: '/dashboard/security',
-      comingSoon: false,
-    },
-  ];
+  const iconClass = 'h-5 w-5';
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-token-surface pb-8">
-        {/* A. Island Header */}
-        <div className="relative z-10 rounded-b-3xl bg-token-card px-4 sm:px-6 pb-6 sm:pb-8 pt-6 sm:pt-8 shadow-sm border-b border-token">
-          {/* Logout icon - top right */}
-          <button
-            onClick={handleLogout}
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full text-token-secondary hover:text-red-500 hover:bg-red-50 transition-colors"
-            aria-label="Logout"
-          >
-            <LogOutIcon />
-          </button>
-
-          <div className="flex flex-col items-center">
-            {/* Avatar with Badge */}
-            <div className="relative mb-4">
-              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-token-accent flex items-center justify-center shadow-md overflow-hidden relative">
-                {getImageUrl(user?.profilePicture || user?.profilePictureUrl) ? (
-                  <Image
-                    src={getImageUrl(user?.profilePicture || user?.profilePictureUrl)!}
-                    alt="Profile"
-                    fill
-                    className="object-cover"
-                    sizes="96px"
-                  />
-                ) : (
-                  <span className="text-3xl sm:text-4xl font-bold text-white">
-                    {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
-                  </span>
-                )}
-              </div>
-              <span className={`absolute -bottom-1 -right-1 rounded-full px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold ${
-                isPremium ? 'bg-amber-100 text-amber-800' : 'bg-[var(--blueGray-200)] text-token-secondary'
-              }`}>
-                {isPremium ? 'PREMIUM' : 'FREE'}
+      <div className="mx-auto max-w-lg space-y-4 pb-8">
+        {/* Header */}
+        <div className="flex items-center gap-3.5">
+          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-token-accent">
+            {avatarUrl ? (
+              <Image src={avatarUrl} alt="" fill className="object-cover" sizes="56px" />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center text-xl font-medium text-white">
+                {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
               </span>
-            </div>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-base font-medium text-token-primary">{user?.name || 'User'}</p>
+            <button type="button" onClick={copyId} className="mt-0.5 flex items-center gap-1 text-xs text-token-muted">
+              ID {shortId}
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </button>
+          </div>
+          <Link
+            href="/dashboard/profile/edit"
+            className="shrink-0 rounded-lg border border-token px-3 py-2 text-sm font-medium text-token-primary"
+          >
+            Edit
+          </Link>
+        </div>
 
-            {/* Identity */}
-            <h1 className="text-lg sm:text-xl font-bold text-token-primary">
-              {user?.name || 'User'}
-            </h1>
-            {isPremium && user?.subscription?.summaryLine ? (
-              <p className="mt-2 text-sm text-token-secondary text-center max-w-xs">
-                {user.subscription.summaryLine}
-              </p>
-            ) : null}
-            <p className="mt-1 text-xs text-token-muted font-mono">
-              ID: {user?.id.slice(0, 8).toUpperCase()}
+        {/* Plan */}
+        <div className="flex items-center gap-3 rounded-2xl border border-[var(--accent-primary)]/35 bg-token-card p-4">
+          <svg className="h-5 w-5 shrink-0 text-token-accent" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2l2.2 5.4 5.8.5-4.4 3.9 1.3 5.7L12 15.5l-4.9 3 1.3-5.7L4 8.9l5.8-.5L12 2z" />
+          </svg>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-token-primary">{isPremium ? 'Premium plan' : 'Free plan'}</p>
+            <p className="mt-0.5 truncate text-xs text-token-muted">
+              {isPremium
+                ? user?.subscription?.summaryLine || premiumPlansSubtitle(user)
+                : 'Upgrade to unlock all features'}
             </p>
           </div>
+          {!isPremium ? (
+            <Link
+              href="/dashboard/premium"
+              className="shrink-0 rounded-lg bg-token-accent px-3.5 py-2 text-sm font-medium text-white"
+            >
+              See plans
+            </Link>
+          ) : (
+            <Link
+              href="/dashboard/premium"
+              className="shrink-0 rounded-lg border border-token px-3 py-2 text-sm text-token-primary"
+            >
+              Manage
+            </Link>
+          )}
         </div>
 
-        {/* B. Settings Body */}
-        <div className="px-4 sm:px-6 pt-4 sm:pt-6">
-          {/* General */}
-          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-token-muted">
-            General
-          </p>
-          <div className="mb-4 sm:mb-6 overflow-hidden rounded-2xl bg-token-card shadow-sm border border-token">
-            {generalItems.map((item, i) => (
-              <MenuItem
-                key={item.title}
-                {...item}
-                isLast={i === generalItems.length - 1}
-                onComingSoonClick={setComingSoonModal}
-              />
-            ))}
-          </div>
-
-          {/* App Settings */}
-          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-token-muted">
-            App Settings
-          </p>
-          <div className="mb-4 sm:mb-6 overflow-hidden rounded-2xl bg-token-card shadow-sm border border-token">
-            {appItems.map((item, i) => (
-              <MenuItem
-                key={item.title}
-                {...item}
-                isLast={i === appItems.length - 1}
-                onComingSoonClick={setComingSoonModal}
-              />
-            ))}
-          </div>
-
-          {/* Security */}
-          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-token-muted">
-            Security
-          </p>
-          <div className="mb-6 overflow-hidden rounded-2xl bg-token-card shadow-sm border border-token">
-            {securityItems.map((item, i) => (
-              <MenuItem
-                key={item.title}
-                {...item}
-                isLast={i === securityItems.length - 1}
-                onComingSoonClick={setComingSoonModal}
-              />
-            ))}
-          </div>
+        <SectionLabel>Money</SectionLabel>
+        <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+          <NavRow
+            href="/dashboard/budget"
+            title="Monthly budget"
+            value={budgetHint}
+            icon={
+              <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            }
+          />
+          <NavRow
+            href="/dashboard/goals"
+            title="Savings goals"
+            value={goalsHint}
+            icon={
+              <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 12v-2m9-4a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <NavRow
+            href="/dashboard/currencies"
+            title="Currency"
+            value={user?.currency || 'USD'}
+            icon={
+              <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <circle cx="12" cy="12" r="9" />
+                <path strokeLinecap="round" d="M3 12h18" />
+                <path strokeLinecap="round" d="M12 7v10" />
+              </svg>
+            }
+          />
+          <NavRow
+            href="/dashboard/recurring"
+            title="Recurring"
+            value={recurringActive > 0 ? `${recurringActive} active` : 'Auto-log'}
+            last
+            icon={
+              <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5M20 9A8 8 0 006.34 6.34M4 15a8 8 0 0013.66 2.66" />
+              </svg>
+            }
+          />
         </div>
+
+        <SectionLabel>Preferences</SectionLabel>
+        <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+          <label className="flex min-h-[52px] items-center gap-3 border-b border-token px-4 py-3">
+            <svg className={`${iconClass} shrink-0 text-token-muted`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.4-1.4a2 2 0 00-.6-1.4V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
+            </svg>
+            <span className="flex-1 text-sm font-medium text-token-primary">Budget alerts</span>
+            <input
+              type="checkbox"
+              className="h-5 w-5 accent-[var(--accent-primary)]"
+              checked={prefs?.budgetAlertsEnabled ?? false}
+              disabled={prefsLoading || prefsSaving || !prefs?.pushEnabled}
+              onChange={(e) => savePrefs({ budgetAlertsEnabled: e.target.checked })}
+            />
+          </label>
+          <label className="flex min-h-[52px] items-center gap-3 border-b border-token px-4 py-3">
+            <svg className={`${iconClass} shrink-0 text-token-muted`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            </svg>
+            <span className="flex-1 text-sm font-medium text-token-primary">Weekly AI briefing</span>
+            <input
+              type="checkbox"
+              className="h-5 w-5 accent-[var(--accent-primary)]"
+              checked={prefs?.pushEnabled ?? false}
+              disabled={prefsLoading || prefsSaving}
+              onChange={(e) => savePrefs({ pushEnabled: e.target.checked })}
+            />
+          </label>
+          <NavRow
+            href="/dashboard/settings/device"
+            title="Appearance"
+            value={themeLabel(themeMode)}
+            icon={
+              <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+              </svg>
+            }
+          />
+          <NavRow
+            href="/dashboard/security"
+            title="Security"
+            value="Password"
+            last
+            icon={
+              <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c.5-1.2 1.6-2 3-2a3 3 0 013 3v2h-5v5h-2v-5H8v-2c0-1.7 1.3-3 3-3 1.4 0 2.5.8 3 2z" />
+                <rect x="3" y="11" width="18" height="10" rx="2" />
+              </svg>
+            }
+          />
+        </div>
+
+        <SectionLabel>Data and help</SectionLabel>
+        <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+          <button
+            type="button"
+            onClick={() => setExportModalOpen(true)}
+            className="flex min-h-[52px] w-full items-center gap-3 border-b border-token px-4 py-3 text-left transition-colors hover:bg-[var(--surface-hover)]"
+          >
+            <svg className={`${iconClass} shrink-0 text-token-muted`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+            </svg>
+            <span className="flex-1 text-sm font-medium text-token-primary">Export data</span>
+            <span className="text-sm text-token-muted">CSV</span>
+            <RowChevron />
+          </button>
+          <button
+            type="button"
+            onClick={startTour}
+            className="flex min-h-[52px] w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--surface-hover)]"
+          >
+            <svg className={`${iconClass} shrink-0 text-token-muted`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <circle cx="12" cy="12" r="9" />
+              <path strokeLinecap="round" d="M9.5 9.5a3 3 0 015 0" />
+              <path strokeLinecap="round" d="M12 17h.01" />
+            </svg>
+            <span className="flex-1 text-sm font-medium text-token-primary">Replay the tour</span>
+            <RowChevron />
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setLogoutConfirm(true)}
+          className="flex w-full items-center justify-center gap-2 py-4 text-sm font-medium text-red-500"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Log out
+        </button>
       </div>
 
-      {/* Coming Soon Modal */}
       <Modal
-        isOpen={!!comingSoonModal}
-        onClose={() => setComingSoonModal(null)}
-        title={comingSoonModal ? `${comingSoonModal} - Coming soon!` : ''}
+        isOpen={exportModalOpen}
+        onClose={() => setExportModalOpen(false)}
+        title="Export Expenses"
         footer={
-          <Button onClick={() => setComingSoonModal(null)} className="w-full">
-            OK
-          </Button>
+          <div className="flex gap-3">
+            <Button onClick={() => setExportModalOpen(false)} variant="outline" className="flex-1">
+              Cancel
+            </Button>
+            <Button onClick={handleExport} className="flex-1" disabled={isExporting}>
+              {isExporting ? 'Exporting...' : 'Export'}
+            </Button>
+          </div>
         }
       >
-        <p className="text-token-secondary">This feature is under development. Check back soon!</p>
+        <div className="space-y-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-token-primary">Format</label>
+            <select
+              value={exportFormat}
+              onChange={(e) => setExportFormat(e.target.value as 'csv' | 'pdf')}
+              className="w-full rounded-lg border border-token bg-token-card px-3 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+            >
+              <option value="csv">CSV</option>
+              <option value="pdf">PDF</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-token-primary">From (optional)</label>
+              <input
+                type="date"
+                value={exportFrom}
+                onChange={(e) => setExportFrom(e.target.value)}
+                className="w-full rounded-lg border border-token bg-token-card px-3 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-token-primary">To (optional)</label>
+              <input
+                type="date"
+                value={exportTo}
+                onChange={(e) => setExportTo(e.target.value)}
+                className="w-full rounded-lg border border-token bg-token-card px-3 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              />
+            </div>
+          </div>
+          <p className="text-sm text-token-secondary">Leave dates empty to export all expenses.</p>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={logoutConfirm}
+        onClose={() => setLogoutConfirm(false)}
+        title="Log out?"
+        footer={
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1" onClick={() => setLogoutConfirm(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              className="flex-1"
+              onClick={() => {
+                setLogoutConfirm(false);
+                logout();
+                router.push('/');
+              }}
+            >
+              Log out
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-token-secondary">You’ll need to sign in again to access your expenses.</p>
       </Modal>
     </DashboardLayout>
   );
