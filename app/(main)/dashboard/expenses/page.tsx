@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef, type ElementType } from 'react';
 import Link from 'next/link';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useCategories } from '@/hooks/useCategories';
@@ -24,6 +24,89 @@ import {
 import { subMonths } from 'date-fns';
 import { getCategoryIcon } from '@/lib/categoryIcons';
 import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
+function ExpenseRow({
+  expense,
+  selectionMode,
+  selected,
+  onActivate,
+  onLongPress,
+  CategoryIcon,
+}: {
+  expense: Expense;
+  selectionMode: boolean;
+  selected: boolean;
+  onActivate: () => void;
+  onLongPress: () => void;
+  CategoryIcon: ElementType;
+}) {
+  const longPressTimer = useRef<number | null>(null);
+  const longPressFired = useRef(false);
+
+  const clearTimer = () => {
+    if (longPressTimer.current != null) {
+      window.clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const startLongPress = () => {
+    longPressFired.current = false;
+    clearTimer();
+    longPressTimer.current = window.setTimeout(() => {
+      longPressFired.current = true;
+      onLongPress();
+    }, 450);
+  };
+
+  const handleClick = () => {
+    clearTimer();
+    if (longPressFired.current) return;
+    onActivate();
+  };
+
+  return (
+    <button
+      type="button"
+      onMouseDown={startLongPress}
+      onMouseUp={clearTimer}
+      onMouseLeave={clearTimer}
+      onTouchStart={startLongPress}
+      onTouchEnd={clearTimer}
+      onClick={handleClick}
+      className={`w-full flex items-center gap-2 sm:gap-4 px-2.5 sm:px-4 py-3 min-h-[64px] sm:min-h-[72px] text-left transition-colors ${
+        selected ? 'bg-teal-50/80 dark:bg-teal-950/30' : 'bg-token-card hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)]'
+      }`}
+    >
+      {selectionMode ? (
+        <span
+          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+            selected ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)] text-white' : 'border-token'
+          }`}
+        >
+          {selected ? '✓' : null}
+        </span>
+      ) : null}
+      <div
+        className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl shrink-0 flex items-center justify-center"
+        style={{ backgroundColor: getCategoryBgColor(expense.category) }}
+      >
+        <CategoryIcon className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" style={{ color: getCategoryChartColor(expense.category) }} aria-hidden />
+      </div>
+      <div className="flex-1 min-w-0 text-left">
+        <p className="font-bold text-token-primary truncate">{cleanExpenseDescription(expense.description)}</p>
+        <p className="text-sm text-token-secondary mt-0.5">{formatDate(expense.date)}</p>
+      </div>
+      <div className="shrink-0 text-right">
+        <p className="font-bold text-token-primary text-sm sm:text-base">
+          -{formatCurrency(expense.amount, expense.currency)}
+        </p>
+        <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--background-tag)] text-[var(--text-tag)]">
+          {expense.category}
+        </span>
+      </div>
+    </button>
+  );
+}
 
 export default function ExpensesPage() {
   const { isAuthenticated, isLoading: authLoading } = useProtectedRoute();
@@ -37,6 +120,10 @@ export default function ExpensesPage() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -197,6 +284,64 @@ export default function ExpensesPage() {
       }
     } catch (error) {
       toast.error('Failed to delete expense');
+    }
+  };
+
+  const exitSelection = useCallback(() => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  }, []);
+
+  const toggleSelected = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const beginSelection = useCallback(
+    (expense: Expense) => {
+      setSelectionMode(true);
+      setSelectedIds((prev) => new Set(prev).add(expense.id));
+    },
+    []
+  );
+
+  const handleRowActivate = useCallback(
+    (expense: Expense) => {
+      if (selectionMode) {
+        toggleSelected(expense.id);
+        return;
+      }
+      handleEdit(expense);
+    },
+    [handleEdit, selectionMode, toggleSelected]
+  );
+
+  useEffect(() => {
+    if (selectionMode && selectedIds.size === 0) setSelectionMode(false);
+  }, [selectionMode, selectedIds.size]);
+
+  const confirmBulkDelete = async () => {
+    const ids = [...selectedIds];
+    if (!ids.length) return;
+    setIsBulkDeleting(true);
+    try {
+      const response = await api.deleteExpensesBatch(ids);
+      if (response.success) {
+        toast.success(response.message || `Deleted ${response.data.deleted} expenses`);
+        setIsBulkDeleteOpen(false);
+        exitSelection();
+        fetchExpenses();
+        if (searchResult) handleSearch();
+        window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
+      }
+    } catch {
+      toast.error('Failed to delete expenses');
+    } finally {
+      setIsBulkDeleting(false);
     }
   };
 
@@ -466,6 +611,23 @@ export default function ExpensesPage() {
           </div>
         )}
 
+        {selectionMode ? (
+          <div className="shrink-0 mb-3 flex items-center justify-between rounded-xl border border-token bg-token-card px-4 py-2.5">
+            <button type="button" onClick={exitSelection} className="text-sm font-semibold text-token-primary">
+              Cancel
+            </button>
+            <span className="text-sm font-semibold text-token-primary">{selectedIds.size} selected</span>
+            <button
+              type="button"
+              disabled={selectedIds.size === 0}
+              onClick={() => setIsBulkDeleteOpen(true)}
+              className="text-sm font-semibold text-red-600 disabled:opacity-40"
+            >
+              Delete
+            </button>
+          </div>
+        ) : null}
+
         {/* B. Transaction List Container - Scrollable */}
         <div className="flex-1 min-h-0 flex flex-col rounded-2xl bg-token-card border border-token shadow-sm overflow-hidden">
           {/* Search results summary */}
@@ -512,41 +674,17 @@ export default function ExpensesPage() {
             <div className={`relative flex-1 min-h-0 overflow-y-auto divide-y divide-[var(--border-default)] transition-opacity ${isPageChanging ? 'opacity-60 pointer-events-none' : ''}`}>
               {displayedExpenses.map((expense) => {
                 const CategoryIcon = getCategoryIcon(expense.category);
+                const selected = selectedIds.has(expense.id);
                 return (
-                <button
+                <ExpenseRow
                   key={expense.id}
-                  type="button"
-                  onClick={() => handleEdit(expense)}
-                  className="w-full flex items-center gap-2 sm:gap-4 px-2.5 sm:px-4 py-3 min-h-[64px] sm:min-h-[72px] text-left bg-token-card hover:bg-[var(--surface-hover)] active:bg-[var(--surface-hover)] transition-colors"
-                >
-                  {/* Left: Category Icon (squircle) */}
-                  <div
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl shrink-0 flex items-center justify-center"
-                    style={{ backgroundColor: getCategoryBgColor(expense.category) }}
-                  >
-                    <CategoryIcon className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" style={{ color: getCategoryChartColor(expense.category) }} aria-hidden />
-                  </div>
-
-                  {/* Middle: Title & Subtitle */}
-                  <div className="flex-1 min-w-0 text-left">
-                    <p className="font-bold text-token-primary truncate">
-                      {cleanExpenseDescription(expense.description)}
-                    </p>
-                    <p className="text-sm text-token-secondary mt-0.5">
-                      {formatDate(expense.date)}
-                    </p>
-                  </div>
-
-                  {/* Right: Amount & Category Tag */}
-                  <div className="shrink-0 text-right">
-                    <p className="font-bold text-token-primary text-sm sm:text-base">
-                      -{formatCurrency(expense.amount, expense.currency)}
-                    </p>
-                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--background-tag)] text-[var(--text-tag)]">
-                      {expense.category}
-                    </span>
-                  </div>
-                </button>
+                  expense={expense}
+                  selected={selected}
+                  selectionMode={selectionMode}
+                  onActivate={() => handleRowActivate(expense)}
+                  onLongPress={() => beginSelection(expense)}
+                  CategoryIcon={CategoryIcon}
+                />
               );
               })}
             </div>
@@ -715,6 +853,26 @@ export default function ExpensesPage() {
           </div>
           <p className="text-sm text-token-secondary">Leave dates empty to export all expenses.</p>
         </div>
+      </Modal>
+
+      <Modal
+        isOpen={isBulkDeleteOpen}
+        onClose={() => setIsBulkDeleteOpen(false)}
+        title="Delete expenses"
+        footer={
+          <div className="flex gap-3">
+            <Button onClick={() => setIsBulkDeleteOpen(false)} variant="outline" className="flex-1">
+              Cancel
+            </Button>
+            <Button onClick={confirmBulkDelete} variant="danger" className="flex-1" disabled={isBulkDeleting}>
+              {isBulkDeleting ? 'Deleting…' : 'Delete'}
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-token-primary">
+          Delete {selectedIds.size} expense{selectedIds.size === 1 ? '' : 's'}? This cannot be undone.
+        </p>
       </Modal>
 
       {/* Delete Confirmation Modal */}
