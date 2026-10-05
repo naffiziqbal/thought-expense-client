@@ -10,7 +10,8 @@ import { useOnboardingStore } from "@/store/onboardingStore";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/BottomSheet";
-import { CURRENCIES, getDefaultCurrency } from "@/lib/currencies";
+import { getDefaultCurrency, getIso4217Currency } from "@/lib/currencies";
+import { CurrencySearchPanel } from "@/components/currency/CurrencySearchPanel";
 
 function getPasswordStrength(pwd: string): 0 | 1 | 2 | 3 | 4 {
   if (!pwd.length) return 0;
@@ -247,9 +248,7 @@ export default function SignupPage() {
     }
   };
 
-  const selectedCurrency = CURRENCIES.find(
-    (c) => c.value === formData.currency
-  );
+  const selectedCurrency = getIso4217Currency(formData.currency);
 
   return (
     <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-token-surface px-4 py-4 pt-safe pb-safe">
@@ -531,42 +530,16 @@ export default function SignupPage() {
       <BottomSheet
         isOpen={currencySheetOpen}
         onClose={() => setCurrencySheetOpen(false)}
-        title="Select Currency"
+        title="Select currency"
       >
-        <div className="space-y-1">
-          {CURRENCIES.map((c) => (
-            <button
-              key={c.value}
-              type="button"
-              onClick={() => {
-                setFormData((prev) => ({ ...prev, currency: c.value }));
-                setCurrencySheetOpen(false);
-              }}
-              className={cn(
-                "flex w-full items-center justify-between rounded-xl px-4 py-3 text-left transition-colors",
-                formData.currency === c.value
-                  ? "bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300"
-                  : "hover:bg-[var(--surface-hover)]"
-              )}
-            >
-              <span className="font-medium text-token-primary">{c.label}</span>
-              {formData.currency === c.value && (
-                <svg
-                  className="h-5 w-5 text-token-accent"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              )}
-            </button>
-          ))}
+        <div className="max-h-[min(60vh,28rem)] overflow-y-auto pr-0.5">
+          <CurrencySearchPanel
+            selectedCode={formData.currency}
+            onSelect={(code) => {
+              setFormData((prev) => ({ ...prev, currency: code }));
+              setCurrencySheetOpen(false);
+            }}
+          />
         </div>
       </BottomSheet>
     </div>

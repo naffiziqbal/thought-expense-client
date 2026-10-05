@@ -7,26 +7,19 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { api } from '@/lib/api';
-import { formatCurrency } from '@/lib/utils';
+import { getCategoryIcon } from '@/lib/categoryIcons';
+import {
+  RECURRING_PAGE_HINT,
+  describeRecurringSchedule,
+  formatRecurringNextRun,
+  normalizeRecurringDescription,
+  summarizeRecurringRules,
+} from '@/lib/recurringDashboard';
+import { formatCurrency, getCategoryChartColor } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 import type { RecurringExpenseItem, RecurringFrequency, RecurringRule } from '@/types';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-function normalize(text: string): string {
-  return text.toLowerCase().replace(/\s+/g, ' ').trim();
-}
-
-function describeSchedule(rule: RecurringRule): string {
-  if (rule.frequency === 'weekly') return `Every ${WEEKDAYS[rule.dayOfWeek ?? 0]}`;
-  return rule.dayOfMonth ? `Monthly on day ${rule.dayOfMonth}` : 'Monthly';
-}
-
-function formatNextRun(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
 
 interface DraftState {
   description: string;
@@ -70,11 +63,12 @@ export default function RecurringPage() {
     void load();
   }, [isAuthenticated, isLoading, load]);
 
-  // Hide suggestions the user has already automated.
   const suggestions = useMemo(() => {
-    const automated = new Set(rules.map((r) => normalize(r.description)));
-    return detected.filter((d) => !automated.has(normalize(d.description)));
+    const automated = new Set(rules.map((r) => normalizeRecurringDescription(r.description)));
+    return detected.filter((d) => !automated.has(normalizeRecurringDescription(d.description)));
   }, [detected, rules]);
+
+  const summary = useMemo(() => summarizeRecurringRules(rules), [rules]);
 
   const openDraft = (item: RecurringExpenseItem) => {
     const lastDate = new Date(item.lastDate);
@@ -165,128 +159,141 @@ export default function RecurringPage() {
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-token-surface">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--accent-primary)] border-r-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-token-surface">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
       </div>
     );
   }
 
+  const renderRule = (rule: RecurringRule, showBorder: boolean) => {
+    const CategoryIcon = getCategoryIcon(rule.category);
+    return (
+      <div key={rule.id} className={`px-3 py-3 ${showBorder ? 'border-b border-token' : ''}`}>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--chart-track)]"
+            aria-hidden
+          >
+            <CategoryIcon className="h-5 w-5" style={{ color: getCategoryChartColor(rule.category) }} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-token-primary">{rule.description}</p>
+            <p className="mt-0.5 text-xs text-token-muted">
+              {describeRecurringSchedule(rule)}
+              {rule.isActive ? ` · next ${formatRecurringNextRun(rule.nextRunAt)}` : ' · paused'}
+            </p>
+          </div>
+          <p className="shrink-0 text-sm font-semibold tabular-nums text-token-primary">
+            {formatCurrency(rule.amount, rule.currency)}
+          </p>
+        </div>
+
+        <div className="mt-3 flex items-center gap-3 border-t border-token pt-3">
+          <label className="flex flex-1 cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              checked={rule.isActive}
+              disabled={busyId === rule.id}
+              onChange={() => togglePaused(rule)}
+              className="h-4 w-4 accent-[var(--accent-primary)]"
+            />
+            <span className="text-xs text-token-secondary">{rule.isActive ? 'Active' : 'Paused'}</span>
+          </label>
+          <Button variant="outline" size="sm" disabled={busyId === rule.id} onClick={() => logNow(rule)}>
+            Log now
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={busyId === rule.id}
+            onClick={() => remove(rule)}
+            className="text-token-error"
+          >
+            Remove
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <header>
-          <h1 className="text-2xl font-bold text-token-primary">Recurring</h1>
-          <p className="mt-1 text-sm text-token-secondary">
-            Subscriptions and bills we log for you, so you never have to type them again.
-          </p>
-        </header>
+      <div className="mx-auto max-w-lg space-y-3 pb-8 pt-1">
+        <div className="min-w-0">
+          <h1 className="text-base font-semibold leading-tight text-token-primary">Recurring</h1>
+          <p className="mt-0.5 text-xs leading-relaxed text-token-muted">{RECURRING_PAGE_HINT}</p>
+        </div>
 
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="h-6 w-6 animate-spin rounded-full border-4 border-[var(--accent-primary)] border-r-transparent" />
           </div>
+        ) : rules.length === 0 && suggestions.length === 0 ? (
+          <div className="rounded-2xl border border-token bg-token-card px-6 py-8 text-center">
+            <p className="text-sm font-medium text-token-primary">No recurring expenses yet</p>
+            <p className="mt-1 text-xs leading-relaxed text-token-secondary">
+              Log the same subscription or bill for a few months and we&apos;ll suggest automating it here.
+            </p>
+          </div>
         ) : (
           <>
-            {rules.length === 0 && suggestions.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-token p-8 text-center">
-                <p className="font-semibold text-token-primary">No recurring expenses yet</p>
-                <p className="mt-1 text-sm text-token-secondary">
-                  Once you’ve logged the same subscription or bill for a few months, it shows up
-                  here ready to automate.
+            {summary.total > 0 ? (
+              <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-token-card p-4">
+                <p className="text-xs font-medium text-token-muted">Automated</p>
+                <p className="mt-1 text-[1.75rem] font-semibold text-token-primary">
+                  {summary.active.length}
+                  <span className="text-base font-normal text-token-muted"> active</span>
                 </p>
+                {summary.next ? (
+                  <p className="mt-1 truncate text-xs text-token-secondary">
+                    Next: {summary.next.description} · {formatRecurringNextRun(summary.next.nextRunAt)}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs text-token-secondary">All rules paused</p>
+                )}
               </div>
             ) : null}
 
             {rules.length > 0 ? (
-              <section className="space-y-3">
-                <h2 className="text-xs font-semibold tracking-widest text-token-muted">
-                  AUTOMATIC
-                </h2>
-                <div className="space-y-3">
-                  {rules.map((rule) => (
-                    <div
-                      key={rule.id}
-                      className="rounded-2xl border border-token bg-token-card p-4 shadow-sm"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate font-semibold text-token-primary">
-                            {rule.description}
-                          </p>
-                          <p className="mt-0.5 text-xs text-token-secondary">
-                            {describeSchedule(rule)}
-                            {rule.isActive ? ` · next ${formatNextRun(rule.nextRunAt)}` : ' · paused'}
-                          </p>
-                        </div>
-                        <p className="shrink-0 font-bold text-token-primary">
-                          {formatCurrency(rule.amount, rule.currency)}
-                        </p>
-                      </div>
-
-                      <div className="mt-3 flex items-center gap-3 border-t border-token pt-3">
-                        <label className="flex flex-1 cursor-pointer items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={rule.isActive}
-                            disabled={busyId === rule.id}
-                            onChange={() => togglePaused(rule)}
-                            className="h-4 w-4 accent-[var(--accent-primary)]"
-                          />
-                          <span className="text-xs text-token-secondary">
-                            {rule.isActive ? 'Active' : 'Paused'}
-                          </span>
-                        </label>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={busyId === rule.id}
-                          onClick={() => logNow(rule)}
-                        >
-                          Log now
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={busyId === rule.id}
-                          onClick={() => remove(rule)}
-                          className="text-token-error"
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+              <div>
+                <p className="mb-2 ml-1 text-xs font-medium text-token-muted">Your rules</p>
+                <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+                  {rules.map((rule, i) => renderRule(rule, i < rules.length - 1))}
                 </div>
-              </section>
+              </div>
             ) : null}
 
             {suggestions.length > 0 ? (
-              <section className="space-y-3">
-                <h2 className="text-xs font-semibold tracking-widest text-token-muted">
-                  DETECTED IN YOUR HISTORY
-                </h2>
-                <div className="divide-y divide-[var(--border-default)] overflow-hidden rounded-2xl border border-token bg-token-card">
-                  {suggestions.map((item) => (
-                    <div
-                      key={item.description}
-                      className="flex items-center gap-3 px-4 py-3"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-token-primary">
-                          {item.description}
-                        </p>
-                        <p className="text-xs text-token-muted">
-                          {item.category} · seen {item.monthsSeen} months · ~
-                          {formatCurrency(item.averageAmount, item.currency)}
-                        </p>
+              <div>
+                <p className="mb-2 ml-1 text-xs font-medium text-token-muted">Suggested from history</p>
+                <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+                  {suggestions.map((item, i) => {
+                    const CategoryIcon = getCategoryIcon(item.category);
+                    return (
+                      <div
+                        key={item.description}
+                        className={`flex items-center gap-3 px-3 py-3 ${i < suggestions.length - 1 ? 'border-b border-token' : ''}`}
+                      >
+                        <div
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--chart-track)]"
+                          aria-hidden
+                        >
+                          <CategoryIcon className="h-4 w-4" style={{ color: getCategoryChartColor(item.category) }} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-token-primary">{item.description}</p>
+                          <p className="mt-0.5 text-xs text-token-muted">
+                            {item.category} · {item.monthsSeen} mo · ~{formatCurrency(item.averageAmount, item.currency)}
+                          </p>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => openDraft(item)}>
+                          Automate
+                        </Button>
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => openDraft(item)}>
-                        Automate
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
-              </section>
+              </div>
             ) : null}
           </>
         )}
@@ -310,7 +317,7 @@ export default function RecurringPage() {
         {draft ? (
           <div className="space-y-4">
             <p className="text-sm text-token-secondary">
-              We’ll add “{draft.description}” for you on schedule. You can pause it any time.
+              We&apos;ll add &ldquo;{draft.description}&rdquo; for you on schedule. You can pause it any time.
             </p>
 
             <div>
@@ -346,9 +353,7 @@ export default function RecurringPage() {
 
             {draft.frequency === 'monthly' ? (
               <div>
-                <label className="mb-1 block text-sm font-medium text-token-secondary">
-                  Day of month
-                </label>
+                <label className="mb-1 block text-sm font-medium text-token-secondary">Day of month</label>
                 <input
                   type="number"
                   min={1}
@@ -362,15 +367,11 @@ export default function RecurringPage() {
                   }
                   className="w-full rounded-lg border border-token bg-token-card px-3 py-2 text-token-primary focus:border-[var(--accent-primary)] focus:outline-none"
                 />
-                <p className="mt-1 text-xs text-token-muted">
-                  Capped at 28 so it fires every month.
-                </p>
+                <p className="mt-1 text-xs text-token-muted">Capped at 28 so it fires every month.</p>
               </div>
             ) : (
               <div>
-                <label className="mb-1 block text-sm font-medium text-token-secondary">
-                  Day of week
-                </label>
+                <label className="mb-1 block text-sm font-medium text-token-secondary">Day of week</label>
                 <div className="flex flex-wrap gap-2">
                   {WEEKDAYS.map((label, index) => (
                     <button

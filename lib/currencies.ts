@@ -1,23 +1,40 @@
-export const CURRENCIES = [
-  { value: 'USD', label: 'USD - US Dollar ($)' },
-  { value: 'EUR', label: 'EUR - Euro (€)' },
-  { value: 'GBP', label: 'GBP - British Pound (£)' },
-  { value: 'BDT', label: 'BDT - Bangladeshi Taka (৳)' },
-  { value: 'INR', label: 'INR - Indian Rupee (₹)' },
-  { value: 'PKR', label: 'PKR - Pakistani Rupee (Rs)' },
-  { value: 'JPY', label: 'JPY - Japanese Yen (¥)' },
-  { value: 'CAD', label: 'CAD - Canadian Dollar ($)' },
-  { value: 'AUD', label: 'AUD - Australian Dollar ($)' },
-] as const;
+import { getIso4217Currency, normalizeIso4217Code, type Iso4217Currency } from './iso4217';
+
+export type CurrencyOption = Iso4217Currency;
+
+export const CURRENCY_DISPLAY_HINT =
+  'Dashboard, budgets, and exports use this currency. Expenses in other currencies convert when you add them.';
+
+export function findCurrency(code: string, locale = 'en'): CurrencyOption | null {
+  return getIso4217Currency(code, locale);
+}
 
 export function getDefaultCurrency(): string {
   if (typeof window === 'undefined') return 'USD';
   const lang = navigator.language?.toLowerCase() || '';
-  if (lang.includes('en-gb') || lang.includes('gb')) return 'GBP';
-  if (lang.includes('en-bd') || lang.includes('bn')) return 'BDT';
-  if (lang.includes('en-in') || lang.includes('hi')) return 'INR';
-  if (lang.includes('en-pk') || lang.includes('ur')) return 'PKR';
-  if (lang.includes('ja')) return 'JPY';
-  if (lang.includes('fr') || lang.includes('de') || lang.includes('es')) return 'EUR';
-  return 'USD';
+  const guess =
+    lang.includes('en-gb') || lang.includes('gb')
+      ? 'GBP'
+      : lang.includes('en-bd') || lang.includes('bn')
+        ? 'BDT'
+        : lang.includes('en-in') || lang.includes('hi')
+          ? 'INR'
+          : lang.includes('en-pk') || lang.includes('ur')
+            ? 'PKR'
+            : lang.startsWith('ja')
+              ? 'JPY'
+              : lang.startsWith('fr') || lang.startsWith('de') || lang.startsWith('es')
+                ? 'EUR'
+                : 'USD';
+  return normalizeIso4217Code(guess) ?? 'USD';
 }
+
+export {
+  getIso4217Currency,
+  listIso4217Currencies,
+  listIso4217CurrenciesGrouped,
+  normalizeIso4217Code,
+  searchIso4217Currencies,
+  POPULAR_ISO4217_CODES,
+  ISO4217_CODES,
+} from './iso4217';

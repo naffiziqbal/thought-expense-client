@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { format, parseISO } from 'date-fns';
+import { normalizeIso4217Code } from './iso4217';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -24,31 +25,31 @@ export function getImageUrl(imagePath: string | null | undefined): string | null
   return `${baseTrimmed}${pathTrimmed}`;
 }
 
-// Map common currency symbols/codes to ISO 4217 codes
-const currencyCodeMap: Record<string, string> = {
-  'TK': 'BDT',   // Bangladesh Taka
-  'Rs': 'INR',   // Indian Rupee
-  'PKR': 'PKR',  // Pakistani Rupee
+/** Legacy aliases from parsed expense text → ISO 4217 */
+const currencyAliasMap: Record<string, string> = {
+  TK: 'BDT',
+  Rs: 'INR',
   '₹': 'INR',
   '৳': 'BDT',
 };
 
+export function currencyCodeForDisplay(currency: string): string {
+  const upper = currency.trim().toUpperCase();
+  const alias = currencyAliasMap[currency] ?? currencyAliasMap[upper];
+  if (alias) return alias;
+  return normalizeIso4217Code(upper) ?? upper;
+}
+
 export function formatCurrency(amount: number, currency: string = 'USD'): string {
-  // Map currency code if needed
-  const mappedCurrency = currencyCodeMap[currency] || currency;
-  
+  const mappedCurrency = currencyCodeForDisplay(currency);
+
   try {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: mappedCurrency,
     }).format(amount);
-  } catch (error) {
-    // Fallback to USD if currency code is invalid
-    console.warn(`Invalid currency code: ${currency}, falling back to USD`);
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+  } catch {
+    return `${mappedCurrency} ${amount.toFixed(2)}`;
   }
 }
 
