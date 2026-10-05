@@ -6,7 +6,7 @@ export const PREMIUM_BENEFITS: { title: string; desc: string }[] = [
   { title: 'Smart alerts', desc: 'Anomaly, trend & waste detection over 12 months of history' },
   { title: 'Full expense history', desc: 'Search and analyze all your past transactions' },
   { title: 'Receipt scanning', desc: 'Scan receipts with camera or upload (web)' },
-  { title: 'Export (CSV & PDF)', desc: 'Download your data anytime' },
+  { title: 'Import & export (CSV & PDF)', desc: 'Bring in bank or sheet exports and download your ledger anytime' },
 ];
 
 export const PACKAGE_LABELS: Record<string, string> = {

@@ -139,7 +139,7 @@ export const premiumPlanFeatures = [
   '12-month intelligence window',
   'Receipt OCR on web',
   'Full expense history',
-  'CSV & PDF export',
+  'CSV & PDF import and export',
   'Daily & weekly insights',
 ];
 

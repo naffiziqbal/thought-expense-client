@@ -73,6 +73,21 @@ export interface ParseExpenseResponse {
   };
 }
 
+export interface ExpenseImportRow {
+  description: string;
+  amount: number;
+  currency: string;
+  category: string;
+  date: string;
+}
+
+export interface ExpenseImportPreview {
+  format: 'csv' | 'pdf';
+  rows: ExpenseImportRow[];
+  warnings: string[];
+  skippedRows: number;
+}
+
 export interface ExpenseFilters {
   startDate?: string;
   endDate?: string;

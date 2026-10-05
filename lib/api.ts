@@ -205,10 +205,30 @@ class ApiClient {
     return response.data;
   }
 
-  async getParseJobStatus(
-    jobId: string
-  ): Promise<{ success: boolean; data: { jobId: string; status: string; result?: unknown; error?: string } }> {
+  async getParseJobStatus(jobId: string): Promise<{
+    success: boolean;
+    data: {
+      jobId: string;
+      status: string;
+      progress?: number;
+      phase?: string;
+      message?: string;
+      importFileName?: string;
+      importedCount?: number;
+      result?: unknown;
+      error?: string;
+    };
+  }> {
     const response = await this.client.get(`/api/expenses/parse/jobs/${jobId}`);
+    return response.data;
+  }
+
+  async cancelImportJob(jobId: string): Promise<{
+    success: boolean;
+    message: string;
+    data: { jobId: string; status: 'cancelled' };
+  }> {
+    const response = await this.client.post(`/api/expenses/parse/jobs/${jobId}/cancel`);
     return response.data;
   }
 
@@ -268,6 +288,35 @@ class ApiClient {
     const response = await this.client.get('/api/expenses/export', {
       params: { format, from, to },
       responseType: 'blob',
+    });
+    return response.data;
+  }
+
+  async previewExpenseImport(file: File): Promise<{ success: boolean; data: import('@/types').ExpenseImportPreview }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await this.client.post('/api/expenses/import/preview', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  }
+
+  async applyExpenseImport(
+    expenses: import('@/types').ExpenseImportRow[]
+  ): Promise<{ success: boolean; message: string; data: { imported: number } }> {
+    const response = await this.client.post('/api/expenses/import', { expenses });
+    return response.data;
+  }
+
+  async enqueueImportDocument(file: File): Promise<{
+    success: boolean;
+    message: string;
+    data: { jobId: string; message?: string };
+  }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await this.client.post('/api/expenses/import/async', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   }

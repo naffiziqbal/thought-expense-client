@@ -16,7 +16,10 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { formatCurrency, getImageUrl } from '@/lib/utils';
-import type { NotificationPreferences } from '@/types';
+import type { ExpenseImportPreview, NotificationPreferences } from '@/types';
+import { ExpenseImportPreviewPanel } from '@/components/import/ExpenseImportPreviewPanel';
+import { ImportAsyncProgressPanel } from '@/components/import/ImportAsyncProgressPanel';
+import { IMPORT_DATA_HINT, isCsvImportFile, type ImportJobPhase } from '@/lib/importDashboard';
 
 function themeLabel(mode: ThemeMode): string {
   if (mode === 'system') return 'System';
@@ -84,6 +87,36 @@ export default function ProfilePage() {
   const [exportFrom, setExportFrom] = useState('');
   const [exportTo, setExportTo] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importPreview, setImportPreview] = useState<ExpenseImportPreview | null>(null);
+  const [importParsing, setImportParsing] = useState(false);
+  const [importApplying, setImportApplying] = useState(false);
+  const [importFileName, setImportFileName] = useState<string | null>(null);
+  const [importJobId, setImportJobId] = useState<string | null>(null);
+  const [importPhase, setImportPhase] = useState<ImportJobPhase>('queued');
+  const [importMessage, setImportMessage] = useState('');
+  const [importProgress, setImportProgress] = useState(0);
+  const [importCancelling, setImportCancelling] = useState(false);
+
+  const handleCancelImportJob = async () => {
+    if (!importJobId || importCancelling) return;
+    setImportCancelling(true);
+    try {
+      const res = await api.cancelImportJob(importJobId);
+      toast.success(res.message || 'Import cancelled');
+      setImportJobId(null);
+      setImportPhase('cancelled');
+      setImportMessage(
+        res.message || 'Import cancelled. Nothing new was added from this file.'
+      );
+      setImportProgress(0);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e.response?.data?.message || 'Could not cancel import');
+    } finally {
+      setImportCancelling(false);
+    }
+  };
 
   useEffect(() => {
     if (!isAuthenticated || isLoading) return;
@@ -134,6 +167,118 @@ export default function ProfilePage() {
     if (!user?.id) return;
     await navigator.clipboard.writeText(user.id);
     toast.success('User ID copied');
+  };
+
+  const openImport = () => {
+    if (!isPremium) {
+      toast.error('Import is available on Premium');
+      router.push('/dashboard/premium');
+      return;
+    }
+    setImportPreview(null);
+    setImportFileName(null);
+    setImportJobId(null);
+    setImportPhase('queued');
+    setImportMessage('');
+    setImportProgress(0);
+    setImportModalOpen(true);
+  };
+
+  useEffect(() => {
+    if (!importJobId) return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const res = await api.getParseJobStatus(importJobId);
+        if (cancelled) return;
+        const d = res.data;
+        if (d.message) setImportMessage(d.message);
+        if (typeof d.progress === 'number') setImportProgress(d.progress);
+        if (d.phase) setImportPhase(d.phase as ImportJobPhase);
+        if (d.status === 'completed') {
+          toast.success(d.message || 'Import complete');
+          setImportJobId(null);
+          setImportModalOpen(false);
+          router.push('/dashboard/expenses');
+        }
+        if (d.status === 'cancelled') {
+          setImportJobId(null);
+          setImportPhase('cancelled');
+          if (d.message) setImportMessage(d.message);
+          setImportProgress(0);
+        }
+        if (d.status === 'failed') {
+          setImportJobId(null);
+          setImportPhase('failed');
+          if (d.message) setImportMessage(d.message);
+        }
+      } catch {
+        if (!cancelled) setImportMessage('Still working… checking again shortly.');
+      }
+    };
+    poll();
+    const interval = setInterval(poll, 2500);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [importJobId, router]);
+
+  const handleImportFile = async (file: File | null) => {
+    if (!file) return;
+    setImportFileName(file.name);
+    setImportPreview(null);
+    setImportJobId(null);
+
+    if (isCsvImportFile(file)) {
+      setImportParsing(true);
+      try {
+        const res = await api.previewExpenseImport(file);
+        if (res.success) setImportPreview(res.data);
+      } catch (err: unknown) {
+        const e = err as { response?: { data?: { message?: string } } };
+        toast.error(e.response?.data?.message || 'Could not read file');
+      } finally {
+        setImportParsing(false);
+      }
+      return;
+    }
+
+    setImportParsing(true);
+    setImportPhase('queued');
+    setImportMessage('Uploading your document…');
+    setImportProgress(0);
+    try {
+      const res = await api.enqueueImportDocument(file);
+      if (res.success) {
+        setImportJobId(res.data.jobId);
+        setImportMessage(res.data.message || 'Import started — reading your document…');
+      }
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e.response?.data?.message || 'Could not start import');
+      setImportPhase('failed');
+      setImportMessage(e.response?.data?.message || 'Could not start import');
+    } finally {
+      setImportParsing(false);
+    }
+  };
+
+  const handleApplyImport = async () => {
+    if (!importPreview?.rows.length) return;
+    setImportApplying(true);
+    try {
+      const res = await api.applyExpenseImport(importPreview.rows);
+      toast.success(res.message || `Imported ${res.data.imported} expenses`);
+      setImportModalOpen(false);
+      setImportPreview(null);
+      setImportFileName(null);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e.response?.data?.message || 'Import failed');
+    } finally {
+      setImportApplying(false);
+    }
   };
 
   const handleExport = async () => {
@@ -333,6 +478,18 @@ export default function ProfilePage() {
         <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
           <button
             type="button"
+            onClick={openImport}
+            className="flex min-h-[52px] w-full items-center gap-3 border-b border-token px-4 py-3 text-left transition-colors hover:bg-[var(--surface-hover)]"
+          >
+            <svg className={`${iconClass} shrink-0 text-token-muted`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 8v8a2 2 0 002 2h12a2 2 0 002-2V8M7 10l5-5 5 5M12 15V3" />
+            </svg>
+            <span className="flex-1 text-sm font-medium text-token-primary">Import data</span>
+            <span className="text-sm text-token-muted">{isPremium ? 'CSV / PDF' : 'Premium'}</span>
+            <RowChevron />
+          </button>
+          <button
+            type="button"
             onClick={() => setExportModalOpen(true)}
             className="flex min-h-[52px] w-full items-center gap-3 border-b border-token px-4 py-3 text-left transition-colors hover:bg-[var(--surface-hover)]"
           >
@@ -418,6 +575,113 @@ export default function ProfilePage() {
             </div>
           </div>
           <p className="text-sm text-token-secondary">Leave dates empty to export all expenses.</p>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={importModalOpen}
+        onClose={() => {
+          setImportModalOpen(false);
+          setImportPreview(null);
+          setImportFileName(null);
+        }}
+        title={importJobId ? 'Import in progress' : importPreview ? 'Review import' : 'Import Expenses'}
+        footer={
+          importJobId ? (
+            <div className="flex w-full gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={importCancelling}
+                onClick={() => void handleCancelImportJob()}
+              >
+                {importCancelling ? 'Cancelling…' : 'Cancel import'}
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setImportModalOpen(false);
+                  toast.success('Import continues in the background.');
+                }}
+              >
+                Close
+              </Button>
+            </div>
+          ) : (
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  setImportModalOpen(false);
+                  setImportPreview(null);
+                  setImportFileName(null);
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              {importPreview ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  disabled={importParsing || importApplying}
+                  onClick={() => {
+                    setImportPreview(null);
+                    setImportFileName(null);
+                  }}
+                >
+                  Choose another file
+                </Button>
+              ) : null}
+              <Button
+                onClick={handleApplyImport}
+                className="flex-1"
+                disabled={!importPreview?.rows.length || importApplying || importParsing}
+              >
+                {importApplying ? 'Importing…' : importPreview?.rows.length ? `Import ${importPreview.rows.length}` : 'Import'}
+              </Button>
+            </div>
+          )
+        }
+      >
+        <div className="space-y-4">
+          {importJobId || importPhase === 'failed' || importPhase === 'cancelled' ? (
+            <ImportAsyncProgressPanel
+              fileName={importFileName}
+              phase={importPhase}
+              message={importMessage}
+              progress={importProgress}
+            />
+          ) : null}
+          {!importPreview && !importJobId && importPhase !== 'failed' && importPhase !== 'cancelled' ? (
+            <p className="text-sm text-token-secondary">{IMPORT_DATA_HINT}</p>
+          ) : null}
+          {!importPreview && !importJobId && importPhase !== 'failed' && importPhase !== 'cancelled' ? (
+            <input
+              type="file"
+              accept=".csv,.pdf,image/*,text/csv,application/pdf"
+              disabled={importParsing || importApplying}
+              onChange={(e) => void handleImportFile(e.target.files?.[0] ?? null)}
+              className="block w-full text-sm text-token-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-token-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
+            />
+          ) : null}
+          {importParsing && !importJobId ? <p className="text-sm text-token-muted">Reading file…</p> : null}
+          {importPreview ? <ExpenseImportPreviewPanel preview={importPreview} fileName={importFileName} /> : null}
+          {(importPhase === 'failed' || importPhase === 'cancelled') && !importJobId ? (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setImportPhase('queued');
+                setImportMessage('');
+                setImportProgress(0);
+                setImportFileName(null);
+              }}
+            >
+              Try another file
+            </Button>
+          ) : null}
         </div>
       </Modal>
 
