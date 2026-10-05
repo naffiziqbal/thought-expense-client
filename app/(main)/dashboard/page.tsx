@@ -1,14 +1,27 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
+import { format, parseISO } from 'date-fns';
+import Link from 'next/link';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { DailySpendingChart } from '@/components/dashboard/DailySpendingChart';
 import { api } from '@/lib/api';
-import { formatCurrency, formatDate, getCategoryBgColor, getCategoryChartColor } from '@/lib/utils';
+import { formatCurrency, getCategoryBgColor, getCategoryChartColor } from '@/lib/utils';
 import { getCategoryIcon } from '@/lib/categoryIcons';
-import Link from 'next/link';
+import {
+  budgetPaceLabel,
+  buildLastFiveDayBuckets,
+  daysInMonth,
+  daysLeftInMonth,
+  expectedPacePercent,
+  expensesToday,
+  isoDay,
+  sumExpensesOnDay,
+  timeOfDayGreeting,
+} from '@/lib/homeDashboard';
 import type { CategorySummary, Expense, Insight, BudgetSummary, SavingsGoal } from '@/types';
 import { maybeNotifyBudgetStatus } from '@/lib/notifications';
 import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
@@ -27,70 +40,14 @@ function getCurrentMonthRange() {
   };
 }
 
-/** SVG Donut chart — matches mobile home hero */
-function DonutChart({ percentage, size = 96 }: { percentage: number; size?: number }) {
-  const r = (size - 12) / 2;
-  const cx = size / 2;
-  const cy = size / 2;
-  const stroke = 12;
-  const circumference = 2 * Math.PI * r;
-  const fillPct = Math.min(100, Math.max(0, percentage));
-  const strokeDashoffset = circumference - (fillPct / 100) * circumference;
-
-  return (
-    <svg width={size} height={size} className="shrink-0" aria-hidden>
-      <circle
-        cx={cx}
-        cy={cy}
-        r={r}
-        fill="none"
-        stroke="var(--chart-track)"
-        strokeWidth={stroke}
-        strokeLinecap="round"
-      />
-      <circle
-        cx={cx}
-        cy={cy}
-        r={r}
-        fill="none"
-        stroke="var(--accent-primary)"
-        strokeWidth={stroke}
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={strokeDashoffset}
-        transform={`rotate(-90 ${cx} ${cy})`}
-        className="transition-all duration-500"
-      />
-      <text x={cx} y={cy - 5} textAnchor="middle" className="text-base font-bold fill-[var(--text-primary)]">
-        {Math.round(fillPct)}%
-      </text>
-      <text x={cx} y={cy + 12} textAnchor="middle" className="text-[10px] font-semibold fill-[var(--text-muted)]">
-        of budget
-      </text>
-    </svg>
-  );
-}
-
-function BudgetProgressBar({ percentage }: { percentage: number }) {
-  const clamped = Math.min(100, Math.max(0, percentage));
-  const barColor =
-    percentage >= 100 ? 'bg-token-error' : percentage >= 90 ? 'bg-token-warning' : 'bg-token-accent';
-  return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--chart-track)]">
-      <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${clamped}%` }} />
-    </div>
-  );
-}
-
 export default function DashboardPage() {
   const pathname = usePathname();
   const { isAuthenticated, isLoading } = useProtectedRoute();
   const { user } = useAuthStore();
   const pending = usePendingExpenses();
-  const totalTarget = useTourTarget(TOUR_TARGETS.homeTotal);
-  const budgetTarget = useTourTarget(TOUR_TARGETS.homeBudget);
+  const heroTarget = useTourTarget(TOUR_TARGETS.homeTotal);
   const [summary, setSummary] = useState<CategorySummary | null>(null);
-  const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
+  const [monthExpenses, setMonthExpenses] = useState<Expense[]>([]);
   const [insights, setInsights] = useState<Insight[]>([]);
   const [budget, setBudget] = useState<BudgetSummary | null>(null);
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
@@ -117,14 +74,14 @@ export default function DashboardPage() {
     try {
       const [summaryRes, expensesRes, insightsRes, budgetRes, goalsRes] = await Promise.all([
         api.getCategorySummary({ startDate, endDate }),
-        api.getExpenses({ limit: 5, startDate, endDate }),
+        api.getExpenses({ limit: 100, startDate, endDate }),
         api.getInsights({ limit: 10 }),
         api.getCurrentBudget(),
         api.getGoals().catch(() => null),
       ]);
 
       if (summaryRes.success) setSummary(summaryRes.data);
-      if (expensesRes.success) setRecentExpenses(expensesRes.data.expenses);
+      if (expensesRes.success) setMonthExpenses(expensesRes.data.expenses);
       if (insightsRes.success) setInsights(insightsRes.data.insights);
       if (budgetRes.success) setBudget(budgetRes.data);
       if (goalsRes?.success) setGoals(goalsRes.data.goals.filter((g) => g.status === 'active'));
@@ -135,13 +92,11 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, isLoading]);
 
-  // Fetch when on dashboard (mount + navigation)
   useEffect(() => {
     if (!isAuthenticated || isLoading || pathname !== '/dashboard') return;
     fetchData();
   }, [isAuthenticated, isLoading, pathname, fetchData]);
 
-  // Refetch when tab becomes visible (user returns to app)
   useEffect(() => {
     const onVisibility = () => {
       if (document.visibilityState === 'visible' && isAuthenticated && pathname === '/dashboard') {
@@ -152,7 +107,6 @@ export default function DashboardPage() {
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [isAuthenticated, pathname, fetchData]);
 
-  // Refetch when expense is added/edited/deleted (from add or expenses pages)
   useEffect(() => {
     const onRefresh = () => {
       if (isAuthenticated) fetchData();
@@ -173,60 +127,29 @@ export default function DashboardPage() {
     }
   };
 
-  const handleNotificationClick = () => {
-    const willOpen = !notificationOpen;
-    setNotificationOpen(willOpen);
-    if (willOpen && insights.length === 0 && !insightsLoading) fetchInsights();
-    if (willOpen) {
-      const ids = notifications.map((n) => n.id);
-      const merged = Array.from(new Set([...seenIds, ...ids])).slice(-100);
-      setSeenIds(merged);
-      try {
-        localStorage.setItem('seen-notifications', JSON.stringify(merged));
-      } catch {
-        // ignore
-      }
-    }
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
-        setNotificationOpen(false);
-      }
-    };
-    if (notificationOpen) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [notificationOpen]);
-
-  useEffect(() => {
-    if (!budget || !summary) return;
-    maybeNotifyBudgetStatus({
-      year: budget.year,
-      month: budget.month,
-      percentage: budget.percentage,
-      spentLabel: formatCurrency(budget.total_spent, summary.currency || user?.currency || 'USD'),
-      limitLabel: formatCurrency(budget.total_limit, summary.currency || user?.currency || 'USD'),
-    });
-  }, [budget, summary, user]);
-
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
-          <p className="text-token-secondary">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   const { startDate, endDate } = getCurrentMonthRange();
-  const merged = addPendingToTotals(summary?.totalSpent ?? 0, summary?.byCategory ?? {}, pending, startDate, endDate);
   const monthPending = pending.filter((p) => p.date.slice(0, 10) >= startDate && p.date.slice(0, 10) <= endDate);
-  const displaySummary = summary
-    ? { ...summary, totalSpent: merged.totalSpent, byCategory: merged.byCategory, transactionCount: (summary.transactionCount || 0) + monthPending.length }
-    : null;
+  const merged = addPendingToTotals(summary?.totalSpent ?? 0, summary?.byCategory ?? {}, pending, startDate, endDate);
+
+  const pendingExpenses: Expense[] = monthPending.map((p) => ({
+    id: `pending:${p.localId}`,
+    userId: user?.id || '',
+    description: p.description,
+    amount: p.amount,
+    currency: p.currency,
+    category: p.category,
+    confidence: 0.6,
+    rawInput: p.rawInput,
+    date: p.date,
+    createdAt: p.createdAt,
+    updatedAt: p.createdAt,
+  }));
+
+  const mergedExpenses = useMemo(() => {
+    const ids = new Set(monthExpenses.map((e) => e.id));
+    return [...pendingExpenses.filter((e) => !ids.has(e.id)), ...monthExpenses];
+  }, [monthExpenses, pendingExpenses]);
+
   const displayBudget = budget
     ? {
         ...budget,
@@ -238,31 +161,27 @@ export default function DashboardPage() {
             : 0,
       }
     : budget;
-  const displayRecent = [
-    ...monthPending.map((p) => ({
-      id: `pending:${p.localId}`,
-      userId: user?.id || '',
-      description: p.description,
-      amount: p.amount,
-      currency: p.currency,
-      category: p.category,
-      confidence: 0.6,
-      rawInput: p.rawInput,
-      date: p.date,
-      createdAt: p.createdAt,
-      updatedAt: p.createdAt,
-    })),
-    ...recentExpenses,
-  ].slice(0, 5);
 
-  const currency = displaySummary?.currency || user?.currency || 'USD';
-  const budgetPct = displayBudget ? displayBudget.percentage : 0;
-  const topCategory = Object.entries(merged.byCategory).sort((a, b) => b[1] - a[1])[0]?.[0];
-  const topCategoryAmount = topCategory ? merged.byCategory[topCategory] : 0;
+  useEffect(() => {
+    if (!displayBudget || !summary) return;
+    maybeNotifyBudgetStatus({
+      year: displayBudget.year,
+      month: displayBudget.month,
+      percentage: displayBudget.percentage,
+      spentLabel: formatCurrency(displayBudget.total_spent, summary.currency || user?.currency || 'USD'),
+      limitLabel: formatCurrency(displayBudget.total_limit, summary.currency || user?.currency || 'USD'),
+    });
+  }, [displayBudget, summary, user]);
 
-  // Build notifications: budget alerts first (urgent), then AI insights
-  type NotificationItem = { id: string; type: 'budget-exceeded' | 'budget-warning' | 'insight'; content: string; meta?: string };
+  type NotificationItem = {
+    id: string;
+    type: 'budget-exceeded' | 'budget-warning' | 'insight';
+    content: string;
+    meta?: string;
+  };
+
   const notifications: NotificationItem[] = [];
+  const currency = summary?.currency || user?.currency || 'USD';
 
   if (displayBudget && displayBudget.percentage >= 100) {
     notifications.push({
@@ -290,241 +209,330 @@ export default function DashboardPage() {
   });
 
   const notificationCount = notifications.filter((n) => !seenIds.includes(n.id)).length;
-  const activeGoals = goals.slice(0, 2);
+
+  const handleNotificationClick = () => {
+    const willOpen = !notificationOpen;
+    setNotificationOpen(willOpen);
+    if (willOpen && insights.length === 0 && !insightsLoading) fetchInsights();
+    if (willOpen) {
+      const ids = notifications.map((n) => n.id);
+      const merged = Array.from(new Set([...seenIds, ...ids])).slice(-100);
+      setSeenIds(merged);
+      try {
+        localStorage.setItem('seen-notifications', JSON.stringify(merged));
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setNotificationOpen(false);
+      }
+    };
+    if (notificationOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [notificationOpen]);
+
+  const budgetPct = displayBudget?.percentage ?? 0;
+  const expectedPct = expectedPacePercent();
+  const paceLabel = budgetPaceLabel(budgetPct, expectedPct);
+  const daysLeft = daysLeftInMonth();
+  const todayKey = isoDay(new Date());
+  const spentToday = sumExpensesOnDay(mergedExpenses, todayKey);
+  const dailyBuckets = buildLastFiveDayBuckets(mergedExpenses);
+  const dailyLimit =
+    displayBudget && displayBudget.total_limit > 0 ? displayBudget.total_limit / daysInMonth() : 0;
+  const safePerDay = displayBudget && daysLeft > 0 ? Math.max(0, displayBudget.remaining) / daysLeft : 0;
+  const todayExpenses = expensesToday(mergedExpenses);
+  const featuredInsight = insights[0];
+  const primaryGoal = goals[0];
+  const firstName = user?.name?.split(/\s+/)[0] || 'User';
+
+  const formatExpenseTime = (dateString: string) => {
+    try {
+      return format(parseISO(dateString), 'h:mm a');
+    } catch {
+      return '';
+    }
+  };
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
+          <p className="text-token-secondary">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-token-surface pb-24">
-        <div className="space-y-4 sm:space-y-6">
-          {/* Zone A: Personal Header */}
+        <div className="space-y-3 sm:space-y-4">
+          {/* Greeting + notifications */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-token-muted uppercase tracking-wider">Welcome back,</p>
-              <h1 className="text-2xl font-bold text-token-accent">{user?.name || 'User'}</h1>
+              <p className="text-xs font-medium text-token-muted">{timeOfDayGreeting()}</p>
+              <h1 className="text-xl font-medium text-token-accent">{firstName}</h1>
             </div>
             <div className="relative" ref={popoverRef}>
               <button
+                type="button"
                 onClick={handleNotificationClick}
-                className="relative w-10 h-10 rounded-full bg-token-card border border-token dark:border-transparent flex items-center justify-center text-token-secondary shadow-sm hover:border-[var(--accent-primary)] hover:text-token-accent transition-all"
+                className="relative flex h-10 w-10 items-center justify-center rounded-full border border-token bg-token-card text-token-secondary shadow-sm transition-all hover:border-[var(--accent-primary)] hover:text-token-accent dark:border-transparent"
+                aria-label="Notifications"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
                 </svg>
-                {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-token-error text-white text-[10px] font-bold flex items-center justify-center">
-                    {notificationCount > 9 ? '9+' : notificationCount}
-                  </span>
-                )}
+                {notificationCount > 0 ? (
+                  <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-token-error" />
+                ) : null}
               </button>
-              {notificationOpen && (
-                <div className="absolute right-0 top-full mt-2 w-[min(calc(100vw-2rem),384px)] rounded-2xl bg-token-card shadow-xl border border-token z-50 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-token">
+              {notificationOpen ? (
+                <div className="absolute right-0 top-full z-50 mt-2 w-[min(calc(100vw-2rem),384px)] overflow-hidden rounded-2xl border border-token bg-token-card shadow-xl">
+                  <div className="border-b border-token px-4 py-3">
                     <h3 className="font-semibold text-token-primary">Notifications</h3>
-                    <p className="text-xs text-token-secondary">Budget alerts and spending insights</p>
                   </div>
-                  <div className="max-h-[min(60vh,320px)] overflow-y-auto">
+                  <div className="max-h-[min(60vh,320px)] overflow-y-auto p-2">
                     {insightsLoading && notifications.length === 0 ? (
                       <div className="flex justify-center py-12">
-                        <div className="w-8 h-8 animate-spin rounded-full border-2 border-[var(--accent-primary)] border-r-transparent" />
+                        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent-primary)] border-r-transparent" />
                       </div>
                     ) : notifications.length === 0 ? (
                       <div className="px-4 py-8 text-center">
                         <p className="text-sm text-token-secondary">No notifications yet</p>
-                        <p className="text-xs text-token-muted mt-1">You&apos;ll see budget alerts and AI insights here</p>
-                        <Link href="/dashboard/insights" onClick={() => setNotificationOpen(false)} className="mt-3 inline-block text-sm font-semibold text-token-accent">
+                        <Link
+                          href="/dashboard/insights"
+                          onClick={() => setNotificationOpen(false)}
+                          className="mt-3 inline-block text-sm font-semibold text-token-accent"
+                        >
                           Go to Insights
                         </Link>
                       </div>
                     ) : (
-                      <div className="p-2 space-y-2">
+                      <div className="space-y-2">
                         {notifications.map((n) => (
                           <div
                             key={n.id}
-                            className={`p-3 rounded-xl transition-colors ${
+                            className={`rounded-xl p-3 ${
                               n.type === 'budget-exceeded'
-                                ? 'bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50'
+                                ? 'border border-red-200 bg-red-50 dark:border-red-800/50 dark:bg-red-950/30'
                                 : n.type === 'budget-warning'
-                                  ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50'
-                                  : 'bg-teal-50/50 dark:bg-teal-950/20 hover:bg-teal-50 dark:hover:bg-teal-950/30'
+                                  ? 'border border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-950/30'
+                                  : 'bg-token-accent-soft'
                             }`}
                           >
                             <p className="text-sm font-medium text-token-primary">{n.content}</p>
-                            {n.meta && <p className="text-xs text-token-muted mt-2">{n.meta}</p>}
+                            {n.meta ? <p className="mt-1 text-xs text-token-muted">{n.meta}</p> : null}
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
-                  <div className="px-4 py-2 border-t border-token bg-token-surface flex justify-between items-center gap-2">
-                    <Link href="/dashboard/budget" onClick={() => setNotificationOpen(false)}>
-                      <span className="text-sm font-semibold text-token-accent">View budget</span>
-                    </Link>
-                    <Link href="/dashboard/insights" onClick={() => setNotificationOpen(false)}>
-                      <span className="text-sm font-semibold text-token-accent">View all insights</span>
-                    </Link>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Hero: left this month / spent this month */}
+          <div ref={heroTarget} className="dashboard-card space-y-2 rounded-[20px] p-4 sm:p-5">
+            {displayBudget ? (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-token-muted">Left this month</span>
+                  <span className="rounded-full bg-token-accent-soft px-2.5 py-0.5 text-[11px] font-semibold text-token-accent">
+                    {paceLabel}
+                  </span>
+                </div>
+                <p className="text-[32px] font-medium leading-tight tracking-tight text-token-primary">
+                  {loading ? '…' : formatCurrency(Math.max(0, displayBudget.remaining), currency)}
+                </p>
+                <p className="text-xs text-token-muted">
+                  of {formatCurrency(displayBudget.total_limit, currency)} · {daysLeft} days left
+                </p>
+                <div className="relative mt-2 h-2 overflow-visible rounded bg-[var(--chart-track)]">
+                  <div
+                    className="h-2 rounded bg-token-accent transition-all"
+                    style={{ width: `${Math.min(100, budgetPct)}%` }}
+                  />
+                  <div
+                    className="absolute top-[-4px] h-4 w-0.5 bg-token-primary"
+                    style={{ left: `${Math.min(98, Math.max(0, expectedPct))}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[11px] text-token-muted">
+                  <span>
+                    Spent {formatCurrency(displayBudget.total_spent, currency)} ({budgetPct}%)
+                  </span>
+                  <span>Expected pace {expectedPct}%</span>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2.5">
+                  <div className="rounded-xl bg-[var(--background-primary)] px-3 py-2.5">
+                    <p className="text-[11px] text-token-muted">Safe per day</p>
+                    <p className="text-base font-medium text-token-primary">{formatCurrency(safePerDay, currency)}</p>
+                  </div>
+                  <div className="rounded-xl bg-[var(--background-primary)] px-3 py-2.5">
+                    <p className="text-[11px] text-token-muted">Spent today</p>
+                    <p className="text-base font-medium text-token-primary">{formatCurrency(spentToday, currency)}</p>
                   </div>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Zone B: Hero card */}
-          <div ref={totalTarget} className="dashboard-card p-4 sm:p-6">
-            <div className="flex items-center justify-between gap-3 sm:gap-6">
-              <div className="min-w-0 flex-1 overflow-hidden">
-                <span className="text-xs font-bold uppercase tracking-wider text-token-muted">Total Spent</span>
-                <h2 className="text-[36px] font-bold text-token-primary tracking-tight truncate leading-tight mt-1">
-                  {loading ? '…' : formatCurrency(displaySummary?.totalSpent ?? 0, currency)}
-                </h2>
-                <p className="text-sm text-token-secondary mt-2">
-                  {displaySummary?.transactionCount ?? 0} transactions
+              </>
+            ) : (
+              <>
+                <span className="text-xs text-token-muted">Spent this month</span>
+                <p className="text-[32px] font-medium leading-tight text-token-primary">
+                  {loading ? '…' : formatCurrency(merged.totalSpent, currency)}
                 </p>
-                {displayBudget ? (
-                  <span className="mt-2 inline-flex rounded-full bg-token-accent-soft px-2 py-0.5 text-xs font-semibold text-token-accent">
-                    {formatCurrency(Math.max(0, displayBudget.remaining), currency)} safe to spend
-                  </span>
-                ) : null}
-              </div>
-              <DonutChart percentage={budgetPct} size={96} />
-            </div>
+                <Link href="/dashboard/budget" className="text-sm font-semibold text-token-accent">
+                  Set a monthly budget →
+                </Link>
+              </>
+            )}
           </div>
 
-          {/* Zone C: Context Grid */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-4">
-            {/* Card 1: Safe to Spend */}
-            <Link href="/dashboard/budget" className="block min-w-0">
-              <div
-                ref={budgetTarget}
-                className="dashboard-card p-3 sm:p-5 min-h-[136px] flex flex-col justify-between hover:border-[var(--accent-primary)]/30 transition-colors"
-              >
-                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-token-muted">Safe to Spend</p>
-                <p className="text-base sm:text-xl font-extrabold text-token-primary truncate" title={displayBudget ? formatCurrency(Math.max(0, displayBudget.remaining), currency) : undefined}>
-                  {displayBudget ? formatCurrency(Math.max(0, displayBudget.remaining), currency) : '—'}
-                </p>
-                <div className="space-y-1">
-                  <BudgetProgressBar percentage={budgetPct} />
-                  <p className="text-[10px] font-semibold text-token-accent">View budget</p>
-                </div>
-              </div>
-            </Link>
-
-            {/* Card 2: Top Category */}
-            <div className="dashboard-card p-3 sm:p-5 min-h-[136px] flex flex-col justify-between min-w-0">
-              <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-token-muted">Top Category</p>
-              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <div
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: topCategory ? getCategoryBgColor(topCategory) : 'var(--blueGray-100)' }}
-                >
-                  {topCategory ? (
-                    (() => {
-                      const Icon = getCategoryIcon(topCategory);
-                      return <Icon className="w-6 h-6 text-purple-600" aria-hidden />;
-                    })()
-                  ) : (
-                    <span className="text-lg">—</span>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-token-primary truncate">{topCategory || '—'}</p>
-                  <p className="text-sm font-semibold text-token-secondary">
-                    {loading ? '...' : formatCurrency(topCategoryAmount, currency)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* AI advisor entry */}
-          <Link href="/dashboard/assistant" className="dashboard-card flex items-center gap-3 p-4 hover:opacity-95 transition-opacity">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-token-accent-soft">
-              <svg className="h-5 w-5 text-token-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          {/* AI insight */}
+          {featuredInsight ? (
+            <Link
+              href="/dashboard/assistant"
+              className="flex gap-3 rounded-2xl bg-token-accent-soft p-3.5 transition-opacity hover:opacity-95"
+            >
+              <svg className="mt-0.5 h-5 w-5 shrink-0 text-token-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
               </svg>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-token-primary">Ask your AI advisor</p>
-              <p className="truncate text-sm text-token-secondary">Why did I spend so much? How can I save more?</p>
-            </div>
-            <svg className="h-[18px] w-[18px] shrink-0 text-token-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-
-          {/* Savings goals snapshot */}
-          {activeGoals.length > 0 ? (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-token-primary">Savings Goals</h3>
-                <Link href="/dashboard/goals" className="text-sm font-semibold text-token-accent hover:opacity-80">
-                  View All
-                </Link>
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-2 text-sm font-semibold text-token-primary">
+                  {featuredInsight.content.split(/[.!?]/)[0]?.trim() || featuredInsight.content}
+                </p>
+                <p className="mt-0.5 line-clamp-3 text-xs leading-relaxed text-token-secondary">{featuredInsight.content}</p>
+                <span className="mt-2 inline-block text-xs font-semibold text-token-accent">Ask advisor →</span>
               </div>
-              <div className="dashboard-card space-y-4 p-4">
-                {activeGoals.map((goal) => (
-                  <Link key={goal.id} href="/dashboard/goals" className="block space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="min-w-0 flex-1 truncate font-medium text-token-primary">{goal.name}</p>
-                      <p className="shrink-0 text-sm text-token-secondary">
-                        {formatCurrency(goal.savedAmount, goal.currency)} / {formatCurrency(goal.targetAmount, goal.currency)}
-                      </p>
-                    </div>
-                    <BudgetProgressBar percentage={goal.progress * 100} />
-                  </Link>
-                ))}
-              </div>
-            </div>
+            </Link>
           ) : null}
 
-          {/* Zone D: Recent transactions */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-token-primary">Recent Transactions</h3>
-              <Link href="/dashboard/expenses" className="text-sm font-semibold text-token-accent hover:opacity-80">
-                View All
-              </Link>
-            </div>
+          {/* Daily spending */}
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-sm font-medium text-token-primary">Daily spending</h2>
+            {dailyLimit > 0 ? (
+              <span className="text-[11px] text-token-muted">Limit {formatCurrency(dailyLimit, currency)}</span>
+            ) : null}
+          </div>
+          <DailySpendingChart buckets={dailyBuckets} dailyLimit={dailyLimit} />
 
-            {displayRecent.length > 0 ? (
-              <div className="dashboard-card divide-y divide-[var(--border-default)] overflow-hidden px-0 !rounded-2xl">
-                {displayRecent.map((expense) => {
+          {/* Savings goal */}
+          {primaryGoal ? (
+            <>
+              <div className="flex items-baseline justify-between">
+                <h2 className="text-sm font-medium text-token-primary">Savings goal</h2>
+                <Link href="/dashboard/goals" className="text-sm font-semibold text-token-accent">
+                  View all
+                </Link>
+              </div>
+              <div className="dashboard-card space-y-3 rounded-2xl p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--chart-track)] text-token-accent">
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-token-primary">{primaryGoal.name}</p>
+                      <p className="text-sm text-token-muted">
+                        {formatCurrency(primaryGoal.savedAmount, primaryGoal.currency)} of{' '}
+                        {formatCurrency(primaryGoal.targetAmount, primaryGoal.currency)}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="shrink-0 font-medium text-token-primary">{Math.round(primaryGoal.progress * 100)}%</p>
+                </div>
+                <div className="h-2 overflow-hidden rounded bg-[var(--chart-track)]">
+                  <div
+                    className="h-full rounded bg-token-accent transition-all"
+                    style={{ width: `${Math.min(100, primaryGoal.progress * 100)}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm text-token-muted">
+                    {formatCurrency(Math.max(0, primaryGoal.targetAmount - primaryGoal.savedAmount), primaryGoal.currency)} to go
+                  </p>
+                  <Link
+                    href="/dashboard/goals"
+                    className="rounded-full bg-token-accent-soft px-3 py-1 text-xs font-semibold text-token-accent"
+                  >
+                    Add funds
+                  </Link>
+                </div>
+              </div>
+            </>
+          ) : null}
+
+          {/* Today */}
+          {todayExpenses.length > 0 ? (
+            <>
+              <div className="flex items-baseline justify-between">
+                <h2 className="text-sm font-medium text-token-primary">
+                  Today · {formatCurrency(spentToday, currency)}
+                </h2>
+                <Link href="/dashboard/expenses" className="text-sm font-semibold text-token-accent">
+                  View all
+                </Link>
+              </div>
+              <div className="dashboard-card divide-y divide-[var(--border-default)] overflow-hidden !rounded-2xl p-0">
+                {todayExpenses.map((expense) => {
                   const CategoryIcon = getCategoryIcon(expense.category);
+                  const time = formatExpenseTime(expense.date);
                   return (
-                    <Link key={expense.id} href="/dashboard/expenses" className="flex items-center gap-2 sm:gap-4 px-2.5 sm:px-4 py-3 hover:bg-[var(--surface-hover)] transition-colors">
+                    <Link
+                      key={expense.id}
+                      href="/dashboard/expenses"
+                      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface-hover)]"
+                    >
                       <div
-                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
                         style={{ backgroundColor: getCategoryBgColor(expense.category) }}
                       >
-                        <CategoryIcon className="w-6 h-6" style={{ color: getCategoryChartColor(expense.category) }} aria-hidden />
+                        <CategoryIcon className="h-4 w-4" style={{ color: getCategoryChartColor(expense.category) }} aria-hidden />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-token-primary truncate">{expense.description}</p>
-                        <p className="text-sm text-token-secondary">{formatDate(expense.date)}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-token-primary">{expense.description}</p>
+                        <p className="truncate text-xs text-token-muted">
+                          {expense.category}
+                          {time ? ` · ${time}` : ''}
+                        </p>
                       </div>
-                      <p className="font-bold text-token-primary shrink-0">-{formatCurrency(expense.amount, expense.currency)}</p>
+                      <p className="shrink-0 text-sm font-medium text-token-primary">-{expense.amount.toFixed(0)}</p>
                     </Link>
                   );
                 })}
               </div>
-            ) : null}
-          </div>
+            </>
+          ) : null}
 
-          {/* Empty State */}
-          {!loading && (displaySummary?.transactionCount ?? 0) === 0 && (
-            <div className="dashboard-card p-6 sm:p-12 text-center">
-              <div className="mb-4 text-6xl">📝</div>
+          {!loading && merged.totalSpent === 0 ? (
+            <div className="dashboard-card p-8 text-center sm:p-12">
+              <div className="mb-4 text-5xl">📝</div>
               <h3 className="mb-2 text-xl font-semibold text-token-primary">No expenses yet</h3>
               <p className="mb-6 text-token-secondary">Start tracking your expenses by adding your first entry</p>
-              <Link href="/dashboard/add">
-                <span className="inline-flex px-6 py-3 bg-token-accent hover:opacity-90 text-white rounded-lg font-semibold shadow-sm transition-all">
-                  Add Your First Expense
-                </span>
+              <Link
+                href="/dashboard/add"
+                className="inline-flex rounded-lg bg-token-accent px-6 py-3 font-semibold text-white shadow-sm transition-all hover:opacity-90"
+              >
+                Add Your First Expense
               </Link>
             </div>
-          )}
-
+          ) : null}
         </div>
-
       </div>
     </DashboardLayout>
   );
