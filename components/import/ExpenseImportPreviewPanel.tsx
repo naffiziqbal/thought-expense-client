@@ -22,7 +22,7 @@ export function ExpenseImportPreviewPanel({ preview, fileName }: Props) {
           {w}
         </p>
       ))}
-      <div className="max-h-[min(50vh,22rem)] overflow-auto rounded-xl border border-token">
+      <div className="max-h-[min(50vh,22rem)] overflow-auto rounded-control border border-token">
         <table className="w-full min-w-[520px] border-collapse text-left text-xs">
           <thead className="sticky top-0 z-10 bg-token-card">
             <tr className="border-b border-token text-token-muted">

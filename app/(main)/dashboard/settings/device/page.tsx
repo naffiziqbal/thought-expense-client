@@ -72,9 +72,9 @@ export default function DeviceSettingsPage() {
           <p className="mt-0.5 text-xs leading-relaxed text-token-muted">{APPEARANCE_PAGE_HINT}</p>
         </div>
 
-        <div className="rounded-2xl border border-[var(--accent-primary)]/35 bg-[var(--accent-primary)]/5 p-4">
+        <div className="rounded-card border border-[var(--accent-primary)]/35 bg-[var(--accent-primary)]/5 p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-xl bg-token-card text-token-accent">
+            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-icon bg-token-card text-token-accent">
               {isDark ? <MoonIcon className="h-7 w-7" /> : <SunIcon className="h-7 w-7" />}
             </div>
             <div>
@@ -86,7 +86,7 @@ export default function DeviceSettingsPage() {
         </div>
 
         <p className="ml-1 text-xs font-medium text-token-muted">Theme</p>
-        <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+        <div className="overflow-hidden rounded-card border border-token bg-token-card">
           {THEME_MODE_OPTIONS.map((opt, i) => {
             const active = mode === opt.value;
             return (
@@ -100,7 +100,7 @@ export default function DeviceSettingsPage() {
                   i < THEME_MODE_OPTIONS.length - 1 && 'border-b border-token'
                 )}
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--background-primary)]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-icon bg-[var(--background-primary)]">
                   <ModeIcon
                     mode={opt.value}
                     className={cn('h-5 w-5', active ? 'text-token-accent' : 'text-token-muted')}

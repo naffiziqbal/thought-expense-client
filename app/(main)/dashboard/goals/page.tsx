@@ -221,13 +221,13 @@ export default function GoalsPage() {
     return (
       <div
         key={goal.id}
-        className={`relative rounded-2xl border bg-token-card p-4 shadow-sm ${
+        className={`relative rounded-card border bg-token-card p-4 shadow-sm ${
           isCompleted ? 'border-[var(--accent-primary)]/35' : 'border-token'
         }`}
       >
         <div className="flex items-center gap-3">
           <div
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-icon ${
               isCompleted ? 'bg-[var(--accent-primary)]/15' : 'bg-[var(--chart-track)]'
             }`}
           >
@@ -258,7 +258,7 @@ export default function GoalsPage() {
             <button
               type="button"
               onClick={() => setMenuGoalId(menuOpen ? null : goal.id)}
-              className="rounded-lg p-1 text-token-muted hover:bg-[var(--surface-hover)]"
+              className="rounded-control p-1 text-token-muted hover:bg-[var(--surface-hover)]"
               aria-label="Goal options"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -270,7 +270,7 @@ export default function GoalsPage() {
             {menuOpen ? (
               <>
                 <button type="button" className="fixed inset-0 z-10" aria-label="Close menu" onClick={() => setMenuGoalId(null)} />
-                <div className="absolute right-0 top-8 z-20 min-w-[9rem] overflow-hidden rounded-xl border border-token bg-token-card py-1 shadow-lg">
+                <div className="absolute right-0 top-8 z-20 min-w-[9rem] overflow-hidden rounded-control border border-token bg-token-card py-1 shadow-lg">
                   <button
                     type="button"
                     className="block w-full px-3 py-2 text-left text-sm text-token-primary hover:bg-[var(--surface-hover)]"
@@ -347,13 +347,13 @@ export default function GoalsPage() {
         </div>
 
         {loadingGoals ? (
-          <div className="rounded-2xl border border-token bg-token-card py-12 text-center">
+          <div className="rounded-card border border-token bg-token-card py-12 text-center">
             <div className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-4 border-solid border-[var(--accent-primary)] border-r-transparent" />
             <p className="text-sm text-token-muted">Loading goals…</p>
           </div>
         ) : goals.length === 0 ? (
           <div className="space-y-4">
-            <div className="rounded-2xl border border-dashed border-token bg-token-card px-4 py-8 text-center">
+            <div className="rounded-card border border-dashed border-token bg-token-card px-4 py-8 text-center">
               <p className="text-sm font-medium text-token-primary">No goals yet</p>
               <p className="mt-1 text-xs leading-relaxed text-token-secondary">
                 Set a target and log when you set money aside — separate from everyday spending.
@@ -364,7 +364,7 @@ export default function GoalsPage() {
             </div>
             <div>
               <p className="mb-2 ml-1 text-xs text-token-muted">Popular starters</p>
-              <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+              <div className="overflow-hidden rounded-card border border-token bg-token-card">
                 {GOAL_STARTER_IDEAS.map((idea, i) => (
                   <button
                     key={idea.name}
@@ -384,7 +384,7 @@ export default function GoalsPage() {
         ) : (
           <>
             {summary.active.length > 0 ? (
-              <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 p-4">
+              <div className="rounded-card border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 p-4">
                 <p className="text-xs font-medium text-token-accent">Active goals</p>
                 <p className="mt-1 text-2xl font-semibold tabular-nums text-token-primary">
                   {formatCurrency(summary.totalSaved, currency)}
@@ -452,7 +452,7 @@ export default function GoalsPage() {
                 value={createForm.name}
                 onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
                 placeholder="e.g. Emergency fund"
-                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="w-full rounded-control border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <div>
@@ -463,7 +463,7 @@ export default function GoalsPage() {
                 value={createForm.targetAmount}
                 onChange={(e) => setCreateForm({ ...createForm, targetAmount: e.target.value })}
                 placeholder="Amount"
-                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="w-full rounded-control border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <DateField
@@ -520,7 +520,7 @@ export default function GoalsPage() {
                   onChange={(e) => setContributeAmount(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleContribute()}
                   placeholder="Enter amount"
-                  className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                  className="w-full rounded-control border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
                 />
                 <p className="mt-2 text-xs text-token-muted">Use a negative value to undo a contribution.</p>
               </div>
@@ -550,7 +550,7 @@ export default function GoalsPage() {
                 type="text"
                 value={editForm.name}
                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="w-full rounded-control border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <div>
@@ -560,7 +560,7 @@ export default function GoalsPage() {
                 inputMode="decimal"
                 value={editForm.targetAmount}
                 onChange={(e) => setEditForm({ ...editForm, targetAmount: e.target.value })}
-                className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="w-full rounded-control border border-token px-4 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <DateField
@@ -589,7 +589,7 @@ export default function GoalsPage() {
         >
           <p className="text-sm text-token-secondary">This removes the goal and its saved progress. Expenses are not deleted.</p>
           {deleteGoal ? (
-            <div className="mt-4 rounded-xl bg-[var(--background-tag)] p-3">
+            <div className="mt-4 rounded-control bg-[var(--background-tag)] p-3">
               <p className="font-medium text-token-primary">{deleteGoal.name}</p>
               <p className="text-xs text-token-muted">
                 {formatCurrency(deleteGoal.savedAmount, deleteGoal.currency)} saved

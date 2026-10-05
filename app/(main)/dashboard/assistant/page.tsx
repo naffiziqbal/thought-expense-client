@@ -36,7 +36,7 @@ function parseBareNumber(text: string): number | null {
 
 function SavingsPlanCard({ plan }: { plan: SavingsPlan }) {
   return (
-    <div className="mt-3 space-y-2 rounded-xl border border-token bg-token-card p-3">
+    <div className="mt-3 space-y-2 rounded-control border border-token bg-token-card p-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-token-muted">
           Savings plan · {formatCurrency(plan.targetAmount, plan.currency)}
@@ -236,7 +236,7 @@ export default function AssistantPage() {
   return (
     <DashboardLayout>
       <div className="mx-auto flex h-full min-h-0 w-full max-w-lg flex-1 flex-col pb-1">
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-token bg-token-card shadow-sm">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-card border border-token bg-token-card shadow-sm">
           <div className="flex shrink-0 items-center gap-2 border-b border-token px-3 py-2">
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-primary)]/15 text-token-accent">
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -277,7 +277,7 @@ export default function AssistantPage() {
                   not generic tips.
                 </p>
 
-                <div className="rounded-xl border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 p-3">
+                <div className="rounded-control border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 p-3">
                   <p className="text-xs font-medium text-token-accent">Quick savings plan</p>
                   <p className="mt-1 text-xs text-token-secondary">Target to save next month ({currency})</p>
                   <div className="mt-2 flex gap-2">
@@ -287,7 +287,7 @@ export default function AssistantPage() {
                       value={quickSaveAmount}
                       onChange={(e) => setQuickSaveAmount(e.target.value)}
                       placeholder="e.g. 5000"
-                      className="min-w-0 flex-1 rounded-lg border border-token bg-token-card px-3 py-2 text-sm text-token-primary"
+                      className="min-w-0 flex-1 rounded-control border border-token bg-token-card px-3 py-2 text-sm text-token-primary"
                     />
                     <Button type="button" size="sm" onClick={handleQuickSave} disabled={isThinking}>
                       Build
@@ -298,7 +298,7 @@ export default function AssistantPage() {
                 {ADVISOR_PROMPT_GROUPS.map((group) => (
                   <div key={group.id}>
                     <p className="mb-2 ml-1 text-xs text-token-muted">{group.label}</p>
-                    <div className="overflow-hidden rounded-xl border border-token">
+                    <div className="overflow-hidden rounded-control border border-token">
                       {group.prompts.map((prompt, i) => (
                         <button
                           key={prompt.id}
@@ -328,14 +328,14 @@ export default function AssistantPage() {
                   <div key={message.id}>
                     {message.role === 'user' ? (
                       <div className="flex justify-end">
-                        <div className="max-w-[88%] rounded-2xl rounded-br-md bg-token-accent px-3.5 py-2.5 text-sm text-white">
+                        <div className="max-w-[88%] rounded-card rounded-br-md bg-token-accent px-3.5 py-2.5 text-sm text-white">
                           {message.content}
                         </div>
                       </div>
                     ) : (
                       <div className="max-w-[95%]">
                         <p className="mb-1 text-[11px] font-medium text-token-accent">Penny</p>
-                        <div className="rounded-2xl rounded-bl-md border border-token bg-[var(--background-tag)] px-3.5 py-2.5 text-sm leading-relaxed text-token-primary whitespace-pre-wrap">
+                        <div className="rounded-card rounded-bl-md border border-token bg-[var(--background-tag)] px-3.5 py-2.5 text-sm leading-relaxed text-token-primary whitespace-pre-wrap">
                           {message.content}
                           {message.plan ? <SavingsPlanCard plan={message.plan} /> : null}
                         </div>
@@ -346,7 +346,7 @@ export default function AssistantPage() {
                 {isThinking ? (
                   <div>
                     <p className="mb-1 text-[11px] font-medium text-token-muted">Penny</p>
-                    <div className="inline-flex rounded-2xl rounded-bl-md border border-token bg-[var(--background-tag)] px-4 py-3">
+                    <div className="inline-flex rounded-card rounded-bl-md border border-token bg-[var(--background-tag)] px-4 py-3">
                       <div className="flex items-center gap-1.5">
                         <span className="h-2 w-2 animate-bounce rounded-full bg-token-muted [animation-delay:0ms]" />
                         <span className="h-2 w-2 animate-bounce rounded-full bg-token-muted [animation-delay:150ms]" />
@@ -364,7 +364,7 @@ export default function AssistantPage() {
           {limitMessage ? (
             <div className="flex shrink-0 items-center justify-between gap-3 border-t border-token bg-amber-500/10 px-4 py-3">
               <p className="text-sm text-amber-800 dark:text-amber-200">{limitMessage}</p>
-              <Link href="/dashboard/premium" className="shrink-0 rounded-lg bg-token-accent px-3 py-1.5 text-sm font-medium text-white">
+              <Link href="/dashboard/premium" className="shrink-0 rounded-control bg-token-accent px-3 py-1.5 text-sm font-medium text-white">
                 Upgrade
               </Link>
             </div>
@@ -395,7 +395,7 @@ export default function AssistantPage() {
                 onChange={(e) => setInput(e.target.value)}
                 rows={1}
                 placeholder="Ask about your spending…"
-                className="max-h-28 min-h-[44px] flex-1 resize-none rounded-xl border border-token bg-[var(--background-tag)] px-3 py-2.5 text-sm text-token-primary placeholder:text-token-muted focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="max-h-28 min-h-[44px] flex-1 resize-none rounded-control border border-token bg-[var(--background-tag)] px-3 py-2.5 text-sm text-token-primary placeholder:text-token-muted focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -443,7 +443,7 @@ export default function AssistantPage() {
           onChange={(e) => setPlanAmount(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handlePlanSubmit()}
           placeholder="Enter target amount"
-          className="w-full rounded-lg border border-token px-4 py-2 text-sm text-token-primary"
+          className="w-full rounded-control border border-token px-4 py-2 text-sm text-token-primary"
         />
         <p className="mt-2 text-xs text-token-muted">Currency: {currency}</p>
       </Modal>

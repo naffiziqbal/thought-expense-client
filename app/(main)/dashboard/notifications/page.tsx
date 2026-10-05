@@ -95,7 +95,7 @@ export default function NotificationsPage() {
           </div>
         ) : (
           <>
-            <div className="divide-y divide-[var(--border-default)] overflow-hidden rounded-2xl border border-token bg-token-card">
+            <div className="divide-y divide-[var(--border-default)] overflow-hidden rounded-card border border-token bg-token-card">
               <ToggleRow
                 title="Push notifications"
                 subtitle="Weekly briefings and auto-logged expenses"

@@ -339,14 +339,14 @@ export default function ProfilePage() {
           </div>
           <Link
             href="/dashboard/profile/edit"
-            className="shrink-0 rounded-lg border border-token px-3 py-2 text-sm font-medium text-token-primary"
+            className="shrink-0 rounded-control border border-token px-3 py-2 text-sm font-medium text-token-primary"
           >
             Edit
           </Link>
         </div>
 
         {/* Plan */}
-        <div className="flex items-center gap-3 rounded-2xl border border-[var(--accent-primary)]/35 bg-token-card p-4">
+        <div className="flex items-center gap-3 rounded-card border border-[var(--accent-primary)]/35 bg-token-card p-4">
           <svg className="h-5 w-5 shrink-0 text-token-accent" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2l2.2 5.4 5.8.5-4.4 3.9 1.3 5.7L12 15.5l-4.9 3 1.3-5.7L4 8.9l5.8-.5L12 2z" />
           </svg>
@@ -361,14 +361,14 @@ export default function ProfilePage() {
           {!isPremium ? (
             <Link
               href="/dashboard/premium"
-              className="shrink-0 rounded-lg bg-token-accent px-3.5 py-2 text-sm font-medium text-white"
+              className="shrink-0 rounded-control bg-token-accent px-3.5 py-2 text-sm font-medium text-white"
             >
               See plans
             </Link>
           ) : (
             <Link
               href="/dashboard/premium"
-              className="shrink-0 rounded-lg border border-token px-3 py-2 text-sm text-token-primary"
+              className="shrink-0 rounded-control border border-token px-3 py-2 text-sm text-token-primary"
             >
               Manage
             </Link>
@@ -376,7 +376,7 @@ export default function ProfilePage() {
         </div>
 
         <SectionLabel>Money</SectionLabel>
-        <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+        <div className="overflow-hidden rounded-card border border-token bg-token-card">
           <NavRow
             href="/dashboard/budget"
             title="Monthly budget"
@@ -423,7 +423,7 @@ export default function ProfilePage() {
         </div>
 
         <SectionLabel>Preferences</SectionLabel>
-        <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+        <div className="overflow-hidden rounded-card border border-token bg-token-card">
           <label className="flex min-h-[52px] items-center gap-3 border-b border-token px-4 py-3">
             <svg className={`${iconClass} shrink-0 text-token-muted`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.4-1.4a2 2 0 00-.6-1.4V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
@@ -475,7 +475,7 @@ export default function ProfilePage() {
         </div>
 
         <SectionLabel>Data and help</SectionLabel>
-        <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+        <div className="overflow-hidden rounded-card border border-token bg-token-card">
           <button
             type="button"
             onClick={openImport}
@@ -548,7 +548,7 @@ export default function ProfilePage() {
             <select
               value={exportFormat}
               onChange={(e) => setExportFormat(e.target.value as 'csv' | 'pdf')}
-              className="w-full rounded-lg border border-token bg-token-card px-3 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="w-full rounded-control border border-token bg-token-card px-3 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
             >
               <option value="csv">CSV</option>
               <option value="pdf">PDF</option>
@@ -561,7 +561,7 @@ export default function ProfilePage() {
                 type="date"
                 value={exportFrom}
                 onChange={(e) => setExportFrom(e.target.value)}
-                className="w-full rounded-lg border border-token bg-token-card px-3 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="w-full rounded-control border border-token bg-token-card px-3 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <div>
@@ -570,7 +570,7 @@ export default function ProfilePage() {
                 type="date"
                 value={exportTo}
                 onChange={(e) => setExportTo(e.target.value)}
-                className="w-full rounded-lg border border-token bg-token-card px-3 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="w-full rounded-control border border-token bg-token-card px-3 py-2 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
           </div>
@@ -664,7 +664,7 @@ export default function ProfilePage() {
               accept=".csv,.pdf,image/*,text/csv,application/pdf"
               disabled={importParsing || importApplying}
               onChange={(e) => void handleImportFile(e.target.files?.[0] ?? null)}
-              className="block w-full text-sm text-token-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-token-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
+              className="block w-full text-sm text-token-secondary file:mr-3 file:rounded-control file:border-0 file:bg-token-accent file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
             />
           ) : null}
           {importParsing && !importJobId ? <p className="text-sm text-token-muted">Reading file…</p> : null}

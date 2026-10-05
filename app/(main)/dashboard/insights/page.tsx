@@ -202,7 +202,7 @@ export default function InsightsPage() {
       <div className="mx-auto max-w-lg space-y-3 pb-6">
         {/* Period row */}
         <div className="flex min-w-0 max-w-full items-center gap-2">
-          <div className="inline-flex min-w-0 max-w-[58%] shrink rounded-xl border border-token bg-token-card p-1">
+          <div className="inline-flex min-w-0 max-w-[58%] shrink rounded-control border border-token bg-token-card p-1">
             {(['month', 'all'] as const).map((p) => (
               <button
                 key={p}
@@ -253,7 +253,7 @@ export default function InsightsPage() {
 
         {/* Single AI insight */}
         {!insightDismissed && primaryInsight ? (
-          <div className="rounded-2xl border border-[var(--accent-primary)]/40 bg-token-card p-4 shadow-sm">
+          <div className="rounded-card border border-[var(--accent-primary)]/40 bg-token-card p-4 shadow-sm">
             <div className="mb-2.5 flex items-center gap-2">
               <svg className="h-4 w-4 shrink-0 text-token-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -314,7 +314,7 @@ export default function InsightsPage() {
             </div>
           </div>
         ) : insightDismissed && primaryInsight ? (
-          <div className="rounded-2xl border border-token bg-token-card px-4 py-3 shadow-sm">
+          <div className="rounded-card border border-token bg-token-card px-4 py-3 shadow-sm">
             <div className="flex items-center gap-2">
               <svg className="h-4 w-4 shrink-0 text-token-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -350,7 +350,7 @@ export default function InsightsPage() {
             </div>
           </div>
         ) : !primaryInsight && !isLoading ? (
-          <div className="rounded-2xl border border-token bg-token-card p-5 text-center">
+          <div className="rounded-card border border-token bg-token-card p-5 text-center">
             <p className="text-sm text-token-secondary">No AI insight yet for this period.</p>
             <Button onClick={handleRegenerateInsight} isLoading={isGenerating} size="sm" className="mt-3">
               Generate insights
@@ -359,7 +359,7 @@ export default function InsightsPage() {
         ) : null}
 
         {/* Weekly spending */}
-        <div className="rounded-2xl bg-token-card border border-token p-4 shadow-sm">
+        <div className="rounded-card bg-token-card border border-token p-4 shadow-sm">
           <div className="mb-3 flex items-baseline justify-between">
             <h3 className="text-sm font-medium text-token-primary">Weekly spending</h3>
             <span className="text-xs text-token-muted">Last 4 weeks</span>
@@ -369,7 +369,7 @@ export default function InsightsPage() {
 
         {/* Categories vs usual */}
         {summary && summary.transactionCount > 0 && barData.length > 0 ? (
-          <div className="rounded-2xl bg-token-card border border-token p-4 shadow-sm">
+          <div className="rounded-card bg-token-card border border-token p-4 shadow-sm">
             <h3 className="mb-3.5 text-sm font-medium text-token-primary">Categories vs usual</h3>
             <div className="space-y-3.5">
               {visibleBarData.map((item) => {
@@ -429,7 +429,7 @@ export default function InsightsPage() {
             ) : null}
           </div>
         ) : summary && summary.transactionCount === 0 ? (
-          <div className="rounded-2xl bg-token-card border border-token p-8 text-center">
+          <div className="rounded-card bg-token-card border border-token p-8 text-center">
             <p className="text-sm font-medium text-token-primary">No spending this period</p>
             <p className="mt-1 text-sm text-token-secondary">Pick another month or add expenses.</p>
           </div>
@@ -437,7 +437,7 @@ export default function InsightsPage() {
 
         {/* One recurring row */}
         {topRecurring ? (
-          <div className="flex items-center gap-3 rounded-2xl bg-token-card border border-token p-4 shadow-sm">
+          <div className="flex items-center gap-3 rounded-card bg-token-card border border-token p-4 shadow-sm">
             <svg className="h-5 w-5 shrink-0 text-token-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"

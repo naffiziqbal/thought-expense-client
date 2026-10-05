@@ -24,7 +24,7 @@ const icons: Record<string, ReactNode> = {
 
 function FeatureIcon({ title }: { title: string }) {
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-token-accent sm:h-12 sm:w-12">
+    <div className="flex h-10 w-10 items-center justify-center rounded-icon bg-[var(--accent-primary)]/10 text-token-accent sm:h-12 sm:w-12">
       <svg
         className="h-5 w-5 sm:h-6 sm:w-6"
         viewBox="0 0 24 24"

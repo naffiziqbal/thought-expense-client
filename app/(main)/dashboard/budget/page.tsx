@@ -245,7 +245,7 @@ export default function BudgetPage() {
           </button>
         </div>
 
-        <div className={`rounded-2xl border p-4 ${tier === 'safe' ? 'border-[var(--accent-primary)]/35 bg-[var(--accent-primary)]/5' : 'border-token bg-token-card'}`}>
+        <div className={`rounded-card border p-4 ${tier === 'safe' ? 'border-[var(--accent-primary)]/35 bg-[var(--accent-primary)]/5' : 'border-token bg-token-card'}`}>
           {budget ? (
             <>
               <div className="flex items-center justify-between gap-2">
@@ -280,7 +280,7 @@ export default function BudgetPage() {
                 {isCurrentMonth ? <span>Expected {expectedPct}%</span> : null}
               </div>
               {isCurrentMonth && daysLeft > 0 ? (
-                <div className="mt-3 rounded-xl bg-[var(--background-primary)] px-3 py-2.5">
+                <div className="mt-3 rounded-control bg-[var(--background-primary)] px-3 py-2.5">
                   <p className="text-[11px] text-token-muted">Safe per day</p>
                   <p className="text-base font-medium text-token-primary">{formatCurrency(safePerDay, currency)}</p>
                 </div>
@@ -301,10 +301,10 @@ export default function BudgetPage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-token-card p-4">
+        <div className="rounded-card border border-[var(--accent-primary)]/30 bg-token-card p-4">
           <p className="text-xs font-medium text-token-accent">Category budgets</p>
           <p className="mt-1 text-xs leading-relaxed text-token-muted">{CATEGORY_BUDGET_INPUT_HINT}</p>
-          <div className="mt-3 rounded-xl border border-token bg-[var(--background-tag)] px-3 py-3 focus-within:border-[var(--accent-primary)]">
+          <div className="mt-3 rounded-control border border-token bg-[var(--background-tag)] px-3 py-3 focus-within:border-[var(--accent-primary)]">
             <div className="flex items-start gap-2">
               <svg className="mt-0.5 h-4 w-4 shrink-0 text-token-accent" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5z" clipRule="evenodd" />
@@ -326,7 +326,7 @@ export default function BudgetPage() {
 
           {parsedCategories.length > 0 ? (
             <div className="mt-3 space-y-2 border-t border-token pt-3">
-              <div className="flex items-center justify-between gap-2 rounded-lg bg-token-accent-soft px-3 py-2">
+              <div className="flex items-center justify-between gap-2 rounded-control bg-token-accent-soft px-3 py-2">
                 <span className="text-xs text-token-primary">
                   Total {formatCurrency(parsedCategories.reduce((s, i) => s + i.limit, 0), currency)}
                 </span>
@@ -339,14 +339,14 @@ export default function BudgetPage() {
                   <input
                     value={item.category}
                     onChange={(e) => setParsedCategories((prev) => prev.map((p, i) => (i === idx ? { ...p, category: e.target.value } : p)))}
-                    className="min-w-0 flex-1 rounded-lg border border-token px-3 py-2 text-sm text-token-primary"
+                    className="min-w-0 flex-1 rounded-control border border-token px-3 py-2 text-sm text-token-primary"
                   />
                   <input
                     type="text"
                     inputMode="decimal"
                     value={item.limit}
                     onChange={(e) => setParsedCategories((prev) => prev.map((p, i) => (i === idx ? { ...p, limit: Number(e.target.value) || 0 } : p)))}
-                    className="w-24 rounded-lg border border-token px-3 py-2 text-right text-sm text-token-primary"
+                    className="w-24 rounded-control border border-token px-3 py-2 text-right text-sm text-token-primary"
                   />
                   <button type="button" onClick={() => setParsedCategories((prev) => prev.filter((_, i) => i !== idx))} className="p-1 text-token-muted hover:text-token-error">
                     ✕
@@ -363,7 +363,7 @@ export default function BudgetPage() {
         {categoryBudgets.length > 0 ? (
           <div>
             <p className="mb-2 ml-1 text-xs text-token-muted">By category</p>
-            <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+            <div className="overflow-hidden rounded-card border border-token bg-token-card">
               {categoryBudgets.map((b, i) => {
                 const pct = b.limit > 0 ? Math.min(100, Math.round((b.spent / b.limit) * 100)) : 0;
                 const catTier = budgetSpendTier(pct);
@@ -371,7 +371,7 @@ export default function BudgetPage() {
                 return (
                   <div key={`${b.year}-${b.month}-${b.category}`} className={i < categoryBudgets.length - 1 ? 'border-b border-token' : ''}>
                     <button type="button" onClick={() => handleCategoryClick(b.category)} className="flex w-full items-start gap-3 p-3 text-left">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--chart-track)] text-lg">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-icon bg-[var(--chart-track)] text-lg">
                         {getCategoryEmoji(b.category)}
                       </span>
                       <span className="min-w-0 flex-1">
@@ -426,7 +426,7 @@ export default function BudgetPage() {
               </svg>
             </button>
             {showPastMonths ? (
-              <div className="mt-2 overflow-hidden rounded-2xl border border-token bg-token-card">
+              <div className="mt-2 overflow-hidden rounded-card border border-token bg-token-card">
                 {history.slice(0, 6).map((b, i) => {
                   const isSelected = b.month === month && b.year === year;
                   return (
@@ -466,7 +466,7 @@ export default function BudgetPage() {
                     setYear(y);
                     setDatePickerOpen(false);
                   }}
-                  className={`w-full rounded-xl px-4 py-3 text-left text-sm font-medium ${isSelected ? 'bg-token-accent-soft text-token-accent' : 'text-token-primary hover:bg-[var(--surface-hover)]'}`}
+                  className={`w-full rounded-control px-4 py-3 text-left text-sm font-medium ${isSelected ? 'bg-token-accent-soft text-token-accent' : 'text-token-primary hover:bg-[var(--surface-hover)]'}`}
                 >
                   {monthLabel(y, m)}
                 </button>
@@ -487,7 +487,7 @@ export default function BudgetPage() {
                 value={editAmount}
                 onChange={(e) => setEditAmount(e.target.value)}
                 placeholder="Amount"
-                className="w-full rounded-lg border border-token px-4 py-2.5 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="w-full rounded-control border border-token px-4 py-2.5 text-sm text-token-primary focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <Button type="button" className="w-full" onClick={handleSaveLimit} isLoading={isSaving}>

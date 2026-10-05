@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { api } from '@/lib/api';
-import { getCategoryIcon } from '@/lib/categoryIcons';
+import { CategoryIconBubble } from '@/components/CategoryIconBubble';
 import {
   RECURRING_PAGE_HINT,
   describeRecurringSchedule,
@@ -15,7 +15,7 @@ import {
   normalizeRecurringDescription,
   summarizeRecurringRules,
 } from '@/lib/recurringDashboard';
-import { formatCurrency, getCategoryChartColor } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 import type { RecurringExpenseItem, RecurringFrequency, RecurringRule } from '@/types';
 
@@ -166,16 +166,10 @@ export default function RecurringPage() {
   }
 
   const renderRule = (rule: RecurringRule, showBorder: boolean) => {
-    const CategoryIcon = getCategoryIcon(rule.category);
     return (
       <div key={rule.id} className={`px-3 py-3 ${showBorder ? 'border-b border-token' : ''}`}>
         <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--chart-track)]"
-            aria-hidden
-          >
-            <CategoryIcon className="h-5 w-5" style={{ color: getCategoryChartColor(rule.category) }} />
-          </div>
+          <CategoryIconBubble category={rule.category} size="md" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-token-primary">{rule.description}</p>
             <p className="mt-0.5 text-xs text-token-muted">
@@ -229,7 +223,7 @@ export default function RecurringPage() {
             <div className="h-6 w-6 animate-spin rounded-full border-4 border-[var(--accent-primary)] border-r-transparent" />
           </div>
         ) : rules.length === 0 && suggestions.length === 0 ? (
-          <div className="rounded-2xl border border-token bg-token-card px-6 py-8 text-center">
+          <div className="rounded-card border border-token bg-token-card px-6 py-8 text-center">
             <p className="text-sm font-medium text-token-primary">No recurring expenses yet</p>
             <p className="mt-1 text-xs leading-relaxed text-token-secondary">
               Log the same subscription or bill for a few months and we&apos;ll suggest automating it here.
@@ -238,7 +232,7 @@ export default function RecurringPage() {
         ) : (
           <>
             {summary.total > 0 ? (
-              <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-token-card p-4">
+              <div className="rounded-card border border-[var(--accent-primary)]/30 bg-token-card p-4">
                 <p className="text-xs font-medium text-token-muted">Automated</p>
                 <p className="mt-1 text-[1.75rem] font-semibold text-token-primary">
                   {summary.active.length}
@@ -257,7 +251,7 @@ export default function RecurringPage() {
             {rules.length > 0 ? (
               <div>
                 <p className="mb-2 ml-1 text-xs font-medium text-token-muted">Your rules</p>
-                <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+                <div className="overflow-hidden rounded-card border border-token bg-token-card">
                   {rules.map((rule, i) => renderRule(rule, i < rules.length - 1))}
                 </div>
               </div>
@@ -266,20 +260,14 @@ export default function RecurringPage() {
             {suggestions.length > 0 ? (
               <div>
                 <p className="mb-2 ml-1 text-xs font-medium text-token-muted">Suggested from history</p>
-                <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+                <div className="overflow-hidden rounded-card border border-token bg-token-card">
                   {suggestions.map((item, i) => {
-                    const CategoryIcon = getCategoryIcon(item.category);
                     return (
                       <div
                         key={item.description}
                         className={`flex items-center gap-3 px-3 py-3 ${i < suggestions.length - 1 ? 'border-b border-token' : ''}`}
                       >
-                        <div
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--chart-track)]"
-                          aria-hidden
-                        >
-                          <CategoryIcon className="h-4 w-4" style={{ color: getCategoryChartColor(item.category) }} />
-                        </div>
+                        <CategoryIconBubble category={item.category} size="sm" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium text-token-primary">{item.description}</p>
                           <p className="mt-0.5 text-xs text-token-muted">
@@ -327,7 +315,7 @@ export default function RecurringPage() {
                 inputMode="decimal"
                 value={draft.amount}
                 onChange={(e) => setDraft({ ...draft, amount: e.target.value })}
-                className="w-full rounded-lg border border-token bg-token-card px-3 py-2 text-token-primary focus:border-[var(--accent-primary)] focus:outline-none"
+                className="w-full rounded-control border border-token bg-token-card px-3 py-2 text-token-primary focus:border-[var(--accent-primary)] focus:outline-none"
               />
             </div>
 
@@ -341,8 +329,8 @@ export default function RecurringPage() {
                     onClick={() => setDraft({ ...draft, frequency: freq })}
                     className={
                       draft.frequency === freq
-                        ? 'flex-1 rounded-lg bg-token-accent px-3 py-2 text-sm font-semibold text-white'
-                        : 'flex-1 rounded-lg border border-token px-3 py-2 text-sm font-medium text-token-secondary'
+                        ? 'flex-1 rounded-control bg-token-accent px-3 py-2 text-sm font-semibold text-white'
+                        : 'flex-1 rounded-control border border-token px-3 py-2 text-sm font-medium text-token-secondary'
                     }
                   >
                     {freq === 'monthly' ? 'Monthly' : 'Weekly'}
@@ -365,7 +353,7 @@ export default function RecurringPage() {
                       dayOfMonth: Math.min(28, Math.max(1, parseInt(e.target.value, 10) || 1)),
                     })
                   }
-                  className="w-full rounded-lg border border-token bg-token-card px-3 py-2 text-token-primary focus:border-[var(--accent-primary)] focus:outline-none"
+                  className="w-full rounded-control border border-token bg-token-card px-3 py-2 text-token-primary focus:border-[var(--accent-primary)] focus:outline-none"
                 />
                 <p className="mt-1 text-xs text-token-muted">Capped at 28 so it fires every month.</p>
               </div>
@@ -380,8 +368,8 @@ export default function RecurringPage() {
                       onClick={() => setDraft({ ...draft, dayOfWeek: index })}
                       className={
                         draft.dayOfWeek === index
-                          ? 'rounded-lg border-2 border-[var(--accent-primary)] px-3 py-1.5 text-xs font-medium text-token-accent'
-                          : 'rounded-lg border border-token px-3 py-1.5 text-xs font-medium text-token-secondary'
+                          ? 'rounded-control border-2 border-[var(--accent-primary)] px-3 py-1.5 text-xs font-medium text-token-accent'
+                          : 'rounded-control border border-token px-3 py-1.5 text-xs font-medium text-token-secondary'
                       }
                     >
                       {label}

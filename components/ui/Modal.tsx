@@ -43,7 +43,7 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
         <div
           className={cn(
             'relative z-10 flex w-full max-w-md max-h-[min(90dvh,100%)] flex-col overflow-hidden bg-token-card shadow-2xl border border-token',
-            'rounded-t-2xl sm:rounded-xl',
+            'rounded-t-card sm:rounded-card',
             'animate-in fade-in zoom-in duration-200'
           )}
           role="dialog"

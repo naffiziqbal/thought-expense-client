@@ -68,13 +68,13 @@ export default function CurrenciesPage() {
 
         <div
           className={cn(
-            'rounded-2xl border p-4 transition-colors',
+            'rounded-card border p-4 transition-colors',
             hasChanges ? 'border-[var(--accent-primary)]/40 bg-[var(--accent-primary)]/5' : 'border-token bg-token-card'
           )}
         >
           <p className="text-xs font-medium text-token-muted">Display currency</p>
           <div className="mt-2 flex items-center gap-3">
-            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-xl bg-[var(--background-primary)] text-[28px]">
+            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-icon bg-[var(--background-primary)] text-[28px]">
               {selected.flag}
             </div>
             <div className="min-w-0 flex-1">

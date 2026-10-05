@@ -199,7 +199,7 @@ export default function EditProfilePage() {
         </div>
 
         {/* Form Card */}
-        <div className="mt-6 rounded-2xl bg-token-card border border-token p-6 shadow-sm">
+        <div className="mt-6 rounded-card bg-token-card border border-token p-6 shadow-sm">
           <form onSubmit={handleSave} className="space-y-5">
             <Input
               label="Full Name"

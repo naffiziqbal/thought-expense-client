@@ -34,7 +34,7 @@ export function ImportAsyncProgressPanel({ fileName, phase, message, progress }:
             <li
               key={step.key}
               className={cn(
-                'flex gap-3 rounded-xl border px-3 py-2.5 text-sm',
+                'flex gap-3 rounded-card border px-3 py-2.5 text-sm',
                 current && 'border-[var(--accent-primary)]/40 bg-[var(--accent-primary)]/5',
                 done && 'border-token opacity-80',
                 !done && !current && 'border-token opacity-50'
@@ -42,7 +42,7 @@ export function ImportAsyncProgressPanel({ fileName, phase, message, progress }:
             >
               <span
                 className={cn(
-                  'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                  'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-pill text-xs font-semibold',
                   done && 'bg-token-accent text-on-accent',
                   current && 'bg-[var(--accent-primary)] text-white',
                   !done && !current && 'bg-[var(--background-primary)] text-token-muted'

@@ -4,11 +4,9 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { api } from '@/lib/api';
-import { getCategoryIcon } from '@/lib/categoryIcons';
+import { CategoryIconBubble } from '@/components/CategoryIconBubble';
 import {
   formatCurrency,
-  getCategoryBgColor,
-  getCategoryChartColor,
   getCategoryFromKeyword,
   parseExpenseInputLocally
 } from '@/lib/utils';
@@ -382,7 +380,7 @@ export default function AddExpensePage() {
         {/* 2. The Input Card (Smart Box) - Fixed */}
         <div
           ref={inputTarget}
-          className="shrink-0 rounded-2xl bg-token-card border border-token shadow-md overflow-hidden"
+          className="shrink-0 rounded-card bg-token-card border border-token shadow-md overflow-hidden"
         >
           {/* Top Half - Text Area */}
           <div className="p-4">
@@ -447,7 +445,7 @@ export default function AddExpensePage() {
             )}
             <button
               onClick={handleDateClick}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-token-secondary hover:bg-[var(--surface-hover)] text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-3 py-2.5 rounded-control text-token-secondary hover:bg-[var(--surface-hover)] text-sm font-medium transition-colors"
             >
               <span className="whitespace-nowrap">
                 {selectedDate === new Date().toISOString().split('T')[0]
@@ -468,24 +466,18 @@ export default function AddExpensePage() {
             <div className="space-y-3 pb-4">
               {isScanning ? (
                 <>
-                  <div className="h-14 rounded-2xl bg-[var(--blueGray-100)] animate-pulse" />
-                  <div className="h-14 rounded-2xl bg-[var(--blueGray-100)] animate-pulse" />
+                  <div className="h-14 rounded-card bg-[var(--blueGray-100)] animate-pulse" />
+                  <div className="h-14 rounded-card bg-[var(--blueGray-100)] animate-pulse" />
                 </>
               ) : (
                 displayItems.map((item) => {
-                  const CategoryIcon = getCategoryIcon(item.category);
                   const canDelete = itemsToSave.length === 0 && receiptItems.some((i) => i.id === item.id);
                   return (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 p-4 rounded-2xl bg-token-card border border-token shadow-sm shrink-0"
+                    className="flex items-center gap-4 p-4 rounded-card bg-token-card border border-token shadow-sm shrink-0"
                   >
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: getCategoryBgColor(item.category) }}
-                    >
-                      <CategoryIcon className="w-5 h-5 shrink-0" style={{ color: getCategoryChartColor(item.category) }} aria-hidden />
-                    </div>
+                    <CategoryIconBubble category={item.category} size="md" />
                     <div className="flex-1 min-w-0">
                       {editingId === item.id ? (
                         <input
@@ -574,7 +566,7 @@ export default function AddExpensePage() {
             ref={saveTarget}
             onClick={handleSave}
             disabled={!hasContent || isSaving}
-            className="w-full py-4 rounded-2xl bg-token-accent text-white font-semibold text-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg"
+            className="w-full py-4 rounded-card bg-token-accent text-white font-semibold text-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg"
           >
             {isSaving ? (
               <span className="flex items-center justify-center gap-2">

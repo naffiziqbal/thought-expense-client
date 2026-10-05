@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, useRef, type ElementType } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useCategories } from '@/hooks/useCategories';
@@ -16,13 +16,10 @@ import type { Expense, AssistantSearchResult } from '@/types';
 import {
   formatCurrency,
   formatDate,
-  getCategoryColor,
-  getCategoryBgColor,
-  getCategoryChartColor,
   cleanExpenseDescription,
 } from '@/lib/utils';
 import { subMonths } from 'date-fns';
-import { getCategoryIcon } from '@/lib/categoryIcons';
+import { CategoryIconBubble } from '@/components/CategoryIconBubble';
 import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
 function ExpenseRow({
   expense,
@@ -30,14 +27,12 @@ function ExpenseRow({
   selected,
   onActivate,
   onLongPress,
-  CategoryIcon,
 }: {
   expense: Expense;
   selectionMode: boolean;
   selected: boolean;
   onActivate: () => void;
   onLongPress: () => void;
-  CategoryIcon: ElementType;
 }) {
   const longPressTimer = useRef<number | null>(null);
   const longPressFired = useRef(false);
@@ -79,19 +74,14 @@ function ExpenseRow({
     >
       {selectionMode ? (
         <span
-          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-pill border-2 ${
             selected ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)] text-white' : 'border-token'
           }`}
         >
           {selected ? '✓' : null}
         </span>
       ) : null}
-      <div
-        className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl shrink-0 flex items-center justify-center"
-        style={{ backgroundColor: getCategoryBgColor(expense.category) }}
-      >
-        <CategoryIcon className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" style={{ color: getCategoryChartColor(expense.category) }} aria-hidden />
-      </div>
+      <CategoryIconBubble category={expense.category} size="lg" />
       <div className="flex-1 min-w-0 text-left">
         <p className="font-bold text-token-primary truncate">{cleanExpenseDescription(expense.description)}</p>
         <p className="text-sm text-token-secondary mt-0.5">{formatDate(expense.date)}</p>
@@ -452,7 +442,7 @@ export default function ExpensesPage() {
       <div className="flex flex-col h-full bg-token-surface overflow-hidden">
         {/* A. Header & Filter Bar - Fixed */}
         {!isPremium && (
-          <div className="mb-4 rounded-2xl bg-teal-50 border border-teal-200 px-3 sm:px-4 py-3 flex items-center justify-between">
+          <div className="mb-4 rounded-card bg-teal-50 border border-teal-200 px-3 sm:px-4 py-3 flex items-center justify-between">
             <p className="text-sm text-teal-800">
               Viewing past 3 months. <Link href="/dashboard/premium" className="font-semibold underline">Upgrade to Premium</Link> for full history.
             </p>
@@ -469,7 +459,7 @@ export default function ExpensesPage() {
             {isPremium ? (
               <button
                 onClick={() => setExportModalOpen(true)}
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-token bg-token-card text-token-primary text-sm font-medium hover:border-[var(--accent-primary)]/50 transition-colors"
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-icon border border-token bg-token-card text-token-primary text-sm font-medium hover:border-[var(--accent-primary)]/50 transition-colors"
               >
                 <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -477,7 +467,7 @@ export default function ExpensesPage() {
                 Export
               </button>
             ) : (
-              <div title="Export available on Premium" className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-token bg-token-card/50 text-token-muted text-sm cursor-not-allowed">
+              <div title="Export available on Premium" className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-control border border-token bg-token-card/50 text-token-muted text-sm cursor-not-allowed">
                 <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
@@ -486,7 +476,7 @@ export default function ExpensesPage() {
             )}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-token bg-token-card text-token-primary text-sm font-medium hover:border-[var(--accent-primary)]/50 transition-colors"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-control border border-token bg-token-card text-token-primary text-sm font-medium hover:border-[var(--accent-primary)]/50 transition-colors"
             >
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -542,14 +532,14 @@ export default function ExpensesPage() {
 
         {/* Collapsible Filters Panel */}
         {showFilters && (
-          <div className="shrink-0 mb-4 rounded-2xl bg-token-card p-3 sm:p-4 shadow-sm border border-token">
+          <div className="shrink-0 mb-4 rounded-card bg-token-card p-3 sm:p-4 shadow-sm border border-token">
             <div className="space-y-3 sm:space-y-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-token-primary">Category</label>
                 <select
                   value={filters.category}
                   onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                  className="w-full rounded-lg border border-token px-3 py-2 text-sm text-token-primary bg-token-card focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                  className="w-full rounded-control border border-token px-3 py-2 text-sm text-token-primary bg-token-card focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
                 >
                   <option value="">All Categories</option>
                   {categories.map((category) => (
@@ -570,7 +560,7 @@ export default function ExpensesPage() {
                     onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
                     min={!isPremium ? minDateFree : undefined}
                     max={maxDateToday}
-                    className="w-full rounded-lg border border-token px-3 py-2 text-sm text-token-primary bg-token-card focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                    className="w-full rounded-control border border-token px-3 py-2 text-sm text-token-primary bg-token-card focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
                   />
                   {!isPremium && (
                     <p className="mt-1 text-xs text-token-muted">Free: last 3 months only</p>
@@ -584,7 +574,7 @@ export default function ExpensesPage() {
                     onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
                     min={!isPremium ? minDateFree : undefined}
                     max={maxDateToday}
-                    className="w-full rounded-lg border border-token px-3 py-2 text-sm text-token-primary bg-token-card focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                    className="w-full rounded-control border border-token px-3 py-2 text-sm text-token-primary bg-token-card focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
                   />
                 </div>
               </div>
@@ -592,7 +582,7 @@ export default function ExpensesPage() {
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={clearFilters}
-                    className="flex-1 py-2 text-sm font-medium text-token-secondary border border-token rounded-lg hover:bg-[var(--surface-hover)] transition-colors"
+                    className="flex-1 py-2 text-sm font-medium text-token-secondary border border-token rounded-control hover:bg-[var(--surface-hover)] transition-colors"
                   >
                     Clear
                   </button>
@@ -602,7 +592,7 @@ export default function ExpensesPage() {
                     setShowFilters(false);
                     setPage(1);
                   }}
-                  className="flex-1 py-2 text-sm font-medium bg-token-accent text-white rounded-lg hover:opacity-90 transition-opacity"
+                  className="flex-1 py-2 text-sm font-medium bg-token-accent text-white rounded-control hover:opacity-90 transition-opacity"
                 >
                   Apply
                 </button>
@@ -612,7 +602,7 @@ export default function ExpensesPage() {
         )}
 
         {selectionMode ? (
-          <div className="shrink-0 mb-3 flex items-center justify-between rounded-xl border border-token bg-token-card px-4 py-2.5">
+          <div className="shrink-0 mb-3 flex items-center justify-between rounded-card border border-token bg-token-card px-4 py-2.5">
             <button type="button" onClick={exitSelection} className="text-sm font-semibold text-token-primary">
               Cancel
             </button>
@@ -629,7 +619,7 @@ export default function ExpensesPage() {
         ) : null}
 
         {/* B. Transaction List Container - Scrollable */}
-        <div className="flex-1 min-h-0 flex flex-col rounded-2xl bg-token-card border border-token shadow-sm overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col rounded-card bg-token-card border border-token shadow-sm overflow-hidden">
           {/* Search results summary */}
           {isSearchActive && !isSearching && (
             <div className="shrink-0 flex items-center justify-between gap-3 border-b border-token bg-teal-50/50 dark:bg-teal-950/20 px-3 sm:px-4 py-2.5">
@@ -673,7 +663,6 @@ export default function ExpensesPage() {
           ) : (
             <div className={`relative flex-1 min-h-0 overflow-y-auto divide-y divide-[var(--border-default)] transition-opacity ${isPageChanging ? 'opacity-60 pointer-events-none' : ''}`}>
               {displayedExpenses.map((expense) => {
-                const CategoryIcon = getCategoryIcon(expense.category);
                 const selected = selectedIds.has(expense.id);
                 return (
                 <ExpenseRow
@@ -683,7 +672,6 @@ export default function ExpensesPage() {
                   selectionMode={selectionMode}
                   onActivate={() => handleRowActivate(expense)}
                   onLongPress={() => beginSelection(expense)}
-                  CategoryIcon={CategoryIcon}
                 />
               );
               })}
@@ -700,7 +688,7 @@ export default function ExpensesPage() {
                 setPage((p) => Math.max(1, p - 1));
               }}
               disabled={page <= 1 || isPageChanging}
-              className="p-2 rounded-lg border border-token bg-token-card text-token-primary hover:border-[var(--accent-primary)]/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-control border border-token bg-token-card text-token-primary hover:border-[var(--accent-primary)]/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -717,7 +705,7 @@ export default function ExpensesPage() {
                       isPageChangeRef.current = true;
                       setPage(p as number);
                     }}
-                    className={`min-w-[32px] sm:min-w-[36px] h-8 sm:h-9 rounded-lg text-sm font-medium transition-colors ${
+                    className={`min-w-[32px] sm:min-w-[36px] h-8 sm:h-9 rounded-control text-sm font-medium transition-colors ${
                       page === p
                         ? 'bg-token-accent text-white'
                         : 'bg-token-card border border-token text-token-primary hover:border-[var(--accent-primary)]/50'
@@ -735,7 +723,7 @@ export default function ExpensesPage() {
                 setPage((p) => Math.min(totalPages, p + 1));
               }}
               disabled={page >= totalPages || isPageChanging}
-              className="p-2 rounded-lg border border-token bg-token-card text-token-primary hover:border-[var(--accent-primary)]/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-control border border-token bg-token-card text-token-primary hover:border-[var(--accent-primary)]/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -825,7 +813,7 @@ export default function ExpensesPage() {
             <select
               value={exportFormat}
               onChange={(e) => setExportFormat(e.target.value as 'csv' | 'pdf')}
-              className="w-full rounded-lg border border-token px-3 py-2 text-sm text-token-primary bg-token-card focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="w-full rounded-control border border-token px-3 py-2 text-sm text-token-primary bg-token-card focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
             >
               <option value="csv">CSV</option>
               <option value="pdf">PDF</option>
@@ -838,7 +826,7 @@ export default function ExpensesPage() {
                 type="date"
                 value={exportFrom}
                 onChange={(e) => setExportFrom(e.target.value)}
-                className="w-full rounded-lg border border-token px-3 py-2 text-sm text-token-primary bg-token-card focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="w-full rounded-control border border-token px-3 py-2 text-sm text-token-primary bg-token-card focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <div>
@@ -847,7 +835,7 @@ export default function ExpensesPage() {
                 type="date"
                 value={exportTo}
                 onChange={(e) => setExportTo(e.target.value)}
-                className="w-full rounded-lg border border-token px-3 py-2 text-sm text-token-primary bg-token-card focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="w-full rounded-control border border-token px-3 py-2 text-sm text-token-primary bg-token-card focus:border-[var(--accent-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
           </div>
@@ -899,7 +887,7 @@ export default function ExpensesPage() {
           Are you sure you want to delete this expense? This action cannot be undone.
         </p>
         {selectedExpense && (
-          <div className="mt-4 rounded-lg bg-[var(--background-tag)] p-4">
+          <div className="mt-4 rounded-control bg-[var(--background-tag)] p-4">
             <p className="font-medium text-token-primary">{selectedExpense.description}</p>
             <p className="text-sm text-token-secondary">
               {formatCurrency(selectedExpense.amount, selectedExpense.currency)} •{' '}

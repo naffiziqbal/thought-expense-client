@@ -25,7 +25,7 @@ export function CurrencyPickerList({ items, selectedCode, onSelect }: CurrencyPi
               i < items.length - 1 && 'border-b border-token'
             )}
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--background-primary)] text-xl">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-icon bg-[var(--background-primary)] text-xl">
               {currency.flag}
             </div>
             <div className="min-w-0 flex-1">

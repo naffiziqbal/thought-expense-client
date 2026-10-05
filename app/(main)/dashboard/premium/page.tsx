@@ -37,14 +37,14 @@ export default function PremiumPage() {
 
         <div
           className={cn(
-            'rounded-2xl border p-4',
+            'rounded-card border p-4',
             isPremium ? 'border-[var(--accent-primary)]/40 bg-[var(--accent-primary)]/5' : 'border-token bg-token-card'
           )}
         >
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                'flex h-[52px] w-[52px] items-center justify-center rounded-xl',
+                'flex h-[52px] w-[52px] items-center justify-center rounded-icon',
                 isPremium ? 'bg-token-accent text-on-accent' : 'bg-[var(--background-primary)] text-token-accent'
               )}
             >
@@ -63,7 +63,7 @@ export default function PremiumPage() {
         </div>
 
         <p className="ml-1 text-xs font-medium text-token-muted">{isPremium ? 'Included' : 'Premium includes'}</p>
-        <div className="overflow-hidden rounded-2xl border border-token bg-token-card">
+        <div className="overflow-hidden rounded-card border border-token bg-token-card">
           {PREMIUM_BENEFITS.map((b, i) => (
             <div
               key={b.title}
@@ -88,7 +88,7 @@ export default function PremiumPage() {
                 <div
                   key={tier.name}
                   className={cn(
-                    'relative rounded-xl border bg-token-card p-3 text-center',
+                    'relative rounded-control border bg-token-card p-3 text-center',
                     tier.badge ? 'border-[var(--accent-primary)]' : 'border-token'
                   )}
                 >
@@ -104,7 +104,7 @@ export default function PremiumPage() {
               ))}
             </div>
 
-            <div className="rounded-2xl border border-token bg-token-card p-4 text-center">
+            <div className="rounded-card border border-token bg-token-card p-4 text-center">
               <p className="text-sm font-medium text-token-primary">Subscribe on mobile</p>
               <p className="mt-1 text-xs leading-relaxed text-token-secondary">
                 Purchases go through the App Store or Google Play. Open ThoughtExpense on your phone, go to Settings →

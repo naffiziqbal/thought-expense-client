@@ -130,7 +130,7 @@ export default function SecurityPage() {
 
   const inputClass = (hasError: boolean) =>
     cn(
-      'w-full rounded-xl border bg-[var(--background-tag)] px-3 py-2.5 text-sm text-token-primary placeholder:text-token-muted focus:border-[var(--accent-primary)] focus:outline-none',
+      'w-full rounded-control border bg-[var(--background-tag)] px-3 py-2.5 text-sm text-token-primary placeholder:text-token-muted focus:border-[var(--accent-primary)] focus:outline-none',
       hasError ? 'border-red-300' : 'border-token'
     );
 
@@ -142,9 +142,9 @@ export default function SecurityPage() {
           <p className="mt-0.5 text-xs leading-relaxed text-token-muted">{SECURITY_PAGE_HINT}</p>
         </div>
 
-        <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-token-card p-4">
+        <div className="rounded-card border border-[var(--accent-primary)]/30 bg-token-card p-4">
           <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-token-accent-soft text-token-accent">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-icon bg-token-accent-soft text-token-accent">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -163,7 +163,7 @@ export default function SecurityPage() {
         <p className="ml-1 text-xs font-medium text-token-muted">Password</p>
         <form
           onSubmit={handleSubmit}
-          className="space-y-3 rounded-2xl border border-token bg-token-card p-4"
+          className="space-y-3 rounded-card border border-token bg-token-card p-4"
         >
           <div>
             <label className="mb-1.5 block text-xs font-medium text-token-secondary">Current password</label>
@@ -179,7 +179,7 @@ export default function SecurityPage() {
               <button
                 type="button"
                 onClick={() => setShowCurrent(!showCurrent)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-token-muted hover:bg-[var(--surface-hover)]"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-control p-1.5 text-token-muted hover:bg-[var(--surface-hover)]"
                 aria-label={showCurrent ? 'Hide password' : 'Show password'}
               >
                 {showCurrent ? <EyeOffIcon /> : <EyeIcon />}
@@ -201,7 +201,7 @@ export default function SecurityPage() {
               <button
                 type="button"
                 onClick={() => setShowNew(!showNew)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-token-muted hover:bg-[var(--surface-hover)]"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-control p-1.5 text-token-muted hover:bg-[var(--surface-hover)]"
                 aria-label={showNew ? 'Hide password' : 'Show password'}
               >
                 {showNew ? <EyeOffIcon /> : <EyeIcon />}
@@ -235,7 +235,7 @@ export default function SecurityPage() {
         </form>
 
         <p className="ml-1 text-xs font-medium text-token-error">Danger zone</p>
-        <div className="space-y-3 rounded-2xl border border-red-300/60 bg-token-card p-4 dark:border-red-900/50">
+        <div className="space-y-3 rounded-card border border-red-300/60 bg-token-card p-4 dark:border-red-900/50">
           <p className="text-xs leading-relaxed text-token-secondary">
             Permanently delete your account, expenses, budgets, goals, and insights. This cannot be undone.
           </p>

@@ -9,8 +9,8 @@ import { useAuthStore } from '@/store/authStore';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { DailySpendingChart } from '@/components/dashboard/DailySpendingChart';
 import { api } from '@/lib/api';
-import { formatCurrency, getCategoryBgColor, getCategoryChartColor } from '@/lib/utils';
-import { getCategoryIcon } from '@/lib/categoryIcons';
+import { formatCurrency } from '@/lib/utils';
+import { CategoryIconBubble } from '@/components/CategoryIconBubble';
 import {
   budgetPaceLabel,
   buildLastFiveDayBuckets,
@@ -300,7 +300,7 @@ export default function DashboardPage() {
                 ) : null}
               </button>
               {notificationOpen ? (
-                <div className="absolute right-0 top-full z-50 mt-2 w-[min(calc(100vw-2rem),384px)] overflow-hidden rounded-2xl border border-token bg-token-card shadow-xl">
+                <div className="absolute right-0 top-full z-50 mt-2 w-[min(calc(100vw-2rem),384px)] overflow-hidden rounded-card border border-token bg-token-card shadow-xl">
                   <div className="border-b border-token px-4 py-3">
                     <h3 className="font-semibold text-token-primary">Notifications</h3>
                   </div>
@@ -325,7 +325,7 @@ export default function DashboardPage() {
                         {notifications.map((n) => (
                           <div
                             key={n.id}
-                            className={`rounded-xl p-3 ${
+                            className={`rounded-icon p-3 ${
                               n.type === 'budget-exceeded'
                                 ? 'border border-red-200 bg-red-50 dark:border-red-800/50 dark:bg-red-950/30'
                                 : n.type === 'budget-warning'
@@ -346,7 +346,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Hero: left this month / spent this month */}
-          <div ref={heroTarget} className="dashboard-card space-y-2 rounded-[20px] p-4 sm:p-5">
+          <div ref={heroTarget} className="dashboard-card space-y-2 p-4 sm:p-5">
             {displayBudget ? (
               <>
                 <div className="flex items-center justify-between gap-2">
@@ -378,11 +378,11 @@ export default function DashboardPage() {
                   <span>Expected pace {expectedPct}%</span>
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2.5">
-                  <div className="rounded-xl bg-[var(--background-primary)] px-3 py-2.5">
+                  <div className="rounded-icon bg-[var(--background-primary)] px-3 py-2.5">
                     <p className="text-[11px] text-token-muted">Safe per day</p>
                     <p className="text-base font-medium text-token-primary">{formatCurrency(safePerDay, currency)}</p>
                   </div>
-                  <div className="rounded-xl bg-[var(--background-primary)] px-3 py-2.5">
+                  <div className="rounded-icon bg-[var(--background-primary)] px-3 py-2.5">
                     <p className="text-[11px] text-token-muted">Spent today</p>
                     <p className="text-base font-medium text-token-primary">{formatCurrency(spentToday, currency)}</p>
                   </div>
@@ -405,7 +405,7 @@ export default function DashboardPage() {
           {featuredInsight ? (
             <Link
               href="/dashboard/assistant"
-              className="flex gap-3 rounded-2xl bg-token-accent-soft p-3.5 transition-opacity hover:opacity-95"
+              className="flex gap-3 rounded-card bg-token-accent-soft p-3.5 transition-opacity hover:opacity-95"
             >
               <svg className="mt-0.5 h-5 w-5 shrink-0 text-token-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
@@ -438,10 +438,10 @@ export default function DashboardPage() {
                   View all
                 </Link>
               </div>
-              <div className="dashboard-card space-y-3 rounded-2xl p-4">
+              <div className="dashboard-card space-y-3 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--chart-track)] text-token-accent">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-icon bg-[var(--chart-track)] text-token-accent">
                       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                       </svg>
@@ -488,9 +488,8 @@ export default function DashboardPage() {
                   View all
                 </Link>
               </div>
-              <div className="dashboard-card divide-y divide-[var(--border-default)] overflow-hidden !rounded-2xl p-0">
+              <div className="dashboard-card divide-y divide-[var(--border-default)] overflow-hidden p-0">
                 {todayExpenses.map((expense) => {
-                  const CategoryIcon = getCategoryIcon(expense.category);
                   const time = formatExpenseTime(expense.date);
                   return (
                     <Link
@@ -498,12 +497,7 @@ export default function DashboardPage() {
                       href="/dashboard/expenses"
                       className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface-hover)]"
                     >
-                      <div
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-                        style={{ backgroundColor: getCategoryBgColor(expense.category) }}
-                      >
-                        <CategoryIcon className="h-4 w-4" style={{ color: getCategoryChartColor(expense.category) }} aria-hidden />
-                      </div>
+                      <CategoryIconBubble category={expense.category} size="sm" />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-token-primary">{expense.description}</p>
                         <p className="truncate text-xs text-token-muted">

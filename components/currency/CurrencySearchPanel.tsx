@@ -29,7 +29,7 @@ export function CurrencySearchPanel({ selectedCode, onSelect, className }: Curre
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search ISO code or currency name…"
-        className="mb-3 w-full rounded-xl border border-token bg-[var(--background-tag)] px-3 py-2.5 text-sm text-token-primary placeholder:text-token-muted focus:border-[var(--accent-primary)] focus:outline-none"
+        className="mb-3 w-full rounded-control border border-token bg-[var(--background-tag)] px-3 py-2.5 text-sm text-token-primary placeholder:text-token-muted focus:border-[var(--accent-primary)] focus:outline-none"
       />
       {!searching && popular.length > 0 ? (
         <>
