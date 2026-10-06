@@ -200,6 +200,28 @@ export default function InsightsPage() {
   return (
     <DashboardLayout>
       <div className="mx-auto max-w-lg space-y-3 pb-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-base font-semibold leading-tight text-token-primary">Insights</h1>
+            <p className="mt-0.5 text-xs text-token-muted">Charts, trends, and AI tips</p>
+          </div>
+          <Link
+            href="/dashboard/assistant"
+            className="inline-flex shrink-0 items-center gap-1 pt-0.5 text-sm font-semibold text-token-accent transition-opacity hover:opacity-90"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+              />
+            </svg>
+            AI advisor
+            <span aria-hidden>→</span>
+          </Link>
+        </div>
+
         {/* Period row */}
         <div className="flex min-w-0 max-w-full items-center gap-2">
           <div className="inline-flex min-w-0 max-w-[58%] shrink rounded-control border border-token bg-token-card p-1">

@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { CurrencyChangeConsentModal } from '@/components/currency/CurrencyChangeConsentModal';
 import { CurrencySearchPanel } from '@/components/currency/CurrencySearchPanel';
-import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { CURRENCY_DISPLAY_HINT, findCurrency } from '@/lib/currencies';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -19,26 +19,36 @@ export default function CurrenciesPage() {
   const { user, setUser } = useAuthStore();
   const router = useRouter();
   const savedCode = user?.currency || 'USD';
-  const [selectedCurrency, setSelectedCurrency] = useState(savedCode);
+  const [pendingCode, setPendingCode] = useState<string | null>(null);
+  const [consentOpen, setConsentOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    setSelectedCurrency(savedCode);
-  }, [savedCode]);
-
-  const hasChanges = selectedCurrency !== savedCode;
-  const selected = useMemo(() => findCurrency(selectedCurrency) ?? findCurrency('USD')!, [selectedCurrency]);
+  const selected = useMemo(() => findCurrency(savedCode) ?? findCurrency('USD')!, [savedCode]);
   const preview = formatCurrency(PREVIEW_AMOUNT, selected.code);
 
-  const handleSave = async () => {
-    if (!hasChanges || !user) return;
+  const handlePick = (code: string) => {
+    if (code === savedCode) return;
+    setPendingCode(code);
+    setConsentOpen(true);
+  };
+
+  const closeConsent = () => {
+    if (isSaving) return;
+    setConsentOpen(false);
+    setPendingCode(null);
+  };
+
+  const applyCurrency = async () => {
+    if (!pendingCode || !user || pendingCode === savedCode) return;
 
     setIsSaving(true);
     try {
-      const res = await api.updateProfile({ currency: selectedCurrency });
+      const res = await api.updateProfile({ currency: pendingCode });
       if (res.success && res.data?.user) {
         setUser({ ...user, ...res.data.user });
-        toast.success(`Currency updated — amounts now display in ${selectedCurrency}`);
+        toast.success(`Currency updated — amounts now display in ${pendingCode}`);
+        setConsentOpen(false);
+        setPendingCode(null);
         router.push('/dashboard/profile');
       } else {
         toast.error('Failed to update currency. Please try again.');
@@ -66,12 +76,7 @@ export default function CurrenciesPage() {
           <p className="mt-0.5 text-xs text-token-muted">ISO 4217 — how amounts appear on your dashboard</p>
         </div>
 
-        <div
-          className={cn(
-            'rounded-card border p-4 transition-colors',
-            hasChanges ? 'border-[var(--accent-primary)]/40 bg-[var(--accent-primary)]/5' : 'border-token bg-token-card'
-          )}
-        >
+        <div className={cn('rounded-card border border-token bg-token-card p-4 transition-colors')}>
           <p className="text-xs font-medium text-token-muted">Display currency</p>
           <div className="mt-2 flex items-center gap-3">
             <div className="flex h-[52px] w-[52px] items-center justify-center rounded-icon bg-[var(--background-primary)] text-[28px]">
@@ -87,18 +92,20 @@ export default function CurrenciesPage() {
           </div>
           <p className="mt-3 text-[1.75rem] font-semibold tabular-nums tracking-tight text-token-primary">{preview}</p>
           <p className="mt-0.5 text-xs text-token-muted">Example formatting</p>
-          {hasChanges ? (
-            <p className="mt-2 text-xs font-medium text-token-accent">Save to apply this currency</p>
-          ) : null}
         </div>
 
-        <CurrencySearchPanel selectedCode={selectedCurrency} onSelect={setSelectedCurrency} />
+        <CurrencySearchPanel selectedCode={savedCode} onSelect={handlePick} />
 
         <p className="px-1 text-xs leading-relaxed text-token-muted">{CURRENCY_DISPLAY_HINT}</p>
 
-        <Button type="button" onClick={handleSave} className="w-full" size="lg" isLoading={isSaving} disabled={!hasChanges}>
-          {hasChanges ? 'Save currency' : 'Saved'}
-        </Button>
+        <CurrencyChangeConsentModal
+          isOpen={consentOpen}
+          pendingCode={pendingCode}
+          currentCode={savedCode}
+          onConfirm={applyCurrency}
+          onCancel={closeConsent}
+          isLoading={isSaving}
+        />
       </div>
     </DashboardLayout>
   );

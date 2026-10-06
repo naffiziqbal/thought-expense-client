@@ -3,7 +3,15 @@ import { getIso4217Currency, normalizeIso4217Code, type Iso4217Currency } from '
 export type CurrencyOption = Iso4217Currency;
 
 export const CURRENCY_DISPLAY_HINT =
-  'Dashboard, budgets, and exports use this currency. Expenses in other currencies convert when you add them.';
+  'Tap a currency to change your display currency. Amounts in the app use exchange rates to show in the code you pick.';
+
+export function currencyChangeConsentTitle(code: string): string {
+  return `Switch to ${code}?`;
+}
+
+export function currencyChangeConsentBody(code: string, name: string, fromCode: string): string {
+  return `Your display currency will change from ${fromCode} to ${code} (${name}). Dashboard totals, budgets, insights, and exports will show amounts converted to ${code}, including your existing expenses in summaries.`;
+}
 
 export function findCurrency(code: string, locale = 'en'): CurrencyOption | null {
   return getIso4217Currency(code, locale);
