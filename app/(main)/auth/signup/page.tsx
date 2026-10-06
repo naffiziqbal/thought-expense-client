@@ -10,7 +10,7 @@ import { useOnboardingStore } from "@/store/onboardingStore";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/BottomSheet";
-import { getDefaultCurrency, getIso4217Currency, SIGNUP_CURRENCY_HINT } from "@/lib/currencies";
+import { getDefaultCurrency, getIso4217Currency } from "@/lib/currencies";
 import { CurrencySearchPanel } from "@/components/currency/CurrencySearchPanel";
 
 function getPasswordStrength(pwd: string): 0 | 1 | 2 | 3 | 4 {
@@ -250,8 +250,14 @@ export default function SignupPage() {
 
   const selectedCurrency = getIso4217Currency(formData.currency);
 
+  const underlineRow = (focused: boolean, hasError?: boolean) =>
+    cn(
+      "flex h-10 items-center gap-2 border-b bg-transparent px-0 transition-colors",
+      hasError ? "border-token-error" : focused ? "border-token-accent" : "border-token"
+    );
+
   return (
-    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-token-surface px-4 py-4 pt-safe pb-safe">
+    <div className="relative flex h-dvh max-h-dvh flex-col items-center justify-center overflow-hidden bg-token-surface px-4 py-2 pt-safe pb-safe">
       <div className="absolute right-4 top-[max(1rem,env(safe-area-inset-top,0px))] z-20">
         <ThemeToggle />
       </div>
@@ -265,17 +271,12 @@ export default function SignupPage() {
         aria-hidden
       />
 
-      <div className="relative z-10 w-full max-w-[420px] shrink-0 py-1">
+      <div className="relative z-10 flex w-full max-w-[420px] min-h-0 flex-1 flex-col justify-center py-1">
         {/* Header */}
-        <div className="flex shrink-0 flex-col items-center ">
-          <Link href="/" className="flex items-center space-x-2 group py-5">
-            <div className="bg-token-accent text-white rounded-2xl p-2 shadow-md group-hover:opacity-90 transition-all">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+        <div className="mb-3 flex shrink-0 items-center gap-3">
+          <Link href="/" className="group shrink-0">
+            <div className="rounded-xl bg-token-accent p-2 text-white shadow-md transition-all group-hover:opacity-90">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -285,27 +286,17 @@ export default function SignupPage() {
               </svg>
             </div>
           </Link>
-          <h1 className="text-xl font-bold text-token-primary">
-            Create Account
-          </h1>
-          <p className="mt-0.5 text-xs text-token-secondary">
-            Start tracking expenses naturally
-          </p>
+          <div className="min-w-0">
+            <h1 className="truncate text-lg font-bold text-token-primary">Create account</h1>
+            <p className="truncate text-xs text-token-secondary">Thought Expense · natural-language tracking</p>
+          </div>
         </div>
 
         {/* Smart Form */}
-        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-2">
+        <form onSubmit={handleSubmit} className="flex shrink-0 flex-col gap-1.5">
           {/* Full Name */}
           <div>
-            <div
-              className={cn(
-                "flex h-11 items-center gap-2.5 rounded-xl px-3 transition-all",
-                "bg-[var(--background-tag)]",
-                nameFocused &&
-                  "bg-token-card ring-2 ring-[var(--accent-primary)] ring-offset-2 dark:ring-offset-[var(--background-surface)] shadow-sm",
-                errors.name && "bg-red-50 dark:bg-red-950/30"
-              )}
-            >
+            <div className={underlineRow(nameFocused, Boolean(errors.name))}>
               <UserIcon
                 className={cn(
                   "h-5 w-5 shrink-0",
@@ -334,15 +325,7 @@ export default function SignupPage() {
 
           {/* Email */}
           <div>
-            <div
-              className={cn(
-                "flex h-11 items-center gap-2.5 rounded-xl px-3 transition-all",
-                "bg-[var(--background-tag)]",
-                emailFocused &&
-                  "bg-token-card ring-2 ring-[var(--accent-primary)] ring-offset-2 dark:ring-offset-[var(--background-surface)] shadow-sm",
-                errors.email && "bg-red-50 dark:bg-red-950/30"
-              )}
-            >
+            <div className={underlineRow(emailFocused, Boolean(errors.email))}>
               <MailIcon
                 className={cn(
                   "h-5 w-5 shrink-0",
@@ -370,15 +353,7 @@ export default function SignupPage() {
 
           {/* Password + Strength Meter */}
           <div>
-            <div
-              className={cn(
-                "flex h-11 items-center gap-2.5 rounded-xl px-3 transition-all",
-                "bg-[var(--background-tag)]",
-                passwordFocused &&
-                  "bg-token-card ring-2 ring-[var(--accent-primary)] ring-offset-2 dark:ring-offset-[var(--background-surface)] shadow-sm",
-                errors.password && "bg-red-50 dark:bg-red-950/30"
-              )}
-            >
+            <div className={underlineRow(passwordFocused, Boolean(errors.password))}>
               <LockIcon
                 className={cn(
                   "h-5 w-5 shrink-0",
@@ -412,8 +387,8 @@ export default function SignupPage() {
                 )}
               </button>
             </div>
-            {/* Strength Meter - 4 pills */}
-            <div className="mt-1.5 flex gap-1">
+            {formData.password.length > 0 ? (
+            <div className="mt-1 flex gap-1">
               {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}
@@ -437,6 +412,7 @@ export default function SignupPage() {
                 />
               ))}
             </div>
+            ) : null}
             {errors.password && (
               <p className="mt-1 text-sm text-token-error">{errors.password}</p>
             )}
@@ -447,30 +423,25 @@ export default function SignupPage() {
             <button
               type="button"
               onClick={() => setCurrencySheetOpen(true)}
-              className="flex h-11 w-full items-center gap-2.5 rounded-xl bg-[var(--background-tag)] px-3 text-left transition-all hover:bg-[var(--surface-hover)]"
+              className="flex h-10 w-full items-center gap-2 border-b border-token bg-transparent px-0 text-left text-sm transition-colors hover:border-token-accent"
             >
-              <CoinsIcon className="h-5 w-5 shrink-0 text-token-muted" />
-              <span className="flex-1 text-base text-token-primary">
-                {selectedCurrency?.label ?? formData.currency}
+              <CoinsIcon className="h-4 w-4 shrink-0 text-token-muted" />
+              <span className="flex-1 truncate text-token-primary">
+                Display currency · {selectedCurrency?.code ?? formData.currency}
               </span>
-              <ChevronDownIcon className="h-5 w-5 shrink-0 text-token-muted" />
+              <ChevronDownIcon className="h-4 w-4 shrink-0 text-token-muted" />
             </button>
-            <p className="mt-1.5 text-xs leading-relaxed text-token-muted">{SIGNUP_CURRENCY_HINT}</p>
           </div>
 
           {/* Primary Button */}
           <button
             type="submit"
             disabled={isLoading || !isPasswordValid}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-token-accent px-6 font-semibold text-white shadow-lg shadow-teal-200/50 dark:shadow-teal-900/30 transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:opacity-50"
+            className="group ml-auto mt-2 flex min-h-10 items-center gap-2 rounded-full bg-token-accent py-2 pl-5 pr-1 text-sm font-semibold text-on-accent transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:opacity-45"
           >
             {isLoading ? (
-              <span className="flex items-center gap-2">
-                <svg
-                  className="h-5 w-5 animate-spin"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
+              <span className="flex items-center gap-2 px-3">
+                <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle
                     className="opacity-25"
                     cx="12"
@@ -485,18 +456,20 @@ export default function SignupPage() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                   />
                 </svg>
-                Creating account...
+                Creating…
               </span>
             ) : (
               <>
-                Get Started
-                <ArrowRightIcon className="h-5 w-5" />
+                <span className="tracking-wide">Get started</span>
+                <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white/20 transition-transform group-active:translate-x-0.5">
+                  <ArrowRightIcon className="h-4 w-4" />
+                </span>
               </>
             )}
           </button>
 
           {/* Legal */}
-          <p className="text-center text-[11px] leading-tight text-token-secondary">
+          <p className="text-center text-[10px] leading-tight text-token-muted">
             By signing up, you agree to our{" "}
             <Link
               href="/terms"
@@ -516,7 +489,7 @@ export default function SignupPage() {
         </form>
 
         {/* Login Link */}
-        <p className="mt-4 text-center text-sm text-token-secondary">
+        <p className="mt-2 shrink-0 pb-1 text-center text-sm text-token-secondary">
           Already have an account?{" "}
           <Link
             href="/auth/login"
