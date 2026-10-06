@@ -10,7 +10,7 @@ import { useOnboardingStore } from "@/store/onboardingStore";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "@/components/ui/BottomSheet";
-import { getDefaultCurrency, getIso4217Currency } from "@/lib/currencies";
+import { getDefaultCurrency, getIso4217Currency, SIGNUP_CURRENCY_HINT } from "@/lib/currencies";
 import { CurrencySearchPanel } from "@/components/currency/CurrencySearchPanel";
 
 function getPasswordStrength(pwd: string): 0 | 1 | 2 | 3 | 4 {
@@ -455,6 +455,7 @@ export default function SignupPage() {
               </span>
               <ChevronDownIcon className="h-5 w-5 shrink-0 text-token-muted" />
             </button>
+            <p className="mt-1.5 text-xs leading-relaxed text-token-muted">{SIGNUP_CURRENCY_HINT}</p>
           </div>
 
           {/* Primary Button */}

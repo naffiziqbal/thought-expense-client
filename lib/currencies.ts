@@ -5,6 +5,9 @@ export type CurrencyOption = Iso4217Currency;
 export const CURRENCY_DISPLAY_HINT =
   'Tap a currency to change your display currency. Amounts in the app use exchange rates to show in the code you pick.';
 
+export const SIGNUP_CURRENCY_HINT =
+  'Your dashboard and budgets use this currency. Expenses in other currencies convert using exchange rates when you add them.';
+
 export function currencyChangeConsentTitle(code: string): string {
   return `Switch to ${code}?`;
 }
