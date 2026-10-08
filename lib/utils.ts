@@ -225,6 +225,21 @@ export function getCategoryBgColor(category: string): string {
   return colorPalette[hash % colorPalette.length];
 }
 
+/** Zero code points of native-script digit blocks: Bengali, Devanagari, Arabic-Indic, Urdu/Persian */
+const NATIVE_DIGIT_ZEROS = [0x09e6, 0x0966, 0x0660, 0x06f0];
+
+/** Convert native-script digits to ASCII ("৫০" → "50") so amount regexes match */
+export function normalizeDigits(text: string): string {
+  return text.replace(/[০-৯०-९٠-٩۰-۹]/g, (ch) => {
+    const code = ch.charCodeAt(0);
+    const zero = NATIVE_DIGIT_ZEROS.find((z) => code >= z && code <= z + 9) ?? code;
+    return String(code - zero);
+  });
+}
+
+/** Currency words that sit next to an amount ("চা ৫০ টাকা", "cha 50 tk") */
+const CURRENCY_WORDS = /৳|টাকা|\b(?:tk|taka|bdt)\b\.?/gi;
+
 // Local parsing for Quick Log live preview (works offline)
 export interface ParsedExpensePreview {
   description: string;
@@ -235,14 +250,15 @@ export interface ParsedExpensePreview {
 export function parseExpenseInputLocally(input: string): ParsedExpensePreview[] {
   if (!input.trim()) return [];
 
-  const items = input
-    .split(/[\n,]+|\s+and\s+/i)
+  const rawItems = input
+    .split(/[\n,।]+|\s+(?:and|এবং|আর)\s+/i)
     .map((s) => s.trim())
     .filter(Boolean);
 
   const results: ParsedExpensePreview[] = [];
 
-  for (const item of items) {
+  for (const rawItem of rawItems) {
+    const item = normalizeDigits(rawItem).replace(CURRENCY_WORDS, ' ').replace(/\s+/g, ' ').trim();
     const endNumberMatch = item.match(/^(.+?)\s+(\d+(?:\.\d{1,2})?)\s*$/);
     const startNumberMatch = item.match(/^(\d+(?:\.\d{1,2})?)\s+(.+)$/);
 
@@ -250,13 +266,13 @@ export function parseExpenseInputLocally(input: string): ParsedExpensePreview[] 
       results.push({
         description: endNumberMatch[1].trim(),
         amount: parseFloat(endNumberMatch[2]),
-        rawInput: item,
+        rawInput: rawItem,
       });
     } else if (startNumberMatch) {
       results.push({
         description: startNumberMatch[2].trim(),
         amount: parseFloat(startNumberMatch[1]),
-        rawInput: item,
+        rawInput: rawItem,
       });
     } else {
       const numbers = item.match(/\d+(?:\.\d{1,2})?/g);
@@ -264,7 +280,7 @@ export function parseExpenseInputLocally(input: string): ParsedExpensePreview[] 
         results.push({
           description: 'Unknown',
           amount: parseFloat(numbers[0]),
-          rawInput: item,
+          rawInput: rawItem,
         });
       }
     }
@@ -299,8 +315,23 @@ export function getCategoryFromKeyword(description: string): string {
     Fees: ['fee', 'subscription', 'membership'],
   };
 
+  const tokens = lower.split(/[\s,.।!?()-]+/).filter(Boolean);
   for (const [category, words] of Object.entries(keywords)) {
     if (words.some((w) => lower.includes(w))) return category;
+    const local = LOCAL_CATEGORY_KEYWORDS[category] ?? [];
+    if (local.some((w) => (w.includes(' ') ? lower.includes(w) : tokens.includes(w)))) return category;
   }
   return 'Other';
 }
+
+/** Bangla + Banglish keywords, matched as whole words (short ones like "cha" would hit "charge") */
+const LOCAL_CATEGORY_KEYWORDS: Record<string, string[]> = {
+  Food: ['চা', 'কফি', 'নাস্তা', 'খাবার', 'ভাত', 'বিরিয়ানি', 'সিঙ্গারা', 'সমুচা', 'ফুচকা', 'পরোটা', 'বাজার', 'মুদি', 'cha', 'nasta', 'khabar', 'bazar', 'biryani', 'biriyani', 'singara', 'fuchka'],
+  Transport: ['রিকশা', 'রিক্সা', 'বাস', 'সিএনজি', 'উবার', 'পাঠাও', 'ট্যাক্সি', 'মেট্রো', 'riksha', 'cng', 'pathao'],
+  Rent: ['বাসা ভাড়া', 'বাড়ি ভাড়া', 'বাড়িভাড়া', 'ঘর ভাড়া', 'basa bhara', 'bari bhara'],
+  Utilities: ['বিদ্যুৎ', 'কারেন্ট', 'বিল', 'গ্যাস', 'পানি', 'ইন্টারনেট', 'রিচার্জ', 'recharge'],
+  Shopping: ['শপিং', 'কাপড়', 'জামা', 'মার্কেট', 'daraz'],
+  Healthcare: ['ওষুধ', 'ঔষধ', 'ডাক্তার', 'হাসপাতাল', 'ফার্মেসি', 'oshudh', 'osud'],
+  Education: ['বই', 'টিউশন', 'কোচিং', 'কোর্স', 'coaching'],
+  'Personal Care': ['সেলুন', 'পার্লার', 'চুল কাটা'],
+};

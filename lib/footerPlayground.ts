@@ -1,4 +1,5 @@
 import { PLAY_STORE_URL } from '@/lib/appLinks';
+import { getCategoryFromKeyword, normalizeDigits } from '@/lib/utils';
 
 export type FooterParsedRow = {
   label: string;
@@ -30,11 +31,13 @@ function inferCategory(label: string): string {
   for (const [pattern, category] of KEYWORDS) {
     if (pattern.test(label)) return category;
   }
-  return 'Other';
+  // Bangla / Banglish ("চা", "pathao") — whole-word match so "চা" doesn't hit "রিচার্জ"
+  return getCategoryFromKeyword(label);
 }
 
 function parsePart(part: string): FooterParsedRow | null {
-  const match = part.trim().match(/^(.+?)\s+(\d+(?:,\d{3})*(?:\.\d+)?)$/);
+  const cleaned = normalizeDigits(part).replace(/৳|টাকা|\b(?:tk|taka|bdt)\b\.?/gi, ' ').replace(/\s+/g, ' ').trim();
+  const match = cleaned.match(/^(.+?)\s+(\d+(?:,\d{3})*(?:\.\d+)?)$/);
   if (!match) return null;
 
   const label = match[1].trim().replace(/^\w/, (c) => c.toUpperCase());
@@ -50,7 +53,7 @@ export function parseFooterInput(text: string): FooterParsedRow[] {
   if (!text.trim()) return [];
 
   return text
-    .split(/,|\band\b/i)
+    .split(/,|।|\band\b|\sএবং\s/i)
     .map(parsePart)
     .filter((row): row is FooterParsedRow => row !== null);
 }
