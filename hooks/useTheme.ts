@@ -1,22 +1,33 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { useThemeStore } from '@/store/themeStore';
+
+const DARK_QUERY = '(prefers-color-scheme: dark)';
+
+function subscribeToSystemTheme(onChange: () => void) {
+  const media = window.matchMedia(DARK_QUERY);
+  media.addEventListener('change', onChange);
+  return () => media.removeEventListener('change', onChange);
+}
+
+const noopSubscribe = () => () => {};
 
 export function useTheme() {
   const mode = useThemeStore((s) => s.mode);
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    if (mode === 'system') {
-      const media = window.matchMedia('(prefers-color-scheme: dark)');
-      const update = () => setIsDark(media.matches);
-      update();
-      media.addEventListener('change', update);
-      return () => media.removeEventListener('change', update);
-    }
-    setIsDark(mode === 'dark');
-  }, [mode]);
+  const systemDark = useSyncExternalStore(
+    subscribeToSystemTheme,
+    () => window.matchMedia(DARK_QUERY).matches,
+    () => false
+  );
+  // The persisted mode is only known on the client; render light on the server and
+  // during hydration (as before) so the markup matches.
+  const hydrated = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false
+  );
+  const isDark = hydrated && (mode === 'dark' || (mode === 'system' && systemDark));
 
   return { isDark, mode };
 }

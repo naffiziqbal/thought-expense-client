@@ -1,3 +1,4 @@
+import { createElement } from 'react';
 import { getCategoryBgColor, getCategoryChartColor } from '@/lib/utils';
 import { getCategoryIcon } from '@/lib/categoryIcons';
 
@@ -17,20 +18,20 @@ export function CategoryIconBubble({
 }) {
   const px = typeof size === 'number' ? size : SIZE_PX[size];
   const iconPx = px <= 36 ? 16 : 20;
-  const CategoryIcon = getCategoryIcon(category);
 
   return (
     <div
       className={`flex shrink-0 items-center justify-center rounded-icon ${className}`}
       style={{ width: px, height: px, backgroundColor: getCategoryBgColor(category) }}
     >
-      <CategoryIcon
-        width={iconPx}
-        height={iconPx}
-        className="shrink-0"
-        style={{ color: getCategoryChartColor(category) }}
-        aria-hidden
-      />
+      {/* createElement: the icon is a static component picked from a lookup table. */}
+      {createElement(getCategoryIcon(category), {
+        width: iconPx,
+        height: iconPx,
+        className: 'shrink-0',
+        style: { color: getCategoryChartColor(category) },
+        'aria-hidden': true,
+      })}
     </div>
   );
 }

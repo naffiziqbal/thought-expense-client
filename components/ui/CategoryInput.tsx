@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
 interface CategoryInputProps {
@@ -23,20 +23,16 @@ export const CategoryInput: React.FC<CategoryInputProps> = ({
   error,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (value) {
-      const filtered = suggestions.filter((cat) =>
-        cat.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredSuggestions(filtered);
-    } else {
-      setFilteredSuggestions(suggestions);
-    }
-  }, [value, suggestions]);
+  const filteredSuggestions = useMemo(
+    () =>
+      value
+        ? suggestions.filter((cat) => cat.toLowerCase().includes(value.toLowerCase()))
+        : suggestions,
+    [value, suggestions]
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

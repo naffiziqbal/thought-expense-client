@@ -110,8 +110,9 @@ export default function ExpensesPage() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  // Selection mode ends by itself when the last row is deselected.
+  const selectionMode = selectedIds.size > 0;
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
@@ -194,6 +195,7 @@ export default function ExpensesPage() {
 
   useEffect(() => {
     if (!isAuthenticated || authLoading) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- shows the loading state for the new filters/page, then fills in the results
     fetchExpenses();
   }, [isAuthenticated, authLoading, filters, page]);
 
@@ -278,7 +280,6 @@ export default function ExpensesPage() {
   };
 
   const exitSelection = useCallback(() => {
-    setSelectionMode(false);
     setSelectedIds(new Set());
   }, []);
 
@@ -293,7 +294,6 @@ export default function ExpensesPage() {
 
   const beginSelection = useCallback(
     (expense: Expense) => {
-      setSelectionMode(true);
       setSelectedIds((prev) => new Set(prev).add(expense.id));
     },
     []
@@ -309,10 +309,6 @@ export default function ExpensesPage() {
     },
     [handleEdit, selectionMode, toggleSelected]
   );
-
-  useEffect(() => {
-    if (selectionMode && selectedIds.size === 0) setSelectionMode(false);
-  }, [selectionMode, selectedIds.size]);
 
   const confirmBulkDelete = async () => {
     const ids = [...selectedIds];

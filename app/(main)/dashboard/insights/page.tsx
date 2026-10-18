@@ -49,7 +49,6 @@ export default function InsightsPage() {
   const [briefing, setBriefing] = useState<WeeklyBriefing | null>(null);
 
   const fetchInsights = async () => {
-    setIsLoading(true);
     try {
       const response = await api.getInsights({ limit: 10 });
       if (response.success) {
@@ -102,13 +101,16 @@ export default function InsightsPage() {
 
   useEffect(() => {
     if (!isAuthenticated || authLoading) return;
-    fetchInsights();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetchSummary only sets state once its request resolves
     fetchSummary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, authLoading, period, selYear, selMonth]);
 
+  // Insights and intelligence don't depend on the selected period, so load them once.
   useEffect(() => {
     if (!isAuthenticated || authLoading) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- both only sets state once its request resolves
+    fetchInsights();
     fetchIntelligence();
   }, [isAuthenticated, authLoading]);
 

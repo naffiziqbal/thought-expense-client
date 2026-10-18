@@ -20,7 +20,11 @@ export function FooterPlayground() {
   const [poseKey, setPoseKey] = useState(0);
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebounced(input), 280);
+    const timer = setTimeout(() => {
+      setDebounced(input);
+      // Penny reacts each time typing settles on something parseable.
+      if (parseFooterInput(input).length > 0) setPoseKey((k) => k + 1);
+    }, 280);
     return () => clearTimeout(timer);
   }, [input]);
 
@@ -35,10 +39,6 @@ export function FooterPlayground() {
     if (hasInput) return footerContent.pennyIdle;
     return footerContent.pennyEmpty;
   }, [hasInput, isTyping, rows.length]);
-
-  useEffect(() => {
-    if (rows.length > 0 && !isTyping) setPoseKey((k) => k + 1);
-  }, [rows.length, isTyping]);
 
   return (
     <div className="footer-playground relative overflow-hidden rounded-2xl border border-token bg-token-card p-5 shadow-sm sm:p-6">

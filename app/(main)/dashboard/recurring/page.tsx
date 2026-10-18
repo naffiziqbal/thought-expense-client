@@ -60,6 +60,7 @@ export default function RecurringPage() {
 
   useEffect(() => {
     if (!isAuthenticated || isLoading) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load only sets state once its request resolves
     void load();
   }, [isAuthenticated, isLoading, load]);
 

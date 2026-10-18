@@ -59,6 +59,7 @@ export default function GoalsPage() {
 
   useEffect(() => {
     if (!isAuthenticated || isLoading) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadGoals only sets state once its request resolves
     loadGoals();
   }, [isAuthenticated, isLoading]);
 

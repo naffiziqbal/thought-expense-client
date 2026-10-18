@@ -54,16 +54,17 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
-  const [seenIds, setSeenIds] = useState<string[]>([]);
-
-  useEffect(() => {
+  // Read once on the client. Notifications come from fetched data, so the first
+  // render shows none and the server markup still matches.
+  const [seenIds, setSeenIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
     try {
       const raw = localStorage.getItem('seen-notifications');
-      if (raw) setSeenIds(JSON.parse(raw));
+      return raw ? JSON.parse(raw) : [];
     } catch {
-      // ignore
+      return [];
     }
-  }, []);
+  });
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const fetchData = useCallback(async () => {
@@ -94,6 +95,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!isAuthenticated || isLoading || pathname !== '/dashboard') return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- shows the loading state, then fills in the results
     fetchData();
   }, [isAuthenticated, isLoading, pathname, fetchData]);
 
@@ -128,22 +130,30 @@ export default function DashboardPage() {
   };
 
   const { startDate, endDate } = getCurrentMonthRange();
-  const monthPending = pending.filter((p) => p.date.slice(0, 10) >= startDate && p.date.slice(0, 10) <= endDate);
+  const monthPending = useMemo(
+    () => pending.filter((p) => p.date.slice(0, 10) >= startDate && p.date.slice(0, 10) <= endDate),
+    [pending, startDate, endDate]
+  );
   const merged = addPendingToTotals(summary?.totalSpent ?? 0, summary?.byCategory ?? {}, pending, startDate, endDate);
 
-  const pendingExpenses: Expense[] = monthPending.map((p) => ({
-    id: `pending:${p.localId}`,
-    userId: user?.id || '',
-    description: p.description,
-    amount: p.amount,
-    currency: p.currency,
-    category: p.category,
-    confidence: 0.6,
-    rawInput: p.rawInput,
-    date: p.date,
-    createdAt: p.createdAt,
-    updatedAt: p.createdAt,
-  }));
+  const userId = user?.id || '';
+  const pendingExpenses = useMemo<Expense[]>(
+    () =>
+      monthPending.map((p) => ({
+        id: `pending:${p.localId}`,
+        userId,
+        description: p.description,
+        amount: p.amount,
+        currency: p.currency,
+        category: p.category,
+        confidence: 0.6,
+        rawInput: p.rawInput,
+        date: p.date,
+        createdAt: p.createdAt,
+        updatedAt: p.createdAt,
+      })),
+    [monthPending, userId]
+  );
 
   const mergedExpenses = useMemo(() => {
     const ids = new Set(monthExpenses.map((e) => e.id));

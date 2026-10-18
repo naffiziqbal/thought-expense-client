@@ -3,6 +3,7 @@
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { DASHBOARD_REFRESH_EVENT } from '@/lib/events';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
+import type { AxiosError } from 'axios';
 import { api } from '@/lib/api';
 import { CategoryIconBubble } from '@/components/CategoryIconBubble';
 import {
@@ -111,7 +112,6 @@ export default function AddExpensePage() {
 
   useEffect(() => {
     if (!showCamera) return;
-    setCameraError(null);
     let stream: MediaStream | null = null;
     const startCamera = async () => {
       try {
@@ -126,8 +126,8 @@ export default function AddExpensePage() {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
-      } catch (err: any) {
-        setCameraError(err?.message || 'Could not access camera');
+      } catch (err) {
+        setCameraError(err instanceof Error ? err.message : 'Could not access camera');
       }
     };
     startCamera();
@@ -185,6 +185,7 @@ export default function AddExpensePage() {
       toast.error('Upgrade to Premium to scan receipts');
       return;
     }
+    setCameraError(null);
     setShowCamera(true);
   };
 
@@ -340,7 +341,8 @@ export default function AddExpensePage() {
       toast.success('Saved');
       window.dispatchEvent(new CustomEvent(DASHBOARD_REFRESH_EVENT));
       router.push('/dashboard');
-    } catch (error: any) {
+    } catch (caught) {
+      const error = caught as AxiosError<{ message?: string }>;
       // The request never reached the server, so the same idempotency key is
       // safe to replay from the outbox.
       if (!error.response || error.code === 'ECONNABORTED') {

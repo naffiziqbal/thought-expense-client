@@ -76,13 +76,14 @@ export default function BudgetPage() {
 
   useEffect(() => {
     if (!isAuthenticated || isLoading) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadBudgets only sets state once its request resolves
     loadBudgets();
   }, [isAuthenticated, isLoading, month, year]);
 
-  useEffect(() => {
-    if (editLimitOpen && budget) setEditAmount(String(budget.total_limit));
-    if (editLimitOpen && !budget) setEditAmount('');
-  }, [editLimitOpen, budget]);
+  const openEditLimit = () => {
+    setEditAmount(budget ? String(budget.total_limit) : '');
+    setEditLimitOpen(true);
+  };
 
   const handleSaveLimit = async () => {
     const value = parseFloat(editAmount);
@@ -235,7 +236,7 @@ export default function BudgetPage() {
           </div>
           <button
             type="button"
-            onClick={() => setEditLimitOpen(true)}
+            onClick={openEditLimit}
             aria-label="Edit monthly limit"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-token bg-token-card text-token-secondary shadow-sm hover:border-[var(--accent-primary)] hover:text-token-accent"
           >
@@ -294,7 +295,7 @@ export default function BudgetPage() {
               <p className="text-xs leading-relaxed text-token-secondary">
                 Set a total with the edit button, or describe category limits below.
               </p>
-              <Button type="button" size="sm" onClick={() => setEditLimitOpen(true)}>
+              <Button type="button" size="sm" onClick={openEditLimit}>
                 Set monthly limit
               </Button>
             </div>

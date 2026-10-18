@@ -132,7 +132,7 @@ function listAllMetadata(locale: string): Iso4217Currency[] {
   );
 }
 
-let allListCache: Map<string, Iso4217Currency[]> = new Map();
+const allListCache: Map<string, Iso4217Currency[]> = new Map();
 
 /** Every ISO 4217 currency in the registry, sorted by code. */
 export function listIso4217Currencies(locale = 'en'): Iso4217Currency[] {

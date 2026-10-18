@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 import { useThemeStore } from '@/store/themeStore';
 
 const SunIcon = () => (
@@ -16,14 +16,8 @@ const MoonIcon = () => (
 );
 
 export function ThemeToggle() {
-  const mode = useThemeStore((s) => s.mode);
+  const { isDark } = useTheme();
   const setMode = useThemeStore((s) => s.setMode);
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const effective = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    setIsDark(effective);
-  }, [mode]);
 
   const handleToggle = () => {
     setMode(isDark ? 'light' : 'dark');
