@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/landing/ThemeToggle";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { AxiosError } from "axios";
 import toast from "react-hot-toast";
@@ -37,10 +37,12 @@ const ArrowLeftIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const resetRequired = searchParams.get("reason") === "reset-required";
   const [step, setStep] = useState<"email" | "otp">("email");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [otp, setOtp] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -135,7 +137,7 @@ export default function ForgotPasswordPage() {
             )}
           </div>
           <h1 className="text-xl font-bold text-token-primary">
-            {step === "email" ? "Forgot password?" : "Enter your code"}
+            {step === "otp" ? "Enter your code" : resetRequired ? "Reset your password now" : "Forgot password?"}
           </h1>
           <p className="mt-0.5 text-xs text-token-secondary text-center max-w-[320px]">
             {step === "email"
@@ -143,6 +145,19 @@ export default function ForgotPasswordPage() {
               : `We sent a 6-digit code to ${email}. It expires in 10 minutes.`}
           </p>
         </div>
+
+        {resetRequired && step === "email" && (
+          <div
+            role="alert"
+            className="mt-4 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+          >
+            <p className="font-semibold">Password reset required</p>
+            <p className="mt-0.5 text-xs">
+              For your security, we&apos;ve signed you out and you must set a new password before you can sign in
+              again.
+            </p>
+          </div>
+        )}
 
         {step === "email" ? (
           <form onSubmit={handleSendOtp} className="mt-4 flex flex-col gap-2">
@@ -235,5 +250,19 @@ export default function ForgotPasswordPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-token-surface">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--accent-primary)] border-r-transparent" />
+        </div>
+      }
+    >
+      <ForgotPasswordContent />
+    </Suspense>
   );
 }

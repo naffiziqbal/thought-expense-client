@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/landing/ThemeToggle";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { api, isPasswordResetRequired, RESET_REQUIRED_PATH } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import { AxiosError } from "axios";
 import toast from "react-hot-toast";
@@ -110,6 +110,10 @@ export default function LoginPage() {
         router.push("/dashboard/add");
       }
     } catch (error) {
+      if (isPasswordResetRequired(error)) {
+        router.push(`${RESET_REQUIRED_PATH}&email=${encodeURIComponent(formData.email)}`);
+        return;
+      }
       const message =
         error instanceof AxiosError
           ? error.response?.data?.message || "Invalid email or password"

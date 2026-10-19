@@ -353,6 +353,8 @@ export interface WeeklyBriefing {
 export interface ApiError {
   success: false;
   message: string;
+  /** Machine-readable reason, e.g. PASSWORD_RESET_REQUIRED */
+  code?: string;
   errors?: Array<{
     field: string;
     message: string;

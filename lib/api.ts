@@ -28,6 +28,18 @@ import type {
   RecurringRule,
 } from '@/types';
 
+export const PASSWORD_RESET_REQUIRED = 'PASSWORD_RESET_REQUIRED';
+
+/** The server refuses this account until the password is reset by emailed code. */
+export function isPasswordResetRequired(error: unknown): boolean {
+  return (
+    error instanceof AxiosError &&
+    (error.response?.data as Partial<ApiError> | undefined)?.code === PASSWORD_RESET_REQUIRED
+  );
+}
+
+export const RESET_REQUIRED_PATH = '/auth/forgot-password?reason=reset-required';
+
 /** Login failures, anonymous polls, and stale parse-job checks must not wipe the session. */
 function shouldClearSessionOn401(error: AxiosError): boolean {
   if (error.response?.status !== 401) return false;
@@ -70,7 +82,7 @@ class ApiClient {
         if (shouldClearSessionOn401(error)) {
           this.clearToken();
           if (typeof window !== 'undefined') {
-            window.location.href = '/auth/login';
+            window.location.href = isPasswordResetRequired(error) ? RESET_REQUIRED_PATH : '/auth/login';
           }
         }
         return Promise.reject(error);
