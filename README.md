@@ -9,9 +9,9 @@ This repo is the Next.js web client. The product also has:
 | Part | Stack |
 |---|---|
 | **Web app** (this repo) | Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4, Zustand, Recharts, Zod, Sentry |
-| **API** (private) | Express + TypeScript, PostgreSQL, Redis, Gemini for parsing and insights, Pinecone for similar-expense search, Resend email, scheduled backups to DigitalOcean Spaces |
-| **Mobile app** (private) | React Native + Expo, matching the web app's features, RevenueCat subscriptions |
-| **Admin console** (private) | Next.js 16 + shadcn/ui: growth, users, subscriptions, system health |
+| **[API](https://github.com/naffiziqbal/thought-expense-server)** | Express + TypeScript, PostgreSQL, Redis, Gemini for parsing and insights, Pinecone for similar-expense search, Resend email, scheduled backups to DigitalOcean Spaces |
+| **[Mobile app](https://github.com/naffiziqbal/though-expense-native)** | React Native + Expo, matching the web app's features, RevenueCat subscriptions |
+| **[Admin console](https://github.com/naffiziqbal/though-expense-admin)** | Next.js 16 + shadcn/ui: growth, users, subscriptions, system health |
 
 I designed and built all four, and deployed them on my own VPS with Docker.
 
